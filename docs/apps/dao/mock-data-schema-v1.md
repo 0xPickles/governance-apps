@@ -1,8 +1,11 @@
 # DAO Governance Mock Data Schema v1
 
-This schema defines the production-shaped data boundary for the deterministic
-mock client. Names may change during implementation, but the trust boundaries and
-state distinctions are required.
+This schema defines the deterministic mock-client boundary accepted in M2. It
+is not the producer wire contract. The frozen consumer-owned feed contract is
+[`feed-schema-v1.md`](feed-schema-v1.md), with strict failure and provenance
+states, exact lifecycle ABI records, and publication metadata. The
+[`dao-mock-state-map-v1.example.json`](examples/feed-v1/dao-mock-state-map-v1.example.json)
+file maps every accepted mock state to that feed without optional-field guesses.
 
 ## 1. Proposal identity
 

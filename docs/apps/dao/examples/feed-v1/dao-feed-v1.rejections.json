@@ -1,0 +1,188 @@
+[
+  {
+    "name": "cursor chain substitution",
+    "path": ["publication", "cursor", "chainId"],
+    "value": 10,
+    "expectedMessage": "cursor must use the feed chain ID"
+  },
+  {
+    "name": "cursor skips the next block",
+    "path": ["publication", "cursor", "nextBlockNumber"],
+    "value": "24000009",
+    "expectedMessage": "cursor next block"
+  },
+  {
+    "name": "false confirmation count",
+    "path": ["publication", "finality", "observedConfirmations"],
+    "value": 99,
+    "expectedMessage": "Observed confirmations"
+  },
+  {
+    "name": "partial proposal count",
+    "path": ["publication", "counts", "proposals"],
+    "value": 1,
+    "expectedMessage": "proposal count"
+  },
+  {
+    "name": "producer starts before deployment",
+    "path": ["contracts", 0, "startBlock"],
+    "value": "23899999",
+    "expectedMessage": "start block"
+  },
+  {
+    "name": "unpinned Voting source",
+    "path": ["contracts", 0, "source", "revision"],
+    "value": "main",
+    "expectedMessage": "pinned Voting revision"
+  },
+  {
+    "name": "proposal chain substitution",
+    "path": ["proposals", 0, "ref", "chainId"],
+    "value": 10,
+    "expectedMessage": "proposal feed chain"
+  },
+  {
+    "name": "rule threshold substitution",
+    "path": ["proposals", 0, "rules", "approvalThresholdBps"],
+    "value": 6000,
+    "expectedMessage": "snapshotted threshold"
+  },
+  {
+    "name": "rule observation generation mismatch",
+    "path": ["proposals", 0, "rules", "mutableConfiguration", "contractGeneration"],
+    "value": "2",
+    "expectedMessage": "contract generation"
+  },
+  {
+    "name": "vote total inconsistency",
+    "path": ["proposals", 0, "totalWeight"],
+    "value": "1",
+    "expectedMessage": "vote totals"
+  },
+  {
+    "name": "display group substitution",
+    "path": ["proposals", 0, "displayGroup"],
+    "value": "active",
+    "expectedMessage": "Display group"
+  },
+  {
+    "name": "content CID substitution",
+    "path": ["proposals", 0, "content", "cid"],
+    "value": "bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "expectedMessage": "Content CID"
+  },
+  {
+    "name": "canonical JSON substitution",
+    "path": ["proposals", 0, "content", "canonicalJson"],
+    "value": "{}\n",
+    "expectedMessage": "fixed-order canonical JSON"
+  },
+  {
+    "name": "event ID substitution",
+    "path": ["proposals", 0, "events", 0, "eventId"],
+    "value": "1:0x1111111111111111111111111111111111111111:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0:0",
+    "expectedMessage": "Event ID must be derived"
+  },
+  {
+    "name": "vote actor role substitution",
+    "path": ["proposals", 1, "events", 1, "actor", "role"],
+    "value": "guardian",
+    "expectedMessage": "Vote actor role"
+  },
+  {
+    "name": "aggregate binary direction guess",
+    "path": ["proposals", 1, "events", 2, "data", "direction"],
+    "value": "yea",
+    "expectedMessage": "Aggregate vote direction"
+  },
+  {
+    "name": "moderation reason substitution",
+    "path": ["proposals", 10, "moderation", "flagReason"],
+    "value": "Substituted reason",
+    "expectedMessage": "flag reason"
+  },
+  {
+    "name": "creation transaction substitution",
+    "path": ["proposals", 0, "creation", "transactionHash"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "Creation transaction hash"
+  },
+  {
+    "name": "simulation block substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "blockHash"],
+    "value": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "expectedMessage": "exact Propose event block"
+  },
+  {
+    "name": "simulation caller substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "caller"],
+    "value": "0x9999999999999999999999999999999999999999",
+    "expectedMessage": "execution-equivalent caller"
+  },
+  {
+    "name": "event emitter substitution",
+    "path": ["proposals", 1, "events", 1, "data", "abi", "address"],
+    "value": "0x9999999999999999999999999999999999999999",
+    "expectedMessage": "exact Voting emitter"
+  },
+  {
+    "name": "mutable vote start substitution",
+    "path": ["proposals", 0, "rules", "mutableConfiguration", "voteStartTimestamp"],
+    "value": 1787054401,
+    "expectedMessage": "observed mutable vote start"
+  },
+  {
+    "name": "script event binding substitution",
+    "path": ["proposals", 22, "script", "retention", "proposeEventId"],
+    "value": "1:0x1111111111111111111111111111111111111111:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0:0",
+    "expectedMessage": "Script retention must bind"
+  },
+  {
+    "name": "simulation script identity substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "scriptHash"],
+    "value": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "expectedMessage": "exact retained event script hash"
+  },
+  {
+    "name": "simulation Voting transition substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proposalId"],
+    "value": "999",
+    "expectedMessage": "REVM simulation must model"
+  },
+  {
+    "name": "asset gateway suffix substitution",
+    "path": ["proposals", 0, "content", "assetRecords", 0, "gatewayUrl"],
+    "value": "https://ipfs.io/ipfs/bafkreiddpbv6fdpnzg5lnxseuuwicjg4en67yzioea3xtws2aoxnq45cbe/asset.svg",
+    "expectedMessage": "Asset CID and gateway"
+  },
+  {
+    "name": "direct IPFS attachment suffix substitution",
+    "path": ["proposals", 1, "content", "attachmentRecords", 0, "target"],
+    "value": "ipfs://bafkreiddpbv6fdpnzg5lnxseuuwicjg4en67yzioea3xtws2aoxnq45cbe/asset.svg",
+    "expectedMessage": "Attachment provenance"
+  },
+  {
+    "name": "creation receipt block substitution",
+    "path": ["proposals", 0, "creation", "receipt", "blockHash"],
+    "value": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "expectedMessage": "Creation receipt block"
+  },
+  {
+    "name": "event time substitution",
+    "path": ["proposals", 1, "events", 1, "log", "timestamp"],
+    "value": 1787054401,
+    "expectedMessage": "Producer-owned event time cannot follow"
+  },
+  {
+    "name": "verified source traversal",
+    "path": ["proposals", 4, "analysis", "calls", 0, "verifiedSource", "sourcePath"],
+    "value": "../Voting.vy",
+    "expectedMessage": "repository-relative paths"
+  },
+  {
+    "name": "last-good retention disabled",
+    "path": ["publication", "atomicity", "retainLastGood"],
+    "value": false,
+    "expectedMessage": "expected true"
+  }
+]

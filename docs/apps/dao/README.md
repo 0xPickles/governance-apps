@@ -55,7 +55,9 @@ contract revision as equivalent.
   proposal-time simulation. The frontend renders that analysis.
 - Lifecycle status, vote result, moderation, and execution are separate facts.
   Event time comes from the block producer, verified sources are structured
-  HTTPS records, and proposal rules are proposal-owned snapshots.
+  HTTPS records, and the approval threshold is the only proposal-owned rule
+  snapshot. Vote timing, guard, contract, hook, and role values are ordered
+  historical observations.
 - Proposal-level execution readiness covers exact script integrity only. Missing
   event bytes and a stored-hash mismatch are hard blockers; lifecycle, account,
   guard, schedule, and simulation facts stay separate.
@@ -80,6 +82,8 @@ contract revision as equivalent.
 - User outcomes: [`user-stories.md`](user-stories.md)
 - Layout and copy: [`ui-spec.md`](ui-spec.md)
 - Mock/domain data: [`mock-data-schema-v1.md`](mock-data-schema-v1.md)
+- Frozen feed contract: [`feed-schema-v1.md`](feed-schema-v1.md)
+- Feed JSON Schema: [`feed-schema-v1.schema.json`](feed-schema-v1.schema.json)
 - Delivery and agent workflow: [`delivery/README.md`](delivery/README.md)
 - Delivery ledger: [`delivery/status.md`](delivery/status.md)
 - Sol Ultra kickoff: [`delivery/kickoff-prompt.md`](delivery/kickoff-prompt.md)
