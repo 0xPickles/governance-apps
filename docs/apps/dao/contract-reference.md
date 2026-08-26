@@ -23,6 +23,16 @@ Primary contracts:
 - A proposal created in epoch `N` is assigned voting epoch `N + 1`.
 - Voting opens at the configured `vote_start` offset within that epoch. The
   constructor default opens voting halfway through the epoch.
+- `vote_start` and voting length are live global configuration, not proposal
+  snapshots. `status()` and `vote()` read the values effective when they run, so
+  a later change can alter an existing proposal's opening interval and raw
+  status. The feed keeps the Propose-effective values as historical disclosure,
+  admits each Vote under its event-effective values, and derives snapshot timing
+  and raw status from values effective at the end of the canonical block.
+- `vote_start + voting length` equals the fixed epoch. The setter permits the
+  disabling boundary `vote_start = epoch length` and `voting length = 0`; no
+  Vote timestamp can fall inside that empty interval, and the proposal remains
+  `PROPOSED` through its voting epoch before passage logic applies.
 - An approved executable proposal can execute only in epoch `N + 2`, after the
   configured execution delay and before that epoch ends.
 - Contract parameters are live configuration. The app must not hardcode launch
@@ -101,6 +111,27 @@ Users submit Yea or Nay through `Voter`, not directly to `Voting`.
 The raw `Voting.vote` entry point can overwrite a vote, but only the configured
 Voter may call it. The public app follows the one-vote rule enforced by `Voter`.
 
+Pinned setters also admit disabling zero addresses. Voting's Voter, hook, weight
+measure, and operator may be zero; the Executor is zero before its required
+nonzero setter initializes it. The pinned Voter's delegated-staking, YBC, and
+YBC-weight-aggregator addresses may be zero. These states have different
+effects and must not be collapsed into `null` or a generic unavailable flag:
+zero Voter or weight measure disables Vote, a zero hook rejects positive-weight
+Vote, zero YBC atomically reverts a pinned-Voter submission, and zero operator
+blocks Flag and guarded Execute but not permissionless Execute. A zero delegated
+aggregate account can be emitted by the pinned Voter when the aggregate path is
+otherwise valid.
+
+Human and aggregate labels require effective Voter implementation evidence and
+a transaction-bound call trace. The exact Voter source is
+`contracts/governance/Voter.vy` at revision
+`9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, SHA-256
+`0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
+compiled with `vyper@0.4.2`, gas optimization, and Cancun. Archive code evidence
+and a reproducible build must match at the effective configuration position.
+Custom or unverified Voters preserve raw Vote data as unclassified; they do not
+inherit pinned-Voter binary-human or aggregate semantics.
+
 ## 5. Veto behavior
 
 Veto has two branches that the UI must keep distinct.
@@ -167,7 +198,9 @@ Flag and veto reasons are event data. Feed-backed history must retain them.
 ## 8. Status and display mapping
 
 The contract's `status()` gives terminal booleans priority over time-derived
-phases. Application actions must therefore be derived separately.
+phases. Its time-derived phases use the current live vote timing described
+above, not the timing effective when the proposal was created. Application
+actions must therefore be derived separately.
 
 | Raw status | Default display | Notes |
 | --- | --- | --- |
@@ -186,9 +219,12 @@ Never map raw status directly to button availability.
 
 ## 9. Signal proposals
 
-An empty script has the fixed `keccak256("")` hash. A passed empty-script proposal
-reports `PASSED` during the following epoch and later reports `EXECUTED` without
-requiring an executable call.
+An empty script has the fixed `keccak256("")` hash. The stored script hash is
+authoritative for type even when exact event bytes are unavailable: that one
+hash is Signal and every other hash is Executable. Retained bytes independently
+verify integrity. A passed empty-script proposal reports `PASSED` during the
+following epoch and later reports `EXECUTED` without requiring an executable
+call.
 
 User-facing behavior:
 
@@ -230,19 +266,37 @@ The backend simulation is not a normal `Voting.execute` call at the proposal
 block. That call would fail the proposal status and time gates before the voting
 and execution epochs.
 
-The producer must simulate the ordered script atomically against proposal-time
-state using an execution-equivalent caller and context. It records:
+The producer may simulate the ordered script atomically in a disclosed,
+conditional proposal-time Executor-frame scenario. A completed result records:
 
 - the simulation method and engine;
 - state block number and hash;
 - simulated timestamp;
-- caller and any state or timestamp overrides;
+- the authenticated hypothetical transaction origin;
+- the nested-frame caller chain and any state or timestamp overrides;
+- the real code addresses, operator check, and absence of code overrides;
+- the initial frame gas, effective gas price, envelope, access list, and warm-set
+  policy;
 - whether the complete ordered script succeeded atomically;
 - revert or unavailable reason.
 
-If the producer cannot establish an execution-equivalent context, the result is
-`unavailable`, not `succeeded`. ABI decoding is independent: an unknown function
-can still simulate, and a decoded function can still revert.
+A bare top-level `Executor.execute` call with caller set to Voting is not
+equivalent because `tx.origin` becomes Voting. An ordinary deployed harness also
+changes an observable caller or code identity. Version 1 therefore uses an
+engine-injected Executor frame at the Propose block: the authenticated Propose
+sender is a frozen hypothetical origin, Executor sees `CALLER = Voting`, targets
+see `CALLER = Executor`, real Voting and Executor code remains present, and only
+the proven proposal-specific `executed: false -> true` transition is applied.
+The record also freezes initial Executor-frame gas, effective `GASPRICE`, a
+synthetic legacy no-blobs envelope, empty access list, and the Cancun warm set
+for origin, Voting, Executor, and precompiles with no prewarmed storage. A
+recomputed SHA-256 commitment binds those inputs to the block, caller chain, and
+injector artifact.
+Success or revert is conditional on that exact recorded scenario, not a promise
+about the unknown future execution origin. If the origin, frame, code, state,
+time, gas/access context, or script cannot be proved, the result is
+`unavailable`. ABI decoding is independent: an unknown function can still
+simulate, and a decoded function can still revert.
 
 This stored result is historical analysis. Execution still requires a fresh
 normal simulation through the current Voting contract and current state.
@@ -264,11 +318,13 @@ The browser must not substitute local time when an event timestamp is missing
 and must not invent a transaction link for a direct-contract or incomplete
 historical record. Technical details retain every available identity field.
 
-Known-call decoding uses a structured verified-source record: source kind,
-label, validated HTTPS URL, revision, and source path. WP7B pins the Voting
-source to exact stYFI revision `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`.
-That record proves the source used for decoding; it does not prove that a mock
-address is deployed. Unknown calls have no verified source.
+Known-call decoding uses an exact GitHub record: source kind, repository, label,
+canonical blob URL, 40-hex revision, and normalized source path. WP7B pins the
+Voting source to exact stYFI revision
+`9395d5e6fffdfe21fda32af94d32fca1a4f7840b`. Other hosts, credentials, query,
+fragment, controls, traversal, and noncanonical paths are invalid. That record
+proves the source used for decoding; it does not prove that a mock address is
+deployed. Unknown calls have no verified source.
 
 The producer verifies `keccak256(eventScript) == storedScriptHash`, fetches IPFS
 content, decodes known calls, runs the proposal-time simulation, and publishes a

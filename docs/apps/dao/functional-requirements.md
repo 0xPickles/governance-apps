@@ -127,6 +127,10 @@ not the current global threshold. Rules also show the supplied proposal type,
 voting period, execution delay and guard where applicable, Voting contract,
 verified source, and the block where mutable configuration was observed. The
 normal fixture uses 5,000 basis points and an alternate fixture retains 6,000.
+That proposal-rule configuration remains the historical disclosure effective at
+Propose. Feed admission checks each Vote against its event-effective live
+window, while raw snapshot status and timing use the configuration effective at
+the end of the canonical block.
 
 ### DAO-FR-013: signal display
 
@@ -140,11 +144,13 @@ The technical disclosure may show the raw contract status.
 
 ### DAO-FR-014: analysis provenance
 
-Decoded actions use a structured, validated HTTPS source record with kind,
-label, URL, revision, and source path. A source can prove the pinned decoder
-input but cannot prove a mock deployment. Unknown calls remain visible as
-target, selector, calldata, and size. A proposal-time simulation shows its
-reference block and never claims to guarantee execution.
+Decoded actions use a structured, exact GitHub source record with kind,
+repository, label, canonical blob URL, 40-hex revision, and normalized source
+path. Other hosts, credentials, query, fragment, controls, and noncanonical
+paths are invalid. A source can prove the pinned decoder input but cannot prove
+a mock deployment. Unknown calls remain visible as target, selector, calldata,
+and size. A proposal-time simulation shows its reference block and never claims
+to guarantee execution.
 
 ### DAO-FR-015: event provenance
 
@@ -156,11 +162,12 @@ still retains every available raw identity field.
 
 ### DAO-FR-016: execution integrity readiness
 
-The client derives proposal-level execution readiness only from proposal type,
-exact event script bytes, and the stored script hash. Signal proposals are not
-applicable. Executable proposals are integrity-ready when the exact bytes hash
-to the stored value. Missing bytes and a hash mismatch are the only hard
-integrity blockers.
+The client derives proposal type from the stored script hash: Signal iff it is
+`keccak256(0x)`, otherwise Executable, even when event bytes are unavailable.
+Signal proposals are not applicable to execution readiness. Executable
+proposals are integrity-ready when the exact retained event bytes hash to the
+stored value. Missing bytes and a hash mismatch are the only hard integrity
+blockers; content `proposalType` never overrides the stored hash.
 
 Board and detail show `Execution blocked` before status and type, followed by a
 static reason. They do not infer this badge from lifecycle, moderation, guard,
@@ -232,7 +239,9 @@ one primary reason controls the action.
 The app requires a public `gov.yearn.fi` topic in the configured forum
 `Proposals` category. A same-origin server endpoint validates and normalizes the
 topic. Eligibility uses stable category IDs, not display labels. Descendants are
-accepted only when their IDs are explicitly configured.
+accepted only when their IDs are explicitly configured. Version 1 fixes the
+authoritative root to `5 / Proposals / proposals` and permits descendants `9`,
+`18`, `17`, `21`, `10`, and `29` only with exact root ancestry and metadata.
 Minimum topic age and poll rules remain informational until an updated DAO policy
 defines them.
 
@@ -330,15 +339,21 @@ preflight endpoint keyed by script hash.
 
 ### DAO-FR-037: proposal-time simulation semantics
 
-The backend simulates the complete ordered script atomically against
-proposal-time state using an execution-equivalent caller and context. It does
-not treat a time-gated `Voting.execute` call at the proposal block as useful
-evidence. The result records the method, engine, block number and hash, simulated
-timestamp, caller, state or time overrides, atomic result, and failure reason.
+The backend runs the complete ordered script atomically in an explicitly
+conditional proposal-time Executor-frame scenario. It does not treat a
+time-gated `Voting.execute` call at the proposal block or a bare top-level
+Executor call with caller set to Voting as useful evidence: the latter changes
+`tx.origin`. A completed record must prove the authenticated hypothetical
+origin, an engine-injected nested frame with real Executor code and
+`CALLER = Voting`, target `CALLER = Executor`, the operator check, no code
+overrides, exact initial frame gas/effective gas price/envelope/access/warm-set
+inputs with their commitment, the exact block/time/script, and the typed Voting
+`executed` false-to-true transition. Its success or revert applies only to that
+recorded scenario, not an unknown future execution transaction.
 
 Unknown call decoding does not force simulation failure. If an
-execution-equivalent context cannot be established, analysis is `Unavailable`
-rather than successful.
+origin and frame-equivalent context cannot be established, analysis is
+`Unavailable` rather than successful.
 
 ## 8. Lifecycle actions
 

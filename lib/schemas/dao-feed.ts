@@ -12,7 +12,6 @@ import {
   canonicalizeDaoProposalContent,
   createDaoRawSha256Cid,
   deriveDaoProposalContentIdentity,
-  getDaoProposalUtf8ByteLength,
   parseDaoProposalContent,
 } from "@/lib/clients/dao/content";
 import {
@@ -42,6 +41,8 @@ export const DAO_FEED_MAX_MODERATION_REASON_BYTES = 256;
 export const DAO_FEED_MAX_RETRY_ATTEMPTS = 16;
 export const DAO_FEED_MAX_CONTENT_RETRIES = 8;
 export const DAO_FEED_MAX_ASSET_RETRIES = 8;
+export const DAO_FEED_RETRY_BACKOFF_SECONDS = 120 as const;
+export const DAO_FEED_MAX_RETRY_BACKOFF_SECONDS = 3_600 as const;
 
 export const DAO_FEED_LIFECYCLE_EVENT_TOPICS = {
   propose:
@@ -122,8 +123,12 @@ export const DAO_FEED_LIFECYCLE_EVENT_ABI = {
 
 const PINNED_VOTING_SOURCE_PATH = "contracts/governance/Voting.vy";
 const PINNED_VOTING_SOURCE_URL = `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${PINNED_VOTING_SOURCE_PATH}`;
+const PINNED_VOTER_SOURCE_PATH = "contracts/governance/Voter.vy";
+const PINNED_VOTER_SOURCE_URL = `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${PINNED_VOTER_SOURCE_PATH}`;
 const PINNED_VOTING_SOURCE_SHA256 =
   "0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e" as const;
+const PINNED_VOTER_SOURCE_SHA256 =
+  "0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab" as const;
 const PINNED_VOTING_LAYOUT_SHA256 =
   "0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26" as const;
 const VOTING_PROPOSALS_MAPPING_SLOT = 17n;
@@ -142,6 +147,23 @@ const EVENT_ID_PATTERN = /^[0-9]+:0x[0-9a-f]{40}:0x[0-9a-f]{64}:[0-9]+:[0-9]+$/u
 const CONFIGURATION_ID_PATTERN = /^config-[1-9]\d*$/u;
 const ISO_UTC_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u;
+const GITHUB_REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u;
+const GITHUB_REVISION_PATTERN = /^[0-9a-f]{40}$/u;
+const SOURCE_PATH_PATTERN = /^[A-Za-z0-9_.\/-]+$/u;
+const CANONICAL_BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u;
+const ZERO_ADDRESS = `0x${"00".repeat(20)}`;
+const DAO_FORUM_PROPOSAL_CATEGORIES = new Map<
+  number,
+  { name: string; slug: string }
+>([
+  [5, { name: "Proposals", slug: "proposals" }],
+  [9, { name: "Vaults", slug: "vaults" }],
+  [18, { name: "Other Products (Labs)", slug: "labs" }],
+  [17, { name: "Finance", slug: "finance" }],
+  [21, { name: "Protocol and Governance", slug: "protocol-and-governance" }],
+  [10, { name: "YIPs", slug: "yips" }],
+  [29, { name: "veYFI", slug: "veyfi" }],
+]);
 
 const zUint = z.string().max(78).regex(UINT_PATTERN);
 const zPositiveUint = z.string().max(78).regex(POSITIVE_UINT_PATTERN);
@@ -153,6 +175,10 @@ const zNonZeroAddress = z.string().regex(LOWER_NONZERO_ADDRESS_PATTERN);
 const zHash = z.string().regex(LOWER_HASH_PATTERN);
 const zNonZeroHash = z.string().regex(LOWER_NONZERO_HASH_PATTERN);
 const zBytes = z.string().max(4_098).regex(LOWER_BYTES_PATTERN);
+const zContentBase64 = z
+  .string()
+  .max(174_764)
+  .regex(CANONICAL_BASE64_PATTERN);
 const zProposeLogData = z.string().max(4_290).regex(LOWER_BYTES_PATTERN);
 const zVoteLogData = z.string().length(130).regex(LOWER_BYTES_PATTERN);
 const zReasonLogData = z.string().max(642).regex(LOWER_BYTES_PATTERN);
@@ -197,11 +223,12 @@ const DiscussionFailureSchema = z.union([
 ]);
 
 const VerifiedSourceSchema = z.strictObject({
-  kind: z.enum(["github", "sourcify", "explorer"]),
+  kind: z.literal("github"),
   label: z.string().min(1).max(256),
   url: z.string().min(1).max(2_048),
-  revision: z.string().min(1).max(128),
-  sourcePath: z.string().min(1).max(512),
+  repository: z.string().regex(GITHUB_REPOSITORY_PATTERN),
+  revision: z.string().regex(GITHUB_REVISION_PATTERN),
+  sourcePath: z.string().min(1).max(512).regex(SOURCE_PATH_PATTERN),
 });
 
 const ProposalRefSchema = z.strictObject({
@@ -274,7 +301,7 @@ const ActorEvidenceSchema = z.union([
 ]);
 
 const ActorSchema = z.strictObject({
-  address: zNonZeroAddress.nullable(),
+  address: zAddress.nullable(),
   role: z.enum([
     "proposer",
     "voter",
@@ -367,21 +394,47 @@ const VoteEventSchema = z.strictObject({
       "human",
       "delegated_staking_aggregate",
       "ybc_aggregate",
+      "unclassified",
     ]),
     yeaBps: z.number().int().min(0).max(DAO_BPS),
     direction: z.enum(["yea", "nay"]).nullable(),
     weight: zUint,
     weightSemantics: z.literal("absolute_actor_contribution"),
     countsAsHumanParticipation: z.boolean(),
-    classification: z.strictObject({
-      method: z.literal("historical_voter_configuration"),
-      configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
-      voterAddress: zNonZeroAddress,
-      delegatedStakingAddress: zNonZeroAddress,
-      ybcAddress: zNonZeroAddress,
-      observedAt: EventPositionSchema,
-      observationSemantics: z.literal("effective_at_event"),
-    }),
+    classification: z.discriminatedUnion("method", [
+      z.strictObject({
+        method: z.literal("pinned_voter_call_trace"),
+        configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
+        voterAddress: zNonZeroAddress,
+        delegatedStakingAddress: zAddress,
+        ybcAddress: zAddress,
+        ybcWeightAggregatorAddress: zAddress,
+        voterImplementationState: z.literal("verified_pinned"),
+        observedAt: EventPositionSchema,
+        observationSemantics: z.literal("effective_at_event"),
+        trace: z.strictObject({
+          transactionHash: zNonZeroHash,
+          voterCallDepth: zPositiveSafeUint,
+          votingCallDepth: zPositiveSafeUint,
+          votingCallOrdinal: zSafeUint,
+          emittedAccount: zAddress,
+          ybcMembership: z.boolean(),
+          aggregatePathExecuted: z.boolean(),
+        }),
+      }),
+      z.strictObject({
+        method: z.literal("unverified_voter_unclassified"),
+        configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
+        voterAddress: zNonZeroAddress,
+        delegatedStakingAddress: z.null(),
+        ybcAddress: z.null(),
+        ybcWeightAggregatorAddress: z.null(),
+        voterImplementationState: z.literal("unverified"),
+        observedAt: EventPositionSchema,
+        observationSemantics: z.literal("effective_at_event"),
+        trace: z.null(),
+      }),
+    ]),
     abi: VoteEventAbiSchema,
   }),
 });
@@ -448,12 +501,40 @@ const ProposalContentValueSchema = z.strictObject({
   assets: z.array(ProposalAssetSchema).max(16),
 });
 
-const ContentRetrySchema = z.strictObject({
-  attempts: zSafeUint.max(DAO_FEED_MAX_CONTENT_RETRIES),
+const RetryAttemptBaseShape = {
+  attempts: zPositiveSafeUint.max(DAO_FEED_MAX_CONTENT_RETRIES),
   maxAttempts: z.literal(DAO_FEED_MAX_CONTENT_RETRIES),
-  lastAttemptAt: zIsoUtc.nullable(),
-  nextRetryAt: zIsoUtc.nullable(),
-});
+  lastAttemptAt: zIsoUtc,
+  policy: z.literal("fixed_120_seconds"),
+};
+
+const ContentRetrySchema = z.discriminatedUnion("state", [
+  z.strictObject({
+    ...RetryAttemptBaseShape,
+    state: z.literal("succeeded"),
+    nextRetryAt: z.null(),
+    backoffSeconds: z.null(),
+  }),
+  z.strictObject({
+    ...RetryAttemptBaseShape,
+    state: z.literal("scheduled"),
+    nextRetryAt: zIsoUtc,
+    backoffSeconds: z.literal(DAO_FEED_RETRY_BACKOFF_SECONDS),
+  }),
+  z.strictObject({
+    ...RetryAttemptBaseShape,
+    state: z.literal("non_retryable"),
+    nextRetryAt: z.null(),
+    backoffSeconds: z.null(),
+  }),
+  z.strictObject({
+    ...RetryAttemptBaseShape,
+    state: z.literal("exhausted"),
+    attempts: z.literal(DAO_FEED_MAX_CONTENT_RETRIES),
+    nextRetryAt: z.null(),
+    backoffSeconds: z.null(),
+  }),
+]);
 
 const AssetRecordSchema = z.strictObject({
   path: z.string().min(1).max(512),
@@ -465,12 +546,7 @@ const AssetRecordSchema = z.strictObject({
   width: zPositiveSafeUint.max(8_192).nullable(),
   height: zPositiveSafeUint.max(8_192).nullable(),
   state: z.enum(["available", "unavailable"]),
-  retry: z.strictObject({
-    attempts: zSafeUint.max(DAO_FEED_MAX_ASSET_RETRIES),
-    maxAttempts: z.literal(DAO_FEED_MAX_ASSET_RETRIES),
-    lastAttemptAt: zIsoUtc.nullable(),
-    nextRetryAt: zIsoUtc.nullable(),
-  }),
+  retry: ContentRetrySchema,
   error: AssetFailureSchema.nullable(),
 });
 
@@ -498,13 +574,17 @@ export const DaoFeedContentV1Schema = z.discriminatedUnion("state", [
     ...ContentCommonShape,
     state: z.literal("available"),
     canonicalJson: z.string().min(2).max(131_072),
+    rawBytesBase64: z.null(),
+    byteLength: zSafeUint.max(131_072),
     value: ProposalContentValueSchema,
     error: z.null(),
   }),
   z.strictObject({
     ...ContentCommonShape,
     state: z.literal("invalid"),
-    canonicalJson: z.string().min(2).max(131_072),
+    canonicalJson: z.null(),
+    rawBytesBase64: zContentBase64,
+    byteLength: zSafeUint.max(131_072),
     value: z.null(),
     error: ContentFailureSchema,
   }),
@@ -512,6 +592,8 @@ export const DaoFeedContentV1Schema = z.discriminatedUnion("state", [
     ...ContentCommonShape,
     state: z.literal("unavailable"),
     canonicalJson: z.null(),
+    rawBytesBase64: z.null(),
+    byteLength: z.null(),
     value: z.null(),
     error: ContentFailureSchema,
   }),
@@ -522,27 +604,44 @@ const DiscussionSchema = z.discriminatedUnion("state", [
     state: z.literal("verified"),
     url: z.string().min(1).max(2_048),
     title: z.string().min(1).max(512),
-    categoryId: zSafeUint,
+    rootCategoryId: z.literal(5),
+    categoryId: z.union([
+      z.literal(5),
+      z.literal(9),
+      z.literal(18),
+      z.literal(17),
+      z.literal(21),
+      z.literal(10),
+      z.literal(29),
+    ]),
     category: z.string().min(1).max(128),
     categorySlugPath: z.array(z.string().min(1).max(128)).min(1).max(16),
+    categoryAncestryIds: z.array(zSafeUint).min(1).max(2),
+    membership: z.enum(["root", "descendant"]),
     error: z.null(),
   }),
   z.strictObject({
     state: z.literal("unverified"),
     url: z.string().min(1).max(2_048),
     title: z.null(),
+    rootCategoryId: z.null(),
     categoryId: z.null(),
     category: z.null(),
     categorySlugPath: z.tuple([]),
+    categoryAncestryIds: z.tuple([]),
+    membership: z.null(),
     error: z.null(),
   }),
   z.strictObject({
     state: z.literal("unavailable"),
     url: z.string().max(2_048).nullable(),
     title: z.null(),
+    rootCategoryId: z.null(),
     categoryId: z.null(),
     category: z.null(),
     categorySlugPath: z.tuple([]),
+    categoryAncestryIds: z.tuple([]),
+    membership: z.null(),
     error: DiscussionFailureSchema,
   }),
 ]);
@@ -678,7 +777,7 @@ const VotingTransitionOverrideSchema = z.strictObject({
 });
 
 const SimulationCompleteShape = {
-  method: z.literal("revm_voting_transition_then_executor_execute"),
+  method: z.literal("revm_engine_injected_executor_frame_conditional_origin"),
   engine: z.literal("revm@34"),
   executorAddress: zNonZeroAddress,
   scriptHash: zNonZeroHash,
@@ -689,6 +788,40 @@ const SimulationCompleteShape = {
   timestampMode: z.literal("block"),
   timestampOverride: z.null(),
   caller: zNonZeroAddress,
+  transactionOrigin: zNonZeroAddress,
+  originPolicy: z.strictObject({
+    state: z.literal("frozen_hypothetical_scenario"),
+    source: z.literal("propose_transaction_sender"),
+    semantics: z.literal(
+      "conditional_on_recorded_origin_block_gas_frame_and_state"
+    ),
+    proposalTransactionHash: zNonZeroHash,
+  }),
+  frameContext: z.strictObject({
+    entry: z.literal("engine_injected"),
+    outerVotingCall: z.literal("not_simulated"),
+    executorCaller: zNonZeroAddress,
+    executorCodeAddress: zNonZeroAddress,
+    targetCaller: zNonZeroAddress,
+    callValue: z.literal("0"),
+    noCodeOverrides: z.literal(true),
+    operatorCheckExecuted: z.literal(true),
+    harness: z.strictObject({
+      name: z.literal("gov-apps-stats-revm-frame-injector"),
+      revision: z.string().min(1).max(128),
+      artifactSha256: zNonZeroHash,
+    }),
+    gasContext: z.strictObject({
+      executorFrameInitialGas: zPositiveUint,
+      effectiveGasPriceWei: zUint,
+      transactionEnvelope: z.literal("synthetic_legacy_no_blobs"),
+      accessList: z.tuple([]),
+      initialWarmSetPolicy: z.literal(
+        "cancun_frame_entry_origin_voting_executor_and_precompiles_no_storage"
+      ),
+      contextInputsSha256: zNonZeroHash,
+    }),
+  }),
   stateOverrides: z.tuple([VotingTransitionOverrideSchema]),
   atomic: z.literal(true),
 };
@@ -707,6 +840,9 @@ export const DaoProposalSimulationV1Schema = z.discriminatedUnion("state", [
     timestampMode: z.null(),
     timestampOverride: z.null(),
     caller: z.null(),
+    transactionOrigin: z.null(),
+    originPolicy: z.null(),
+    frameContext: z.null(),
     stateOverrides: z.tuple([]),
     atomic: z.null(),
     result: z.null(),
@@ -737,6 +873,9 @@ export const DaoProposalSimulationV1Schema = z.discriminatedUnion("state", [
     timestampMode: z.null(),
     timestampOverride: z.null(),
     caller: z.null(),
+    transactionOrigin: z.null(),
+    originPolicy: z.null(),
+    frameContext: z.null(),
     stateOverrides: z.tuple([]),
     atomic: z.null(),
     result: z.null(),
@@ -787,19 +926,88 @@ const AnalysisSchema = z.discriminatedUnion("state", [
   }),
 ]);
 
+const VoterImplementationSchema = z.discriminatedUnion("state", [
+  z.strictObject({
+    state: z.literal("verified_pinned"),
+    address: zNonZeroAddress,
+    source: VerifiedSourceSchema,
+    sourceSha256: z.literal(PINNED_VOTER_SOURCE_SHA256),
+    compiler: z.literal("vyper@0.4.2"),
+    optimization: z.literal("gas"),
+    evmVersion: z.literal("cancun"),
+    immutableGenesisTimestamp: zUnixSeconds,
+    compiledRuntimeBytecodeHash: zNonZeroHash,
+    bytecode: z.strictObject({
+      evidenceKind: z.literal("archive_rpc_and_reproducible_build"),
+      rpcMethod: z.literal("eth_getCode"),
+      hashMethod: z.literal("keccak256"),
+      address: zNonZeroAddress,
+      blockNumber: zUint,
+      blockHash: zNonZeroHash,
+      codeByteLength: zPositiveSafeUint,
+      deployedBytecodeHash: zNonZeroHash,
+      buildArtifactSha256: zNonZeroHash,
+    }),
+    classificationSemantics: z.literal(
+      "pinned_voter_trace_required_for_human_and_aggregate_labels"
+    ),
+    error: z.null(),
+  }),
+  z.strictObject({
+    state: z.literal("disabled_zero_address"),
+    address: z.literal(ZERO_ADDRESS),
+    source: z.null(),
+    sourceSha256: z.null(),
+    compiler: z.null(),
+    optimization: z.null(),
+    evmVersion: z.null(),
+    immutableGenesisTimestamp: z.null(),
+    compiledRuntimeBytecodeHash: z.null(),
+    bytecode: z.null(),
+    classificationSemantics: z.literal("voting_disabled"),
+    error: z.null(),
+  }),
+  z.strictObject({
+    state: z.literal("unverified"),
+    address: zNonZeroAddress,
+    source: z.null(),
+    sourceSha256: z.null(),
+    compiler: z.null(),
+    optimization: z.null(),
+    evmVersion: z.null(),
+    immutableGenesisTimestamp: z.null(),
+    compiledRuntimeBytecodeHash: z.null(),
+    bytecode: z.null(),
+    classificationSemantics: z.literal("unclassified"),
+    error: ProvenanceFailureSchema,
+  }),
+]);
+
 const HistoricalConfigurationValuesShape = {
   contractGeneration: zPositiveUint,
   configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
-  voteStartOffsetSeconds: zSafeUint.max(DAO_FEED_EPOCH_LENGTH_SECONDS - 1),
-  votingPeriodSeconds: zPositiveSafeUint.max(DAO_FEED_EPOCH_LENGTH_SECONDS),
+  voteStartOffsetSeconds: zSafeUint.max(DAO_FEED_EPOCH_LENGTH_SECONDS),
+  votingPeriodSeconds: zSafeUint.max(DAO_FEED_EPOCH_LENGTH_SECONDS),
+  votingWindowState: z.enum(["enabled", "disabled_zero_length"]),
   executionDelaySeconds: zSafeUint.max(DAO_FEED_EPOCH_LENGTH_SECONDS - 1),
   executionGuard: z.enum(["guarded", "permissionless"]),
-  voterAddress: zNonZeroAddress,
-  delegatedStakingAddress: zNonZeroAddress,
-  ybcAddress: zNonZeroAddress,
-  executorAddress: zNonZeroAddress,
-  votingHookAddress: zNonZeroAddress.nullable(),
-  operatorAddress: zNonZeroAddress,
+  voterAddress: zAddress,
+  voterState: z.enum(["configured", "disabled_zero_address"]),
+  voterImplementation: VoterImplementationSchema,
+  delegatedStakingAddress: zAddress,
+  delegatedStakingState: z.enum(["configured", "zero_address"]),
+  ybcAddress: zAddress,
+  ybcState: z.enum(["configured", "zero_address"]),
+  ybcWeightAggregatorAddress: zAddress,
+  ybcWeightAggregatorState: z.enum(["configured", "zero_address"]),
+  executorAddress: zAddress,
+  executorState: z.enum(["configured", "uninitialized_zero_address"]),
+  votingHookAddress: zAddress,
+  votingHookState: z.enum(["configured", "zero_address"]),
+  weightMeasureAddress: zAddress,
+  weightMeasureState: z.enum(["configured", "zero_address"]),
+  operatorAddress: zAddress,
+  operatorState: z.enum(["configured", "zero_address"]),
   guardianAddress: zNonZeroAddress,
 };
 
@@ -834,6 +1042,7 @@ const IndexedCreationSchema = z.strictObject({
   receipt: z.strictObject({
     status: z.literal("success"),
     transactionHash: zNonZeroHash,
+    transactionSender: zNonZeroAddress,
     blockNumber: zUint,
     blockHash: zNonZeroHash,
     blockTimestamp: zUnixSeconds.nullable(),
@@ -861,12 +1070,36 @@ const ModerationSchema = z.strictObject({
   vetoReason: z.string().max(256).nullable(),
 });
 
+const ChainCreatedAtSchema = z.discriminatedUnion("state", [
+  z.strictObject({
+    state: z.literal("available"),
+    timestamp: zUnixSeconds,
+    source: z.literal("propose_block_timestamp"),
+    observedAt: EventPositionSchema,
+    error: z.null(),
+  }),
+  z.strictObject({
+    state: z.literal("unavailable"),
+    timestamp: z.null(),
+    source: z.null(),
+    observedAt: z.null(),
+    error: ProvenanceFailureSchema,
+  }),
+]);
+
+const StatusConfigurationSchema = z.strictObject({
+  configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
+  effectiveAt: EventPositionSchema,
+  observationSemantics: z.literal("effective_at_end_of_canonical_block"),
+});
+
 const ProposalSchema = z.strictObject({
   ref: ProposalRefSchema,
   contractGeneration: zPositiveUint,
   proposer: zNonZeroAddress,
   votingEpoch: zUint,
-  createdAt: zUnixSeconds,
+  chainCreatedAt: ChainCreatedAtSchema,
+  statusConfiguration: StatusConfigurationSchema,
   voteStartsAt: zUnixSeconds,
   voteEndsAt: zUnixSeconds,
   executionStartsAt: zUnixSeconds.nullable(),
@@ -975,15 +1208,21 @@ const PublicationSchema = z.strictObject({
       state: z.literal("first_attempt"),
       attempt: z.literal(1),
       maxAttempts: z.literal(DAO_FEED_MAX_RETRY_ATTEMPTS),
+      lastAttemptAt: zIsoUtc,
+      policy: z.literal("fixed_120_seconds"),
       lastFailure: z.null(),
       nextRetryAt: z.null(),
+      backoffSeconds: z.null(),
     }),
     z.strictObject({
       state: z.literal("succeeded_after_retry"),
       attempt: zPositiveSafeUint.min(2).max(DAO_FEED_MAX_RETRY_ATTEMPTS),
       maxAttempts: z.literal(DAO_FEED_MAX_RETRY_ATTEMPTS),
+      lastAttemptAt: zIsoUtc,
+      policy: z.literal("fixed_120_seconds"),
       lastFailure: PublicationFailureSchema,
       nextRetryAt: z.null(),
+      backoffSeconds: z.literal(DAO_FEED_RETRY_BACKOFF_SECONDS),
     }),
   ]),
   atomicity: z.strictObject({
@@ -997,6 +1236,7 @@ const PublicationSchema = z.strictObject({
   retention: z.strictObject({
     eventScripts: z.literal("indefinite"),
     contentJson: z.literal("indefinite"),
+    rawContentBytes: z.literal("indefinite"),
     assetRecords: z.literal("indefinite"),
     immutableAuditSnapshots: z.literal("indefinite"),
     rawContentMaxAttempts: z.literal(DAO_FEED_MAX_CONTENT_RETRIES),
@@ -1121,6 +1361,44 @@ export function createDaoFeedEventId(
   >
 ): string {
   return `${chainId}:${votingAddress.toLowerCase()}:${log.blockHash.toLowerCase()}:${log.transactionIndex}:${log.logIndex}`;
+}
+
+export function deriveDaoSimulationContextInputsSha256(input: {
+  blockHash: Hex;
+  transactionOrigin: Address;
+  votingCaller: Address;
+  executorAddress: Address;
+  executorCaller: Address;
+  executorCodeAddress: Address;
+  targetCaller: Address;
+  harnessRevision: string;
+  harnessArtifactSha256: Hex;
+  executorFrameInitialGas: string;
+  effectiveGasPriceWei: string;
+}): Hex {
+  const canonicalInputs = JSON.stringify({
+    schema: "yearn.dao.simulation-context-inputs.v1",
+    blockHash: input.blockHash,
+    transactionOrigin: input.transactionOrigin,
+    votingCaller: input.votingCaller,
+    executorAddress: input.executorAddress,
+    executorCaller: input.executorCaller,
+    executorCodeAddress: input.executorCodeAddress,
+    targetCaller: input.targetCaller,
+    callValue: "0",
+    noCodeOverrides: true,
+    operatorCheckExecuted: true,
+    harnessName: "gov-apps-stats-revm-frame-injector",
+    harnessRevision: input.harnessRevision,
+    harnessArtifactSha256: input.harnessArtifactSha256,
+    executorFrameInitialGas: input.executorFrameInitialGas,
+    effectiveGasPriceWei: input.effectiveGasPriceWei,
+    transactionEnvelope: "synthetic_legacy_no_blobs",
+    accessList: [],
+    initialWarmSetPolicy:
+      "cancun_frame_entry_origin_voting_executor_and_precompiles_no_storage",
+  });
+  return sha256(new TextEncoder().encode(canonicalInputs));
 }
 
 export type DaoFeedLifecycleAbiInput =
@@ -1318,6 +1596,7 @@ function validateDaoFeedSemantics(
   validateCanonicalPrimitives(feed, context, []);
   assertIsoUtc(feed.generatedAt, context, ["generatedAt"]);
   assertIsoUtc(feed.publication.publishedAt, context, ["publication", "publishedAt"]);
+  validateFailureObservationTimes(feed, feed.generatedAt, context, []);
   validatePublication(feed, context);
   const contracts = validateContracts(feed, context);
   validateProposals(feed, contracts, context);
@@ -1337,6 +1616,8 @@ const UINT_FIELD_NAMES = new Set([
   "nayWeight",
   "weight",
   "blockNumber",
+  "executorFrameInitialGas",
+  "effectiveGasPriceWei",
 ]);
 
 function validateCanonicalPrimitives(
@@ -1464,16 +1745,30 @@ function validatePublication(
 
   if (publication.retry.state === "succeeded_after_retry") {
     const failedAt = publication.retry.lastFailure.observedAt;
+    const attemptedAt = Date.parse(publication.retry.lastAttemptAt);
+    const expectedAttemptedAt =
+      failedAt === null
+        ? Number.NaN
+        : Date.parse(failedAt) +
+          publication.retry.backoffSeconds * 1_000;
     if (
       failedAt === null ||
-      Date.parse(failedAt) > Date.parse(publication.publishedAt)
+      !publication.retry.lastFailure.retryable ||
+      publication.retry.lastAttemptAt !== publication.publishedAt ||
+      attemptedAt !== expectedAttemptedAt
     ) {
       issue(
         context,
-        ["publication", "retry", "lastFailure", "observedAt"],
-        "A successful publication retry must retain its exact preceding failure time."
+        ["publication", "retry"],
+        "A preceding publication failure must be retryable before a successful retry occurs at publishedAt after the exact bounded backoff."
       );
     }
+  } else if (publication.retry.lastAttemptAt !== publication.publishedAt) {
+    issue(
+      context,
+      ["publication", "retry", "lastAttemptAt"],
+      "A successful first publication attempt must retain publishedAt as its exact attempt time."
+    );
   }
 
   if (publication.reorg.state === "clean") {
@@ -1561,6 +1856,12 @@ function validateContracts(
           "The raw vote-start offset plus voting window must equal the fixed epoch length."
         );
       }
+      validateConfigurationSemantics(
+        configuration,
+        contract.genesisTimestamp,
+        context,
+        configurationPath
+      );
       if (
         configuration.configurationId !== `config-${configurationIndex + 1}` ||
         configurationIds.has(configuration.configurationId)
@@ -1652,6 +1953,7 @@ function validateProposals(
   const proposalKeys = new Set<string>();
   const eventIds = new Set<string>();
   const logCoordinates = new Set<string>();
+  const blockGlobalLogIndices = new Set<string>();
   const transactionGroups = new Map<
     string,
     Pick<FeedEvent["log"], "blockNumber" | "blockHash" | "timestamp" | "transactionHash">
@@ -1663,6 +1965,10 @@ function validateProposals(
   const blockGroups = new Map<
     string,
     Pick<FeedEvent["log"], "blockHash" | "timestamp">
+  >();
+  const blockHashGroups = new Map<
+    string,
+    Pick<FeedEvent["log"], "blockNumber" | "timestamp">
   >();
 
   for (const [proposalIndex, proposal] of feed.proposals.entries()) {
@@ -1706,6 +2012,15 @@ function validateProposals(
         issue(context, eventPath, "Event log coordinates must be globally unique.");
       }
       logCoordinates.add(coordinate);
+      const blockGlobalLogIndex = `${proposal.ref.chainId}:${event.log.blockHash}:${event.log.logIndex}`;
+      if (blockGlobalLogIndices.has(blockGlobalLogIndex)) {
+        issue(
+          context,
+          [...eventPath, "log", "logIndex"],
+          "Ethereum logIndex must be block-global across transactions, proposals, and Voting generations."
+        );
+      }
+      blockGlobalLogIndices.add(blockGlobalLogIndex);
       if (previousPosition && comparePositions(previousPosition, event.log) >= 0) {
         issue(context, eventPath, "Proposal events must be strictly ordered by block, transaction, and log position.");
       }
@@ -1732,6 +2047,20 @@ function validateProposals(
         );
       } else if (!blockGroup) {
         blockGroups.set(event.log.blockNumber, event.log);
+      }
+      const blockHashGroup = blockHashGroups.get(event.log.blockHash);
+      if (
+        blockHashGroup &&
+        (blockHashGroup.blockNumber !== event.log.blockNumber ||
+          blockHashGroup.timestamp !== event.log.timestamp)
+      ) {
+        issue(
+          context,
+          [...eventPath, "log", "blockHash"],
+          "One canonical block hash must map to exactly one block number and producer-owned timestamp."
+        );
+      } else if (!blockHashGroup) {
+        blockHashGroups.set(event.log.blockHash, event.log);
       }
 
       const transactionKey = `${event.log.blockHash}:${event.log.transactionIndex}`;
@@ -1779,10 +2108,11 @@ function validateProposal(
     issue(context, [...path, "totalWeight"], "Proposal vote totals must equal Yea plus Nay weights.");
   }
   if (
-    proposal.createdAt > proposal.voteStartsAt ||
-    proposal.voteStartsAt >= proposal.voteEndsAt
+    (proposal.chainCreatedAt.state === "available" &&
+      proposal.chainCreatedAt.timestamp > proposal.voteStartsAt) ||
+    proposal.voteStartsAt > proposal.voteEndsAt
   ) {
-    issue(context, [...path, "voteStartsAt"], "Proposal voting timestamps must be ordered from creation through vote end.");
+    issue(context, [...path, "voteStartsAt"], "Proposal voting timestamps must be ordered from known chain creation through a possibly disabled zero-length vote window.");
   }
   if ((proposal.executionStartsAt === null) !== (proposal.executionEndsAt === null)) {
     issue(context, [...path, "executionStartsAt"], "Execution start and end timestamps must be present together.");
@@ -1797,7 +2127,7 @@ function validateProposal(
   }
 
   validateRules(proposal, contract, context, [...path, "rules"]);
-  validateContent(proposal, context, [...path, "content"]);
+  validateContent(feed, proposal, context, [...path, "content"]);
   validateDiscussion(proposal, context, [...path, "discussion"]);
   validateScript(proposal, context, [...path, "script"]);
   validateVoteAccounting(proposal, context, [...path, "voteAccounting"]);
@@ -1870,45 +2200,82 @@ function validateRules(
 
   if (contract) {
     const votingEpoch = toUint(proposal.votingEpoch);
-    if (votingEpoch !== null) {
+    const snapshotConfiguration = getSnapshotConfiguration(contract);
+    if (
+      !snapshotConfiguration ||
+      proposal.statusConfiguration.configurationId !==
+        snapshotConfiguration.configurationId ||
+      comparePositions(
+        proposal.statusConfiguration.effectiveAt,
+        snapshotConfiguration.effectiveAt
+      ) !== 0 ||
+      proposal.statusConfiguration.effectiveAt.blockHash !==
+        snapshotConfiguration.effectiveAt.blockHash
+    ) {
+      issue(
+        context,
+        [...path, "statusConfiguration"],
+        "Raw proposal timing and status must bind the configuration effective at the end of the canonical snapshot block."
+      );
+    }
+    if (votingEpoch !== null && snapshotConfiguration) {
       const epochLength = BigInt(contract.epochLengthSeconds);
       const genesis = BigInt(contract.genesisTimestamp);
       const voteStart =
         genesis +
         votingEpoch * epochLength +
-        BigInt(mutable.voteStartOffsetSeconds);
-      const voteEnd = voteStart + BigInt(mutable.votingPeriodSeconds);
+        BigInt(snapshotConfiguration.voteStartOffsetSeconds);
+      const voteEnd =
+        voteStart + BigInt(snapshotConfiguration.votingPeriodSeconds);
       const proposalEpoch =
-        proposal.createdAt < contract.genesisTimestamp
+        proposal.chainCreatedAt.state !== "available" ||
+        proposal.chainCreatedAt.timestamp < contract.genesisTimestamp
           ? null
           : BigInt(
               Math.floor(
-                (proposal.createdAt - contract.genesisTimestamp) /
+                (proposal.chainCreatedAt.timestamp - contract.genesisTimestamp) /
                   contract.epochLengthSeconds
               )
             );
       if (
         voteStart !== BigInt(proposal.voteStartsAt) ||
-        voteEnd !== BigInt(proposal.voteEndsAt) ||
-        proposalEpoch === null ||
-        proposalEpoch + 1n !== votingEpoch
+        voteEnd !== BigInt(proposal.voteEndsAt)
       ) {
-        issue(context, [...path, "mutableConfiguration"], "Proposal epoch formula must use the generation genesis, fixed 14-day epoch, raw vote-start offset, and effective voting period.");
+        issue(
+          context,
+          [...path, "statusConfiguration"],
+          "Snapshot-effective vote timing must use the generation genesis, fixed epoch, current raw vote-start offset, and current voting period."
+        );
+      }
+      if (
+        proposal.chainCreatedAt.state === "available" &&
+        (proposalEpoch === null || proposalEpoch + 1n !== votingEpoch)
+      ) {
+        issue(
+          context,
+          [...path, "chainCreatedAt"],
+          "Known chain creation time must place the proposal in the epoch immediately before its emitted voting epoch."
+        );
       }
       const followingEpochStart = genesis + (votingEpoch + 1n) * epochLength;
       const followingEpochEnd = followingEpochStart + epochLength;
       if (proposal.type === "signal") {
         if (proposal.executionStartsAt !== null || proposal.executionEndsAt !== null) {
-          issue(context, [...path, "mutableConfiguration"], "Signal proposals keep no executable window while their following fixed epoch remains the PASSED interval.");
+          issue(context, [...path, "statusConfiguration"], "Signal proposals keep no executable window while their following fixed epoch remains the PASSED interval.");
         }
       } else if (
         proposal.executionStartsAt === null ||
         proposal.executionEndsAt === null ||
         BigInt(proposal.executionStartsAt) !==
-          followingEpochStart + BigInt(mutable.executionDelaySeconds) ||
+          followingEpochStart +
+            BigInt(snapshotConfiguration.executionDelaySeconds) ||
         BigInt(proposal.executionEndsAt) !== followingEpochEnd
       ) {
-        issue(context, [...path, "mutableConfiguration"], "Executable proposal timing must use the effective delay inside the following fixed epoch.");
+        issue(
+          context,
+          [...path, "statusConfiguration"],
+          "Executable action timing must use the snapshot-effective delay inside the following fixed epoch."
+        );
       }
     }
   }
@@ -1916,6 +2283,7 @@ function validateRules(
 }
 
 function validateContent(
+  feed: StructuralFeed,
   proposal: FeedProposal,
   context: RefinementContext,
   path: readonly PropertyKey[]
@@ -1933,8 +2301,9 @@ function validateContent(
   }
   validateRetryRecord(
     content.retry,
-    content.state !== "available",
-    content.error?.retryable ?? false,
+    content.state,
+    content.error,
+    feed.generatedAt,
     context,
     [...path, "retry"],
     "content"
@@ -1953,17 +2322,42 @@ function validateContent(
     return;
   }
 
-  if (!hasExactlyOneFinalLf(content.canonicalJson)) {
-    issue(context, [...path, "canonicalJson"], "Fetched content JSON must end in exactly one final LF.");
+  let rawBytes: Uint8Array;
+  if (content.state === "invalid") {
+    const decoded = decodeCanonicalBase64(content.rawBytesBase64);
+    if (decoded === null) {
+      issue(
+        context,
+        [...path, "rawBytesBase64"],
+        "Invalid content bytes must use canonical RFC 4648 Base64."
+      );
+      return;
+    }
+    rawBytes = decoded;
+    if (rawBytes.byteLength !== content.byteLength) {
+      issue(
+        context,
+        [...path, "byteLength"],
+        "Invalid content byteLength must equal the exact decoded fetched bytes."
+      );
+    }
+  } else {
+    if (!hasExactlyOneFinalLf(content.canonicalJson)) {
+      issue(context, [...path, "canonicalJson"], "Available content JSON must end in exactly one final LF.");
+    }
+    rawBytes = new TextEncoder().encode(content.canonicalJson);
+    if (rawBytes.byteLength !== content.byteLength) {
+      issue(
+        context,
+        [...path, "byteLength"],
+        "Available content byteLength must equal its exact canonical UTF-8 bytes."
+      );
+    }
   }
-  if (getDaoProposalUtf8ByteLength(content.canonicalJson) > 131_072) {
-    issue(
-      context,
-      [...path, "canonicalJson"],
-      "Retained raw proposal content cannot exceed 131,072 UTF-8 bytes."
-    );
+  if (rawBytes.byteLength > 131_072) {
+    issue(context, [...path, "byteLength"], "Retained raw proposal content cannot exceed 131,072 bytes.");
   }
-  const rawDigest = sha256(new TextEncoder().encode(content.canonicalJson));
+  const rawDigest = sha256(rawBytes);
   const rawCid = createDaoRawSha256Cid(rawDigest);
   const expectedComparison =
     rawDigest === content.expectedDigest ? "verified" : "mismatch";
@@ -2020,7 +2414,11 @@ function validateContent(
   if (!sameAddress(value.createdBy, proposal.proposer)) {
     issue(context, [...path, "value", "createdBy"], "Available content author must match the proposal proposer.");
   }
-  if (Math.floor(Date.parse(value.createdAt) / 1_000) > proposal.createdAt) {
+  if (
+    proposal.chainCreatedAt.state === "available" &&
+    Math.floor(Date.parse(value.createdAt) / 1_000) >
+      proposal.chainCreatedAt.timestamp
+  ) {
     issue(context, [...path, "value", "createdAt"], "Immutable content creation time may differ from but cannot follow the canonical Propose block time.");
   }
 
@@ -2051,8 +2449,9 @@ function validateContent(
     }
     validateRetryRecord(
       record.retry,
-      record.state !== "available",
-      record.error?.retryable ?? false,
+      record.state,
+      record.error,
+      feed.generatedAt,
       context,
       [...path, "assetRecords", index, "retry"],
       "asset"
@@ -2122,13 +2521,27 @@ function validateDiscussion(
     } catch {
       // The shared URL validator reports the structural failure.
     }
+    const category = DAO_FORUM_PROPOSAL_CATEGORIES.get(discussion.categoryId);
+    const expectedAncestry =
+      discussion.categoryId === 5 ? [5] : [5, discussion.categoryId];
+    const expectedSlugPath =
+      discussion.categoryId === 5
+        ? ["proposals"]
+        : ["proposals", category?.slug ?? ""];
     if (
-      discussion.categoryId !== 42 ||
-      discussion.category !== "Proposals" ||
-      discussion.categorySlugPath.length !== 1 ||
-      discussion.categorySlugPath[0] !== "proposals"
+      !category ||
+      discussion.rootCategoryId !== 5 ||
+      discussion.category !== category.name ||
+      discussion.membership !==
+        (discussion.categoryId === 5 ? "root" : "descendant") ||
+      !numberArraysEqual(discussion.categoryAncestryIds, expectedAncestry) ||
+      !stringArraysEqual(discussion.categorySlugPath, expectedSlugPath)
     ) {
-      issue(context, path, "Verified discussion provenance must retain the configured Proposals category ID and stable slug path.");
+      issue(
+        context,
+        path,
+        "Verified discussion authorization must retain exact Proposals root 5 ancestry and an allowed root or descendant ID/name/slug tuple."
+      );
     }
   }
   if (
@@ -2146,6 +2559,16 @@ function validateScript(
   path: readonly PropertyKey[]
 ): void {
   const script = proposal.script;
+  if (
+    (proposal.type === "signal") !==
+    (script.hash === DAO_EMPTY_SCRIPT_HASH)
+  ) {
+    issue(
+      context,
+      [...path, "hash"],
+      "The stored script hash determines proposal type even when exact Propose bytes are unavailable: signal iff keccak256(empty)."
+    );
+  }
   if (script.bytes === null) {
     if (
       script.structure.state !== "unavailable" ||
@@ -2289,8 +2712,25 @@ function validateProposeBindings(
       "Raw Propose ABI evidence must be explicitly available with exact script bytes or unavailable with a failure."
     );
   }
-  if (event.log.timestamp !== null && event.log.timestamp !== proposal.createdAt) {
-    issue(context, [...eventPath, "log", "timestamp"], "Proposal creation time must use the producer-owned Propose event timestamp without substitution.");
+  if (event.log.timestamp === null) {
+    if (proposal.chainCreatedAt.state !== "unavailable") {
+      issue(
+        context,
+        [...path, "chainCreatedAt"],
+        "An unavailable Propose block timestamp requires explicit unavailable chain creation time and must not guess a number."
+      );
+    }
+  } else if (
+    proposal.chainCreatedAt.state !== "available" ||
+    proposal.chainCreatedAt.timestamp !== event.log.timestamp ||
+    comparePositions(proposal.chainCreatedAt.observedAt, event.log) !== 0 ||
+    proposal.chainCreatedAt.observedAt.blockHash !== event.log.blockHash
+  ) {
+    issue(
+      context,
+      [...path, "chainCreatedAt"],
+      "Available chain creation time must equal and bind the producer-owned Propose block timestamp and exact event position."
+    );
   }
   const observation = proposal.rules.mutableConfiguration.observedAt;
   if (comparePositions(observation, event.log) > 0) {
@@ -2418,17 +2858,34 @@ function validateStatus(
   }
   let immutableVetoBranch: "early_no_votes" | "post_participation" | null = null;
   for (const [index, event] of proposal.events.entries()) {
-    if (
-      event.type === "vote" &&
-      event.log.timestamp !== null &&
-      (event.log.timestamp < proposal.voteStartsAt ||
-        event.log.timestamp >= proposal.voteEndsAt)
-    ) {
-      issue(
-        context,
-        [...path, "events", index, "log", "timestamp"],
-        "Vote event time must fall inside the proposal voting window."
-      );
+    if (event.type === "vote") {
+      const eventConfiguration = contract
+        ? getEffectiveConfiguration(contract, event.log)
+        : null;
+      const epochStart = contract
+        ? getProposalEpochBoundary(contract, proposal.votingEpoch, 0n)
+        : null;
+      const eventVoteStart =
+        eventConfiguration && epochStart !== null
+          ? epochStart + BigInt(eventConfiguration.voteStartOffsetSeconds)
+          : null;
+      const eventVoteEnd =
+        eventConfiguration && eventVoteStart !== null
+          ? eventVoteStart + BigInt(eventConfiguration.votingPeriodSeconds)
+          : null;
+      if (
+        event.log.timestamp === null ||
+        eventVoteStart === null ||
+        eventVoteEnd === null ||
+        BigInt(event.log.timestamp) < eventVoteStart ||
+        BigInt(event.log.timestamp) >= eventVoteEnd
+      ) {
+        issue(
+          context,
+          [...path, "events", index, "log", "timestamp"],
+          "Vote event time must be known and fall inside the event-effective voting window."
+        );
+      }
     }
     if (
       (event.type === "retract" || event.type === "flag") &&
@@ -2554,21 +3011,32 @@ function validateStatus(
     return;
   }
   const postVoteEpochEndsAt = Number(postVoteEpochEnd);
-  const expectedProtocolStatus = deriveDaoProtocolStatus({
-    exists: true,
-    now: feed.canonicalBlock.timestamp,
-    voteStartsAt: proposal.voteStartsAt,
-    voteEndsAt: proposal.voteEndsAt,
-    postVoteEpochEndsAt,
-    type: proposal.type,
-    thresholdBps: proposal.thresholdBps,
-    totalWeight: BigInt(proposal.totalWeight),
-    yeaWeight: BigInt(proposal.yeaWeight),
-    retracted: eventTypes.has("retract"),
-    executed: eventTypes.has("execute"),
-    flagged: eventTypes.has("flag"),
-    vetoed: eventTypes.has("veto"),
-  });
+  const statusConfiguration = contract
+    ? getSnapshotConfiguration(contract)
+    : null;
+  const expectedProtocolStatus =
+    statusConfiguration?.votingPeriodSeconds === 0 && contract
+      ? deriveZeroLengthVotingStatus(
+          feed,
+          proposal,
+          contract,
+          eventTypes
+        )
+      : deriveDaoProtocolStatus({
+          exists: true,
+          now: feed.canonicalBlock.timestamp,
+          voteStartsAt: proposal.voteStartsAt,
+          voteEndsAt: proposal.voteEndsAt,
+          postVoteEpochEndsAt,
+          type: proposal.type,
+          thresholdBps: proposal.thresholdBps,
+          totalWeight: BigInt(proposal.totalWeight),
+          yeaWeight: BigInt(proposal.yeaWeight),
+          retracted: eventTypes.has("retract"),
+          executed: eventTypes.has("execute"),
+          flagged: eventTypes.has("flag"),
+          vetoed: eventTypes.has("veto"),
+        });
   if (proposal.protocolStatus !== expectedProtocolStatus) {
     issue(context, [...path, "protocolStatus"], "Protocol status must match event flags, chain time, vote result, and signal auto-execution semantics.");
   }
@@ -2616,6 +3084,37 @@ function validateModeration(
       issue(context, [...path, `${kind}Reason`], `${kind} reasons may contain at most 256 UTF-8 bytes while preserving empty and untrimmed onchain strings.`);
     }
   }
+}
+
+function deriveZeroLengthVotingStatus(
+  feed: StructuralFeed,
+  proposal: FeedProposal,
+  contract: StructuralFeed["contracts"][number],
+  eventTypes: ReadonlySet<string>
+): FeedProposal["protocolStatus"] {
+  if (eventTypes.has("execute")) return "executed";
+  if (eventTypes.has("flag")) return "flagged";
+  if (eventTypes.has("veto")) return "vetoed";
+  if (eventTypes.has("retract")) return "retracted";
+  if (feed.canonicalBlock.timestamp < proposal.voteStartsAt) return "proposed";
+
+  const currentEpoch = BigInt(
+    Math.floor(
+      (feed.canonicalBlock.timestamp - contract.genesisTimestamp) /
+        contract.epochLengthSeconds
+    )
+  );
+  const votingEpoch = toUint(proposal.votingEpoch);
+  if (votingEpoch === null) return "proposed";
+  const total = BigInt(proposal.totalWeight);
+  const yea = BigInt(proposal.yeaWeight);
+  const passed =
+    total > 0n &&
+    yea * BigInt(DAO_BPS) >= total * BigInt(proposal.thresholdBps);
+  if (currentEpoch === votingEpoch) return "voting";
+  if (!passed) return "failed";
+  if (currentEpoch === votingEpoch + 1n) return "passed";
+  return proposal.type === "signal" ? "executed" : "expired";
 }
 
 function validateAnalysis(
@@ -2712,10 +3211,68 @@ function validateAnalysis(
       issue(context, [...path, "proposalSimulation", "stateTimestamp"], "Proposal simulation block-time treatment must use the producer-owned Propose block timestamp.");
     }
     if (!sameAddress(simulation.caller, proposal.ref.votingAddress)) {
-      issue(context, [...path, "proposalSimulation", "caller"], "The execution-equivalent caller must be the proposal Voting contract.");
+      issue(context, [...path, "proposalSimulation", "caller"], "The injected Executor frame caller must be the proposal Voting contract.");
     }
     if (!sameAddress(simulation.executorAddress, proposal.rules.mutableConfiguration.executorAddress)) {
       issue(context, [...path, "proposalSimulation", "executorAddress"], "Proposal simulation must call the Executor effective for this proposal's historical configuration.");
+    }
+    if (
+      proposal.rules.mutableConfiguration.executorState !== "configured" ||
+      proposal.creation.state !== "indexed" ||
+      !sameAddress(
+        simulation.transactionOrigin,
+        proposal.creation.receipt.transactionSender
+      ) ||
+      simulation.originPolicy.proposalTransactionHash !==
+        proposal.creation.transactionHash ||
+      !sameAddress(
+        simulation.frameContext.executorCaller,
+        proposal.ref.votingAddress
+      ) ||
+      !sameAddress(
+        simulation.frameContext.executorCodeAddress,
+        simulation.executorAddress
+      ) ||
+      !sameAddress(
+        simulation.frameContext.targetCaller,
+        simulation.executorAddress
+      )
+    ) {
+      issue(
+        context,
+        [...path, "proposalSimulation", "originPolicy"],
+        "Completed proposal-time simulation must disclose a frozen Propose-sender origin scenario and an engine-injected Executor frame with Voting as caller, real code, and Executor as target caller; it is conditional, not future execution-equivalence."
+      );
+    }
+    const gasContext = simulation.frameContext.gasContext;
+    const expectedContextInputsSha256 =
+      deriveDaoSimulationContextInputsSha256({
+        blockHash: simulation.blockHash as Hex,
+        transactionOrigin: simulation.transactionOrigin as Address,
+        votingCaller: simulation.caller as Address,
+        executorAddress: simulation.executorAddress as Address,
+        executorCaller: simulation.frameContext.executorCaller as Address,
+        executorCodeAddress: simulation.frameContext
+          .executorCodeAddress as Address,
+        targetCaller: simulation.frameContext.targetCaller as Address,
+        harnessRevision: simulation.frameContext.harness.revision,
+        harnessArtifactSha256: simulation.frameContext.harness
+          .artifactSha256 as Hex,
+        executorFrameInitialGas: gasContext.executorFrameInitialGas,
+        effectiveGasPriceWei: gasContext.effectiveGasPriceWei,
+      });
+    if (gasContext.contextInputsSha256 !== expectedContextInputsSha256) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "gasContext",
+          "contextInputsSha256",
+        ],
+        "Simulation context input commitment must bind the exact block, origin, caller chain, injector artifact, gas, envelope, access list, and Cancun warm-set policy."
+      );
     }
     if (
       proposal.script.hashVerification.state === "unavailable" ||
@@ -2813,15 +3370,56 @@ function validateEvent(
   }
   validateEventAbi(proposal, event, context, [...path, "data", "abi"]);
   validateActorEvidence(proposal, contract, event, context, [...path, "actor"]);
+  if (
+    event.type !== "vote" &&
+    event.actor.address !== null &&
+    sameAddress(event.actor.address, ZERO_ADDRESS)
+  ) {
+    issue(
+      context,
+      [...path, "actor", "address"],
+      "Only a Vote account may preserve a contract-valid zero actor argument; non-Vote lifecycle actors must be nonzero."
+    );
+  }
+  if (
+    event.type === "flag" &&
+    contract &&
+    getEffectiveConfiguration(contract, event.log)?.operatorState ===
+      "zero_address"
+  ) {
+    issue(
+      context,
+      [...path, "actor"],
+      "A zero effective operator disables Flag and cannot be represented as an unavailable actor for an emitted Flag log."
+    );
+  }
 
   if (event.type === "vote") {
     const effectiveConfiguration = contract
       ? getEffectiveConfiguration(contract, event.log)
       : null;
+    const voteWeight = toUint(event.data.weight);
+    if (
+      !effectiveConfiguration ||
+      effectiveConfiguration.voterState === "disabled_zero_address" ||
+      effectiveConfiguration.weightMeasureState === "zero_address" ||
+      (effectiveConfiguration.votingHookState === "zero_address" &&
+        voteWeight !== 0n) ||
+      (event.data.classification.method === "pinned_voter_call_trace" &&
+        effectiveConfiguration.ybcState === "zero_address")
+    ) {
+      issue(
+        context,
+        [...path, "data", "classification"],
+        "The effective disabling state cannot produce this Vote: zero Voter or weight measure disables all votes, a zero hook rejects positive-weight votes, and a zero YBC atomically reverts pinned-Voter submissions."
+      );
+    }
     const expectedRole =
       event.data.actorKind === "human"
         ? "voter"
-        : event.data.actorKind;
+        : event.data.actorKind === "unclassified"
+          ? "unknown"
+          : event.data.actorKind;
     if (event.actor.role !== expectedRole || event.actor.address === null) {
       issue(context, [...path, "actor"], "Vote actor role must match historical human, delegated-staking aggregate, or YBC aggregate classification.");
     }
@@ -2837,6 +3435,8 @@ function validateEvent(
     } else if (event.data.direction !== null || event.data.countsAsHumanParticipation) {
       issue(context, [...path, "data", "direction"], "Aggregate vote direction must stay null and cannot count as extra human participation.");
     }
+    const expectsPinnedClassification =
+      event.data.actorKind !== "unclassified";
     if (
       !effectiveConfiguration ||
       event.data.classification.configurationId !==
@@ -2845,48 +3445,78 @@ function validateEvent(
         event.data.classification.voterAddress,
         effectiveConfiguration.voterAddress
       ) ||
-      !sameAddress(
-        event.data.classification.delegatedStakingAddress,
-        effectiveConfiguration.delegatedStakingAddress
-      ) ||
-      !sameAddress(
-        event.data.classification.ybcAddress,
-        effectiveConfiguration.ybcAddress
-      ) ||
       comparePositions(
         event.data.classification.observedAt,
         effectiveConfiguration.effectiveAt
       ) !== 0 ||
       event.data.classification.observedAt.blockHash !==
-        effectiveConfiguration.effectiveAt.blockHash
+        effectiveConfiguration.effectiveAt.blockHash ||
+      (expectsPinnedClassification &&
+        (effectiveConfiguration.voterImplementation.state !==
+          "verified_pinned" ||
+          event.data.classification.method !== "pinned_voter_call_trace")) ||
+      (!expectsPinnedClassification &&
+        (effectiveConfiguration.voterImplementation.state !== "unverified" ||
+          event.data.classification.method !==
+            "unverified_voter_unclassified"))
     ) {
       issue(context, [...path, "data", "classification"], "Vote classification must bind the effective historical configuration at the Vote event.");
     }
-    const aggregateAddress =
-      event.data.actorKind === "delegated_staking_aggregate"
-        ? event.data.classification.delegatedStakingAddress
-        : event.data.actorKind === "ybc_aggregate"
-          ? event.data.classification.ybcAddress
-          : null;
-    if (
-      event.actor.address !== null &&
-      ((aggregateAddress !== null &&
-        !sameAddress(event.actor.address, aggregateAddress)) ||
-        (aggregateAddress === null &&
-          (sameAddress(
-            event.actor.address,
-            event.data.classification.delegatedStakingAddress
-          ) ||
-            sameAddress(
-              event.actor.address,
-              event.data.classification.ybcAddress
-            ))))
-    ) {
-      issue(
-        context,
-        [...path, "data", "classification"],
-        "Vote actor classification must match the delegated-staking and YBC addresses effective at this log."
-      );
+    if (event.data.classification.method === "pinned_voter_call_trace") {
+      const aggregateAddress =
+        event.data.actorKind === "delegated_staking_aggregate"
+          ? event.data.classification.delegatedStakingAddress
+          : event.data.actorKind === "ybc_aggregate"
+            ? event.data.classification.ybcAddress
+            : null;
+      if (
+        !effectiveConfiguration ||
+        !sameAddress(
+          event.data.classification.delegatedStakingAddress,
+          effectiveConfiguration.delegatedStakingAddress
+        ) ||
+        !sameAddress(
+          event.data.classification.ybcAddress,
+          effectiveConfiguration.ybcAddress
+        ) ||
+        !sameAddress(
+          event.data.classification.ybcWeightAggregatorAddress,
+          effectiveConfiguration.ybcWeightAggregatorAddress
+        ) ||
+        event.log.transactionHash === null ||
+        event.data.classification.trace.transactionHash !==
+          event.log.transactionHash ||
+        event.actor.address === null ||
+        !sameAddress(
+          event.data.classification.trace.emittedAccount,
+          event.actor.address
+        ) ||
+        event.data.classification.trace.votingCallDepth !==
+          event.data.classification.trace.voterCallDepth + 1 ||
+        event.data.classification.trace.aggregatePathExecuted !==
+          event.data.classification.trace.ybcMembership ||
+        (event.data.actorKind === "human" &&
+          event.data.classification.trace.votingCallOrdinal !== 0) ||
+        (event.data.actorKind === "delegated_staking_aggregate" &&
+          event.data.classification.trace.votingCallOrdinal !== 1) ||
+        (event.data.actorKind === "ybc_aggregate" &&
+          event.data.classification.trace.votingCallOrdinal !== 2) ||
+        (event.data.actorKind !== "human" &&
+          (!event.data.classification.trace.aggregatePathExecuted ||
+            effectiveConfiguration.ybcState === "zero_address" ||
+            effectiveConfiguration.ybcWeightAggregatorState ===
+              "zero_address")) ||
+        effectiveConfiguration.voterState === "disabled_zero_address" ||
+        effectiveConfiguration.weightMeasureState === "zero_address" ||
+        (aggregateAddress !== null &&
+          !sameAddress(event.actor.address, aggregateAddress))
+      ) {
+        issue(
+          context,
+          [...path, "data", "classification"],
+          "Pinned Voter actor labels require effective source/code/configuration provenance and transaction-bound call-trace resolution."
+        );
+      }
     }
     if (comparePositions(event.data.classification.observedAt, event.log) > 0) {
       issue(context, [...path, "data", "classification", "observedAt"], "Vote actor classification must be observed no later than the event log.");
@@ -3133,11 +3763,33 @@ function validatePinnedVotingSource(
   validateSource(source, context, path);
   if (
     source.kind !== "github" ||
+    source.repository !== "yearn/stYFI" ||
     source.revision !== DAO_PINNED_VOTING_REVISION ||
     source.sourcePath !== PINNED_VOTING_SOURCE_PATH ||
     source.url !== PINNED_VOTING_SOURCE_URL
   ) {
     issue(context, path, "Voting provenance must use the exact pinned Voting GitHub blob URL, revision, and source path.");
+  }
+}
+
+function validatePinnedVoterSource(
+  source: z.infer<typeof VerifiedSourceSchema>,
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  validateSource(source, context, path);
+  if (
+    source.kind !== "github" ||
+    source.repository !== "yearn/stYFI" ||
+    source.revision !== DAO_PINNED_VOTING_REVISION ||
+    source.sourcePath !== PINNED_VOTER_SOURCE_PATH ||
+    source.url !== PINNED_VOTER_SOURCE_URL
+  ) {
+    issue(
+      context,
+      path,
+      "Voter provenance must use the exact pinned Voter GitHub blob URL, repository, revision, and source path."
+    );
   }
 }
 
@@ -3162,6 +3814,14 @@ function validateSource(
     );
   }
   validateHttpsUrl(source.url, context, [...path, "url"], "Verified source URL");
+  const expectedUrl = `https://github.com/${source.repository}/blob/${source.revision}/${source.sourcePath}`;
+  if (source.url !== expectedUrl) {
+    issue(
+      context,
+      [...path, "url"],
+      "Verified GitHub provenance must bind repository, revision, source path, and the exact canonical GitHub source URL."
+    );
+  }
 }
 
 function validateHttpsUrl(
@@ -3200,13 +3860,18 @@ function validateHttpsUrl(
 
 function validateRetryRecord(
   retry: {
+    state: "succeeded" | "scheduled" | "non_retryable" | "exhausted";
     attempts: number;
     maxAttempts: number;
-    lastAttemptAt: string | null;
+    lastAttemptAt: string;
     nextRetryAt: string | null;
+    backoffSeconds: number | null;
   },
-  failed: boolean,
-  retryable: boolean,
+  resourceState: "available" | "invalid" | "unavailable",
+  error:
+    | { retryable: boolean; observedAt: string | null }
+    | null,
+  snapshotAt: string,
   context: RefinementContext,
   path: readonly PropertyKey[],
   label: string
@@ -3214,30 +3879,96 @@ function validateRetryRecord(
   if (retry.attempts > retry.maxAttempts) {
     issue(context, [...path, "attempts"], `${label} retry attempts cannot exceed the bounded maximum.`);
   }
-  if (retry.attempts === 0 && retry.lastAttemptAt !== null) {
-    issue(context, [...path, "lastAttemptAt"], `${label} retry timestamps require at least one attempt.`);
-  }
-  if (retry.attempts > 0 && retry.lastAttemptAt === null) {
-    issue(context, [...path, "lastAttemptAt"], `${label} retry attempts require the exact last-attempt timestamp.`);
-  }
-  const shouldRetry = failed && retryable && retry.attempts < retry.maxAttempts;
-  if ((retry.nextRetryAt !== null) !== shouldRetry) {
+  if (Date.parse(retry.lastAttemptAt) > Date.parse(snapshotAt)) {
     issue(
       context,
-      [...path, "nextRetryAt"],
-      `${label} next-retry time must exist exactly while a retryable failure has attempts remaining.`
+      [...path, "lastAttemptAt"],
+      `${label} last attempt cannot follow feed generation or publication.`
     );
+  }
+  if (resourceState === "available") {
+    if (retry.state !== "succeeded" || error !== null) {
+      issue(context, path, `${label} success requires a succeeded retry state and no failure.`);
+    }
+    return;
+  }
+  if (
+    error === null ||
+    error.observedAt === null ||
+    error.observedAt !== retry.lastAttemptAt
+  ) {
+    issue(
+      context,
+      path,
+      `${label} failure observedAt must equal its exact last-attempt timestamp.`
+    );
+    return;
+  }
+  const expectedState =
+    retry.attempts >= retry.maxAttempts
+      ? "exhausted"
+      : error.retryable
+        ? "scheduled"
+        : "non_retryable";
+  if (retry.state !== expectedState) {
+    issue(
+      context,
+      [...path, "state"],
+      `${label} retry state must exactly reflect retryability and the bounded attempt count.`
+    );
+  }
+  const shouldRetry = expectedState === "scheduled";
+  if ((retry.nextRetryAt !== null) !== shouldRetry) {
+    issue(context, [...path, "nextRetryAt"], `${label} next-retry time must exist exactly for a scheduled retry.`);
   }
   if (
     retry.nextRetryAt !== null &&
-    retry.lastAttemptAt !== null &&
-    Date.parse(retry.nextRetryAt) <= Date.parse(retry.lastAttemptAt)
+    (retry.backoffSeconds === null ||
+      retry.backoffSeconds <= 0 ||
+      retry.backoffSeconds > DAO_FEED_MAX_RETRY_BACKOFF_SECONDS ||
+      Date.parse(retry.nextRetryAt) !==
+        Date.parse(retry.lastAttemptAt) + retry.backoffSeconds * 1_000 ||
+      Date.parse(retry.nextRetryAt) <= Date.parse(snapshotAt))
   ) {
     issue(
       context,
       [...path, "nextRetryAt"],
-      `${label} next-retry time must follow the last bounded attempt.`
+      `${label} next retry must follow the snapshot and equal lastAttemptAt plus its positive bounded backoff.`
     );
+  } else if (!shouldRetry && retry.backoffSeconds !== null) {
+    issue(context, [...path, "backoffSeconds"], `${label} non-scheduled retry states cannot retain a backoff.`);
+  }
+}
+
+function validateFailureObservationTimes(
+  value: unknown,
+  snapshotAt: string,
+  context: RefinementContext,
+  path: PropertyKey[]
+): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) =>
+      validateFailureObservationTimes(item, snapshotAt, context, [...path, index])
+    );
+    return;
+  }
+  if (value === null || typeof value !== "object") return;
+  const record = value as Record<string, unknown>;
+  if (
+    typeof record.code === "string" &&
+    typeof record.retryable === "boolean" &&
+    typeof record.source === "string" &&
+    typeof record.observedAt === "string" &&
+    Date.parse(record.observedAt) > Date.parse(snapshotAt)
+  ) {
+    issue(
+      context,
+      [...path, "observedAt"],
+      "Failure observation cannot follow feed generation or publication."
+    );
+  }
+  for (const [key, item] of Object.entries(record)) {
+    validateFailureObservationTimes(item, snapshotAt, context, [...path, key]);
   }
 }
 
@@ -3302,8 +4033,119 @@ function hasExactlyOneFinalLf(value: string): boolean {
   return value.endsWith("\n") && !value.endsWith("\n\n");
 }
 
+function decodeCanonicalBase64(value: string): Uint8Array | null {
+  if (!CANONICAL_BASE64_PATTERN.test(value)) return null;
+  try {
+    const decoded = Uint8Array.from(atob(value), (character) =>
+      character.charCodeAt(0)
+    );
+    const encoded = btoa(
+      Array.from(decoded, (byte) => String.fromCharCode(byte)).join("")
+    );
+    return encoded === value ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
+function stringArraysEqual(
+  left: readonly string[],
+  right: readonly string[]
+): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function numberArraysEqual(
+  left: readonly number[],
+  right: readonly number[]
+): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 function proposalRefKey(ref: z.infer<typeof ProposalRefSchema>): string {
   return `${ref.chainId}:${ref.votingAddress.toLowerCase()}:${ref.proposalId}`;
+}
+
+function validateConfigurationSemantics(
+  configuration: z.infer<typeof HistoricalConfigurationSchema>,
+  contractGenesisTimestamp: number,
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  const zero = ZERO_ADDRESS;
+  if (
+    configuration.votingWindowState !==
+    (configuration.votingPeriodSeconds === 0
+      ? "disabled_zero_length"
+      : "enabled")
+  ) {
+    issue(
+      context,
+      [...path, "votingWindowState"],
+      "Voting window state must distinguish the contract-valid zero-length disabled window from an enabled window."
+    );
+  }
+  for (const [addressField, stateField, configuredState, zeroState] of [
+    ["voterAddress", "voterState", "configured", "disabled_zero_address"],
+    ["delegatedStakingAddress", "delegatedStakingState", "configured", "zero_address"],
+    ["ybcAddress", "ybcState", "configured", "zero_address"],
+    ["ybcWeightAggregatorAddress", "ybcWeightAggregatorState", "configured", "zero_address"],
+    ["executorAddress", "executorState", "configured", "uninitialized_zero_address"],
+    ["votingHookAddress", "votingHookState", "configured", "zero_address"],
+    ["weightMeasureAddress", "weightMeasureState", "configured", "zero_address"],
+    ["operatorAddress", "operatorState", "configured", "zero_address"],
+  ] as const) {
+    const address = configuration[addressField];
+    const expectedState = address === zero ? zeroState : configuredState;
+    if (configuration[stateField] !== expectedState) {
+      issue(
+        context,
+        [...path, stateField],
+        `${stateField} must truthfully discriminate its raw configured or zero address.`
+      );
+    }
+  }
+
+  const implementation = configuration.voterImplementation;
+  if (!sameAddress(implementation.address, configuration.voterAddress)) {
+    issue(
+      context,
+      [...path, "voterImplementation", "address"],
+      "Voter implementation evidence must bind the exact effective Voting.voter address."
+    );
+  }
+  if (implementation.state === "verified_pinned") {
+    validatePinnedVoterSource(
+      implementation.source,
+      context,
+      [...path, "voterImplementation", "source"]
+    );
+    if (
+      configuration.voterState !== "configured" ||
+      implementation.immutableGenesisTimestamp !== contractGenesisTimestamp ||
+      !sameAddress(implementation.bytecode.address, configuration.voterAddress) ||
+      implementation.bytecode.blockNumber !==
+        configuration.effectiveAt.blockNumber ||
+      implementation.bytecode.blockHash !== configuration.effectiveAt.blockHash ||
+      implementation.compiledRuntimeBytecodeHash !==
+        implementation.bytecode.deployedBytecodeHash
+    ) {
+      issue(
+        context,
+        [...path, "voterImplementation"],
+        "Pinned Voter semantics require exact source/compiler settings, immutable genesis, reproducible runtime bytecode equality, and archive code at the configuration position."
+      );
+    }
+  } else if (
+    (implementation.state === "disabled_zero_address") !==
+    (configuration.voterState === "disabled_zero_address")
+  ) {
+    issue(
+      context,
+      [...path, "voterImplementation", "state"],
+      "Zero Voter state and disabled implementation evidence must agree; a custom nonzero Voter remains explicitly unverified."
+    );
+  }
 }
 
 function getEffectiveConfiguration(
@@ -3319,6 +4161,12 @@ function getEffectiveConfiguration(
     effective = candidate;
   }
   return effective;
+}
+
+function getSnapshotConfiguration(
+  contract: z.infer<typeof FeedContractSchema>
+): z.infer<typeof HistoricalConfigurationSchema> | null {
+  return contract.configurationHistory.at(-1) ?? null;
 }
 
 function getProposalEpochBoundary(
@@ -3346,24 +4194,34 @@ function configurationValuesMatch(
     observed.configurationId === historical.configurationId &&
     observed.voteStartOffsetSeconds === historical.voteStartOffsetSeconds &&
     observed.votingPeriodSeconds === historical.votingPeriodSeconds &&
+    observed.votingWindowState === historical.votingWindowState &&
     observed.executionDelaySeconds === historical.executionDelaySeconds &&
     observed.executionGuard === historical.executionGuard &&
     sameAddress(observed.voterAddress, historical.voterAddress) &&
+    observed.voterState === historical.voterState &&
+    JSON.stringify(observed.voterImplementation) ===
+      JSON.stringify(historical.voterImplementation) &&
     sameAddress(
       observed.delegatedStakingAddress,
       historical.delegatedStakingAddress
     ) &&
+    observed.delegatedStakingState === historical.delegatedStakingState &&
     sameAddress(observed.ybcAddress, historical.ybcAddress) &&
+    observed.ybcState === historical.ybcState &&
+    sameAddress(
+      observed.ybcWeightAggregatorAddress,
+      historical.ybcWeightAggregatorAddress
+    ) &&
+    observed.ybcWeightAggregatorState ===
+      historical.ybcWeightAggregatorState &&
     sameAddress(observed.executorAddress, historical.executorAddress) &&
-    ((observed.votingHookAddress === null &&
-      historical.votingHookAddress === null) ||
-      (observed.votingHookAddress !== null &&
-        historical.votingHookAddress !== null &&
-        sameAddress(
-          observed.votingHookAddress,
-          historical.votingHookAddress
-        ))) &&
+    observed.executorState === historical.executorState &&
+    sameAddress(observed.votingHookAddress, historical.votingHookAddress) &&
+    observed.votingHookState === historical.votingHookState &&
+    sameAddress(observed.weightMeasureAddress, historical.weightMeasureAddress) &&
+    observed.weightMeasureState === historical.weightMeasureState &&
     sameAddress(observed.operatorAddress, historical.operatorAddress) &&
+    observed.operatorState === historical.operatorState &&
     sameAddress(observed.guardianAddress, historical.guardianAddress)
   );
 }

@@ -1,4 +1,4 @@
-import { keccak256, sha256, toBytes, type Hex } from "viem";
+import { keccak256, sha256, toBytes, type Address, type Hex } from "viem";
 import {
   DAO_MOCK_EXECUTOR_ADDRESS,
   DAO_MOCK_FEED,
@@ -29,6 +29,7 @@ import {
   DAO_FEED_SCHEMA_NAME,
   DAO_FEED_SCHEMA_VERSION,
   createDaoFeedEventId,
+  deriveDaoSimulationContextInputsSha256,
   deriveDaoVotingExecutedStorageSlots,
   encodeDaoFeedLifecycleEventAbi,
   parseDaoCreationIdentityStageV1,
@@ -41,8 +42,18 @@ const PINNED_SOURCE = {
   kind: "github",
   label: "Voting.vy at pinned stYFI revision",
   url: `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${SOURCE_PATH}`,
+  repository: "yearn/stYFI",
   revision: DAO_PINNED_VOTING_REVISION,
   sourcePath: SOURCE_PATH,
+} as const;
+const VOTER_SOURCE_PATH = "contracts/governance/Voter.vy";
+const PINNED_VOTER_SOURCE = {
+  kind: "github",
+  label: "Voter.vy at pinned stYFI revision",
+  url: `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${VOTER_SOURCE_PATH}`,
+  repository: "yearn/stYFI",
+  revision: DAO_PINNED_VOTING_REVISION,
+  sourcePath: VOTER_SOURCE_PATH,
 } as const;
 const VOTING_HOOK_ADDRESS =
   "0x9999999999999999999999999999999999999999";
@@ -60,6 +71,14 @@ const CHANGED_OPERATOR_ADDRESS =
   "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 const CHANGED_GUARDIAN_ADDRESS =
   "0xffffffffffffffffffffffffffffffffffffffff";
+const YBC_WEIGHT_AGGREGATOR_ADDRESS =
+  "0x1212121212121212121212121212121212121212";
+const CHANGED_YBC_WEIGHT_AGGREGATOR_ADDRESS =
+  "0x1313131313131313131313131313131313131313";
+const WEIGHT_MEASURE_ADDRESS =
+  "0x1414141414141414141414141414141414141414";
+const CHANGED_WEIGHT_MEASURE_ADDRESS =
+  "0x1515151515151515151515151515151515151515";
 const DAO_GENESIS_TIMESTAMP = 1_543_946_400;
 const CONFIGURATION_CHANGE_BLOCK = 23_902_000n;
 const SNAPSHOT_ID = "dao-mainnet-24000000-39c219e2";
@@ -118,14 +137,26 @@ type FixtureConfiguration = {
   configurationId: "config-1" | "config-2";
   voteStartOffsetSeconds: number;
   votingPeriodSeconds: number;
+  votingWindowState: "enabled" | "disabled_zero_length";
   executionDelaySeconds: number;
   executionGuard: "guarded" | "permissionless";
   voterAddress: string;
+  voterState: "configured" | "disabled_zero_address";
+  voterImplementation: ReturnType<typeof pinnedVoterImplementation>;
   delegatedStakingAddress: string;
+  delegatedStakingState: "configured" | "zero_address";
   ybcAddress: string;
+  ybcState: "configured" | "zero_address";
+  ybcWeightAggregatorAddress: string;
+  ybcWeightAggregatorState: "configured" | "zero_address";
   executorAddress: string;
+  executorState: "configured" | "uninitialized_zero_address";
   votingHookAddress: string;
+  votingHookState: "configured" | "zero_address";
+  weightMeasureAddress: string;
+  weightMeasureState: "configured" | "zero_address";
   operatorAddress: string;
+  operatorState: "configured" | "zero_address";
   guardianAddress: string;
   effectiveAt: {
     blockNumber: string;
@@ -135,20 +166,73 @@ type FixtureConfiguration = {
   };
 };
 
+function pinnedVoterImplementation(
+  address: string,
+  effectiveAt: FixtureConfiguration["effectiveAt"]
+) {
+  const runtimeHash = fixedHex32(BigInt(address));
+  return {
+    state: "verified_pinned" as const,
+    address,
+    source: PINNED_VOTER_SOURCE,
+    sourceSha256:
+      "0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab" as const,
+    compiler: "vyper@0.4.2" as const,
+    optimization: "gas" as const,
+    evmVersion: "cancun" as const,
+    immutableGenesisTimestamp: DAO_GENESIS_TIMESTAMP,
+    compiledRuntimeBytecodeHash: runtimeHash,
+    bytecode: {
+      evidenceKind: "archive_rpc_and_reproducible_build" as const,
+      rpcMethod: "eth_getCode" as const,
+      hashMethod: "keccak256" as const,
+      address,
+      blockNumber: effectiveAt.blockNumber,
+      blockHash: effectiveAt.blockHash,
+      codeByteLength: 3_072,
+      deployedBytecodeHash: runtimeHash,
+      buildArtifactSha256: fixedHex32(BigInt(address) + 1n),
+    },
+    classificationSemantics:
+      "pinned_voter_trace_required_for_human_and_aggregate_labels" as const,
+    error: null,
+  };
+}
+
 const FIXTURE_CONFIGURATIONS: readonly FixtureConfiguration[] = [
   {
     contractGeneration: "1",
     configurationId: "config-1",
     voteStartOffsetSeconds: 604_800,
     votingPeriodSeconds: 604_800,
+    votingWindowState: "enabled",
     executionDelaySeconds: 86_400,
     executionGuard: "guarded",
     voterAddress: DAO_MOCK_VOTER_ADDRESS,
+    voterState: "configured",
+    voterImplementation: pinnedVoterImplementation(
+      DAO_MOCK_VOTER_ADDRESS,
+      {
+        blockNumber: "23900000",
+        blockHash: fixedHex32(23_900_000n),
+        transactionIndex: 0,
+        logIndex: 0,
+      }
+    ),
     delegatedStakingAddress: DAO_MOCK_STYFIX_AGGREGATE_ADDRESS,
+    delegatedStakingState: "configured",
     ybcAddress: DAO_MOCK_YBC_AGGREGATE_ADDRESS,
+    ybcState: "configured",
+    ybcWeightAggregatorAddress: YBC_WEIGHT_AGGREGATOR_ADDRESS,
+    ybcWeightAggregatorState: "configured",
     executorAddress: DAO_MOCK_EXECUTOR_ADDRESS,
+    executorState: "configured",
     votingHookAddress: VOTING_HOOK_ADDRESS,
+    votingHookState: "configured",
+    weightMeasureAddress: WEIGHT_MEASURE_ADDRESS,
+    weightMeasureState: "configured",
     operatorAddress: DAO_MOCK_OPERATOR_ADDRESS,
+    operatorState: "configured",
     guardianAddress: DAO_MOCK_GUARDIAN_ADDRESS,
     effectiveAt: {
       blockNumber: "23900000",
@@ -162,14 +246,31 @@ const FIXTURE_CONFIGURATIONS: readonly FixtureConfiguration[] = [
     configurationId: "config-2",
     voteStartOffsetSeconds: 604_700,
     votingPeriodSeconds: 604_900,
+    votingWindowState: "enabled",
     executionDelaySeconds: 172_800,
     executionGuard: "permissionless",
     voterAddress: CHANGED_VOTER_ADDRESS,
+    voterState: "configured",
+    voterImplementation: pinnedVoterImplementation(CHANGED_VOTER_ADDRESS, {
+      blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
+      blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
+      transactionIndex: 0,
+      logIndex: 0,
+    }),
     delegatedStakingAddress: CHANGED_STYFIX_AGGREGATE_ADDRESS,
+    delegatedStakingState: "configured",
     ybcAddress: CHANGED_YBC_AGGREGATE_ADDRESS,
+    ybcState: "configured",
+    ybcWeightAggregatorAddress: CHANGED_YBC_WEIGHT_AGGREGATOR_ADDRESS,
+    ybcWeightAggregatorState: "configured",
     executorAddress: CHANGED_EXECUTOR_ADDRESS,
+    executorState: "configured",
     votingHookAddress: CHANGED_VOTING_HOOK_ADDRESS,
+    votingHookState: "configured",
+    weightMeasureAddress: CHANGED_WEIGHT_MEASURE_ADDRESS,
+    weightMeasureState: "configured",
     operatorAddress: CHANGED_OPERATOR_ADDRESS,
+    operatorState: "configured",
     guardianAddress: CHANGED_GUARDIAN_ADDRESS,
     effectiveAt: {
       blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
@@ -268,8 +369,11 @@ export function createDaoFeedV1Example(): DaoFeedV1 {
         state: "first_attempt",
         attempt: 1,
         maxAttempts: 16,
+        lastAttemptAt: GENERATED_AT,
+        policy: "fixed_120_seconds",
         lastFailure: null,
         nextRetryAt: null,
+        backoffSeconds: null,
       },
       atomicity: {
         localWrite: "temp_then_rename",
@@ -282,6 +386,7 @@ export function createDaoFeedV1Example(): DaoFeedV1 {
       retention: {
         eventScripts: "indefinite",
         contentJson: "indefinite",
+        rawContentBytes: "indefinite",
         assetRecords: "indefinite",
         immutableAuditSnapshots: "indefinite",
         rawContentMaxAttempts: 8,
@@ -410,18 +515,19 @@ function createProposal(
   const propose = events.find((event) => event.type === "propose");
   if (!propose) throw new Error("Every fixture proposal needs a Propose event.");
   const configuration = configurationForPosition(propose.log);
+  const statusConfiguration = FIXTURE_CONFIGURATIONS.at(-1)!;
   const votingEpoch = Number(source.votingEpoch);
   const voteStartsAt =
     DAO_GENESIS_TIMESTAMP +
     votingEpoch * DAO_FEED_EPOCH_LENGTH_SECONDS +
-    configuration.voteStartOffsetSeconds;
-  const voteEndsAt = voteStartsAt + configuration.votingPeriodSeconds;
+    statusConfiguration.voteStartOffsetSeconds;
+  const voteEndsAt = voteStartsAt + statusConfiguration.votingPeriodSeconds;
   const followingEpochStart =
     DAO_GENESIS_TIMESTAMP +
     (votingEpoch + 1) * DAO_FEED_EPOCH_LENGTH_SECONDS;
   const executionStartsAt =
     source.type === "executable"
-      ? followingEpochStart + configuration.executionDelaySeconds
+      ? followingEpochStart + statusConfiguration.executionDelaySeconds
       : null;
   const executionEndsAt =
     source.type === "executable"
@@ -460,7 +566,32 @@ function createProposal(
     contractGeneration: "1",
     proposer: source.proposer,
     votingEpoch: source.votingEpoch.toString(),
-    createdAt: source.createdAt,
+    chainCreatedAt:
+      propose.log.timestamp === null
+        ? {
+            state: "unavailable",
+            timestamp: null,
+            source: null,
+            observedAt: null,
+            error: failure(
+              "PROPOSE_BLOCK_TIME_UNAVAILABLE",
+              "The canonical Propose block timestamp is unavailable.",
+              false,
+              "provenance"
+            ),
+          }
+        : {
+            state: "available",
+            timestamp: propose.log.timestamp,
+            source: "propose_block_timestamp",
+            observedAt: eventPosition(propose.log),
+            error: null,
+          },
+    statusConfiguration: {
+      configurationId: statusConfiguration.configurationId,
+      effectiveAt: statusConfiguration.effectiveAt,
+      observationSemantics: "effective_at_end_of_canonical_block",
+    },
     voteStartsAt,
     voteEndsAt,
     executionStartsAt,
@@ -519,6 +650,7 @@ function createProposal(
             receipt: {
               status: "success",
               transactionHash: propose.log.transactionHash,
+              transactionSender: source.proposer,
               blockNumber: propose.log.blockNumber,
               blockHash: propose.log.blockHash,
               blockTimestamp: propose.log.timestamp,
@@ -538,6 +670,8 @@ function createContent(source: DaoProposal): {
   computedDigest: Hex | null;
   digestComparison: "verified" | "mismatch" | "unavailable";
   canonicalJson: string | null;
+  rawBytesBase64: string | null;
+  byteLength: number | null;
   value: DaoProposal["content"]["value"];
   retry: unknown;
   assetRecords: unknown[];
@@ -545,10 +679,13 @@ function createContent(source: DaoProposal): {
   error: unknown;
 } {
   const baseRetry = {
+    state: "succeeded" as const,
     attempts: 1,
     maxAttempts: 8,
     lastAttemptAt: GENERATED_AT,
     nextRetryAt: null,
+    policy: "fixed_120_seconds" as const,
+    backoffSeconds: null,
   };
   if (source.content.state === "unavailable") {
     return {
@@ -559,8 +696,10 @@ function createContent(source: DaoProposal): {
       computedDigest: null,
       digestComparison: "unavailable",
       canonicalJson: null,
+      rawBytesBase64: null,
+      byteLength: null,
       value: null,
-      retry: { ...baseRetry, attempts: 8 },
+      retry: { ...baseRetry, state: "exhausted", attempts: 8 },
       assetRecords: [],
       attachmentRecords: [],
       error: failure(
@@ -572,11 +711,8 @@ function createContent(source: DaoProposal): {
     };
   }
   if (source.content.state === "invalid") {
-    const canonicalJson = `${JSON.stringify({
-      schema: "yearn.dao.proposal.invalid",
-      failure: source.content.error,
-    })}\n`;
-    const digest = sha256(toBytes(canonicalJson));
+    const rawBytes = toBytes('{"schema":"yearn.dao.proposal.invalid"');
+    const digest = sha256(rawBytes);
     return {
       state: "invalid",
       expectedCid: createDaoRawSha256Cid(source.content.digest),
@@ -585,9 +721,11 @@ function createContent(source: DaoProposal): {
       computedDigest: digest,
       digestComparison:
         digest === source.content.digest ? "verified" : "mismatch",
-      canonicalJson,
+      canonicalJson: null,
+      rawBytesBase64: bytesToBase64(rawBytes),
+      byteLength: rawBytes.byteLength,
       value: null,
-      retry: baseRetry,
+      retry: { ...baseRetry, state: "non_retryable" },
       assetRecords: [],
       attachmentRecords: [],
       error: failure(
@@ -622,10 +760,13 @@ function createContent(source: DaoProposal): {
       gatewayUrl: `https://ipfs.io/ipfs/${cid}`,
       state: "available",
       retry: {
+        state: "succeeded",
         attempts: 1,
         maxAttempts: 8,
         lastAttemptAt: GENERATED_AT,
         nextRetryAt: null,
+        policy: "fixed_120_seconds",
+        backoffSeconds: null,
       },
       error: null,
     };
@@ -651,6 +792,8 @@ function createContent(source: DaoProposal): {
     computedDigest: digest,
     digestComparison: "verified",
     canonicalJson,
+    rawBytesBase64: null,
+    byteLength: new TextEncoder().encode(canonicalJson).byteLength,
     value: contentValue,
     retry: baseRetry,
     assetRecords,
@@ -662,14 +805,33 @@ function createContent(source: DaoProposal): {
 function createDiscussion(source: DaoProposal): unknown {
   const discussion = source.discussion;
   if (discussion.state === "verified") {
-    return { ...discussion, error: null };
+    return {
+      ...discussion,
+      rootCategoryId: 5,
+      categoryId: 5,
+      category: "Proposals",
+      categorySlugPath: ["proposals"],
+      categoryAncestryIds: [5],
+      membership: "root",
+      error: null,
+    };
   }
   if (discussion.state === "unverified") {
-    return { ...discussion, categorySlugPath: [], error: null };
+    return {
+      ...discussion,
+      rootCategoryId: null,
+      categorySlugPath: [],
+      categoryAncestryIds: [],
+      membership: null,
+      error: null,
+    };
   }
   return {
     ...discussion,
+    rootCategoryId: null,
     categorySlugPath: [],
+    categoryAncestryIds: [],
+    membership: null,
     error: failure(
       "DISCUSSION_UNAVAILABLE",
       "The discussion source could not be verified.",
@@ -780,6 +942,23 @@ function createAnalysis(
   const calls = sourceAnalysis.calls.map(createCall);
   const failed = sourceAnalysis.proposalSimulation.state === "failed";
   const storageSlots = deriveDaoVotingExecutedStorageSlots(proposalId);
+  const harnessRevision = "dao-feed-v1-fixture";
+  const harnessArtifactSha256 = fixedHex32(77_777n);
+  const executorFrameInitialGas = "30000000";
+  const effectiveGasPriceWei = "0";
+  const contextInputsSha256 = deriveDaoSimulationContextInputsSha256({
+    blockHash: proposeLog.blockHash,
+    transactionOrigin: sourceProposal.proposer,
+    votingCaller: DAO_MOCK_VOTING_ADDRESS,
+    executorAddress: configuration.executorAddress as Address,
+    executorCaller: DAO_MOCK_VOTING_ADDRESS,
+    executorCodeAddress: configuration.executorAddress as Address,
+    targetCaller: configuration.executorAddress as Address,
+    harnessRevision,
+    harnessArtifactSha256,
+    executorFrameInitialGas,
+    effectiveGasPriceWei,
+  });
   return {
     state: sourceAnalysis.state,
     generatedAt: sourceAnalysis.generatedAt,
@@ -787,7 +966,7 @@ function createAnalysis(
     calls,
     proposalSimulation: {
       state: failed ? "failed" : "succeeded",
-      method: "revm_voting_transition_then_executor_execute",
+      method: "revm_engine_injected_executor_frame_conditional_origin",
       engine: "revm@34",
       executorAddress: configuration.executorAddress,
       scriptHash,
@@ -798,6 +977,38 @@ function createAnalysis(
       timestampMode: "block",
       timestampOverride: null,
       caller: DAO_MOCK_VOTING_ADDRESS,
+      transactionOrigin: sourceProposal.proposer,
+      originPolicy: {
+        state: "frozen_hypothetical_scenario",
+        source: "propose_transaction_sender",
+        semantics:
+          "conditional_on_recorded_origin_block_gas_frame_and_state",
+        proposalTransactionHash: proposeLog.transactionHash,
+      },
+      frameContext: {
+        entry: "engine_injected",
+        outerVotingCall: "not_simulated",
+        executorCaller: DAO_MOCK_VOTING_ADDRESS,
+        executorCodeAddress: configuration.executorAddress,
+        targetCaller: configuration.executorAddress,
+        callValue: "0",
+        noCodeOverrides: true,
+        operatorCheckExecuted: true,
+        harness: {
+          name: "gov-apps-stats-revm-frame-injector",
+          revision: harnessRevision,
+          artifactSha256: harnessArtifactSha256,
+        },
+        gasContext: {
+          executorFrameInitialGas,
+          effectiveGasPriceWei,
+          transactionEnvelope: "synthetic_legacy_no_blobs",
+          accessList: [],
+          initialWarmSetPolicy:
+            "cancun_frame_entry_origin_voting_executor_and_precompiles_no_storage",
+          contextInputsSha256,
+        },
+      },
       stateOverrides: [
         {
           kind: "voting_proposal_executed_flag",
@@ -1004,17 +1215,23 @@ function createEvent({
         ? "delegated_staking_aggregate"
         : event.voteActorKind;
     const role = actorKind === "human" ? "voter" : actorKind;
+    const emittedActor =
+      actorKind === "delegated_staking_aggregate"
+        ? configuration.delegatedStakingAddress
+        : actorKind === "ybc_aggregate"
+          ? configuration.ybcAddress
+          : event.actor;
     const raw = encodeDaoFeedLifecycleEventAbi({
       type: "vote",
       votingAddress: source.ref.votingAddress,
       proposalId: BigInt(ref.proposalId),
-      account: event.actor,
+      account: emittedActor as `0x${string}`,
       weight: event.weight ?? 0n,
       yeaBps: BigInt(event.yeaBps ?? 0),
     });
     return {
       ...common,
-      actor: eventArgumentActor(event.actor, role),
+      actor: eventArgumentActor(emittedActor, role),
       type: event.type,
       data: {
         actorKind,
@@ -1024,13 +1241,30 @@ function createEvent({
         weightSemantics: "absolute_actor_contribution",
         countsAsHumanParticipation: actorKind === "human",
         classification: {
-          method: "historical_voter_configuration",
+          method: "pinned_voter_call_trace",
           configurationId: configuration.configurationId,
           voterAddress: configuration.voterAddress,
           delegatedStakingAddress: configuration.delegatedStakingAddress,
           ybcAddress: configuration.ybcAddress,
+          ybcWeightAggregatorAddress:
+            configuration.ybcWeightAggregatorAddress,
+          voterImplementationState: "verified_pinned",
           observedAt: configuration.effectiveAt,
           observationSemantics: "effective_at_event",
+          trace: {
+            transactionHash: log.transactionHash,
+            voterCallDepth: 1,
+            votingCallDepth: 2,
+            votingCallOrdinal:
+              actorKind === "human"
+                ? 0
+                : actorKind === "delegated_staking_aggregate"
+                  ? 1
+                  : 2,
+            emittedAccount: emittedActor,
+            ybcMembership: actorKind !== "human",
+            aggregatePathExecuted: actorKind !== "human",
+          },
         },
         abi: availableAbi(raw),
       },
@@ -1226,13 +1460,26 @@ function createSyntheticVoteEvent(
       weightSemantics: "absolute_actor_contribution",
       countsAsHumanParticipation: false,
       classification: {
-        method: "historical_voter_configuration",
+        method: "pinned_voter_call_trace",
         configurationId: configuration.configurationId,
         voterAddress: configuration.voterAddress,
         delegatedStakingAddress: configuration.delegatedStakingAddress,
         ybcAddress: configuration.ybcAddress,
+        ybcWeightAggregatorAddress:
+          configuration.ybcWeightAggregatorAddress,
+        voterImplementationState: "verified_pinned",
         observedAt: configuration.effectiveAt,
         observationSemantics: "effective_at_event",
+        trace: {
+          transactionHash: log.transactionHash,
+          voterCallDepth: 1,
+          votingCallDepth: 2,
+          votingCallOrdinal:
+            actorKind === "delegated_staking_aggregate" ? 1 : 2,
+          emittedAccount: actorAddress,
+          ybcMembership: true,
+          aggregatePathExecuted: true,
+        },
       },
       abi: availableAbi(raw),
     },
@@ -1337,14 +1584,27 @@ function configurationValues(configuration: FixtureConfiguration) {
     configurationId: configuration.configurationId,
     voteStartOffsetSeconds: configuration.voteStartOffsetSeconds,
     votingPeriodSeconds: configuration.votingPeriodSeconds,
+    votingWindowState: configuration.votingWindowState,
     executionDelaySeconds: configuration.executionDelaySeconds,
     executionGuard: configuration.executionGuard,
     voterAddress: configuration.voterAddress,
+    voterState: configuration.voterState,
+    voterImplementation: configuration.voterImplementation,
     delegatedStakingAddress: configuration.delegatedStakingAddress,
+    delegatedStakingState: configuration.delegatedStakingState,
     ybcAddress: configuration.ybcAddress,
+    ybcState: configuration.ybcState,
+    ybcWeightAggregatorAddress:
+      configuration.ybcWeightAggregatorAddress,
+    ybcWeightAggregatorState: configuration.ybcWeightAggregatorState,
     executorAddress: configuration.executorAddress,
+    executorState: configuration.executorState,
     votingHookAddress: configuration.votingHookAddress,
+    votingHookState: configuration.votingHookState,
+    weightMeasureAddress: configuration.weightMeasureAddress,
+    weightMeasureState: configuration.weightMeasureState,
     operatorAddress: configuration.operatorAddress,
+    operatorState: configuration.operatorState,
     guardianAddress: configuration.guardianAddress,
   };
 }
@@ -1420,6 +1680,9 @@ function pendingSimulation(): unknown {
     timestampMode: null,
     timestampOverride: null,
     caller: null,
+    transactionOrigin: null,
+    originPolicy: null,
+    frameContext: null,
     stateOverrides: [],
     atomic: null,
     result: null,
@@ -1452,6 +1715,9 @@ function unavailableSimulation(code: string, message: string): unknown {
     timestampMode: null,
     timestampOverride: null,
     caller: null,
+    transactionOrigin: null,
+    originPolicy: null,
+    frameContext: null,
     stateOverrides: [],
     atomic: null,
     result: null,
@@ -1466,7 +1732,7 @@ function sourceWithPath(
   if (!source || !sourcePath) {
     throw new Error("Verified fixture calls need a complete source record.");
   }
-  return { ...source, sourcePath };
+  return { ...source, repository: "yearn/stYFI", sourcePath };
 }
 
 function getModerationReason(
@@ -1496,4 +1762,17 @@ function failure(
 
 function fixedHex32(value: bigint): Hex {
   return `0x${value.toString(16).padStart(64, "0")}` as Hex;
+}
+
+function eventPosition(log: WireLog) {
+  return {
+    blockNumber: log.blockNumber,
+    blockHash: log.blockHash,
+    transactionIndex: log.transactionIndex,
+    logIndex: log.logIndex,
+  };
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  return btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""));
 }

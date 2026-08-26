@@ -31,10 +31,10 @@ try {
     "x-semantic-invariants": [
       "canonical uint256, nonzero provenance primitives, and composite identities",
       "atomic cursor, finality, retry, reorg, admission, and record counts",
-      "fixed epoch formulas and ordered same-Voting configuration history",
-      "event ordering, reverse transaction identity, canonical ABI, actor evidence, receipt identity, veto branches, and aggregate overwrite-last accounting",
-      "expected/computed canonical content bytes, SHA-256/CIDv1 identity, attachment provenance, manifest and asset records",
-      "exact script retention, hash verification, decoding order, and proven execution-equivalent REVM transition provenance",
+      "proposal-time disclosure, event-effective admission, snapshot-effective status, zero-capable mutable configuration, and ordered same-Voting history",
+      "event ordering, block-global log indices, reverse transaction identity, canonical ABI, receipt identity, veto branches, and aggregate overwrite-last accounting",
+      "explicit chain-time availability, exact arbitrary invalid bytes, canonical available content, SHA-256/CIDv1 identity, attachment provenance, manifest and asset records",
+      "pinned Voter source/code and trace evidence, unclassified custom-Voter events, exact script retention/type/hash binding, decoding order, and conditional-origin REVM frame provenance",
     ],
   };
 
@@ -58,6 +58,7 @@ try {
         displayStatus: proposal.displayStatus,
         displayGroup: proposal.displayGroup,
         proposalType: proposal.type,
+        chainCreatedAtState: proposal.chainCreatedAt.state,
         thresholdBps: proposal.thresholdBps,
         contentState: proposal.content.state,
         discussionState: proposal.discussion.state,

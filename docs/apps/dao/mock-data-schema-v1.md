@@ -185,11 +185,16 @@ size, call-count, or proposal-type check fails.
 The frontend parser produces `DaoScriptCheck`. Backend decoding and proposal-time
 simulation produce the decoded calls and stored simulation. A structured source
 must be complete, use HTTPS without credentials, and retain its revision and
-path separately. It can prove the exact decoder source but cannot prove that a
-mock address is deployed. Unknown decoding has no verified source and remains
+path separately. The frozen feed narrows accepted verified records to exact
+canonical GitHub blob URLs that bind repository, 40-hex revision, and normalized
+path. A source can prove the exact decoder input but cannot prove that a mock
+address is deployed. Unknown decoding has no verified source and remains
 independent from simulation success. `unavailable` means the producer could not
-establish an execution-equivalent context; `failed` means the atomic script ran
-in that context and reverted.
+establish the required origin and nested-frame provenance; `failed` means the
+atomic script reverted only in the exact disclosed conditional scenario. The
+frozen feed also requires initial frame gas, effective gas price, a no-blobs
+envelope, empty access list, Cancun warm-set policy, and a commitment binding
+those inputs to the block, caller chain, and injector artifact.
 
 A fresh execution preflight is wallet-specific and never belongs in the global
 feed:
@@ -353,7 +358,11 @@ account permission.
 Rules belong to the proposal. The constructor/default fixture uses 5,000 basis
 points; a retained alternate snapshot uses 6,000. Mutable voting period, delay,
 guard, and global threshold observations carry their observation block. The UI
-formats these supplied facts and does not reconstruct protocol rules.
+formats these supplied facts and does not reconstruct protocol rules. In the
+frozen feed, the copied proposal-rule configuration is the Propose-effective
+historical disclosure, each Vote uses its event-effective window, and raw
+snapshot timing/status uses the configuration effective at the end of the
+canonical block.
 
 Connected-wallet state is not part of the global proposal feed:
 
@@ -505,9 +514,12 @@ only mock client that prepares and submits actions.
   points.
 - `createdAt <= voteStartsAt < voteEndsAt`. When both execution times exist,
   `voteEndsAt <= executionStartsAt < executionEndsAt`.
-- App type is derived from the event script: Signal has empty bytes and the
-  empty-script hash; Executable has non-empty bytes. A conflicting IPFS
-  `proposalType` is a content inconsistency, not the authoritative type.
+- App type is derived from the stored script hash even when event bytes are
+  unavailable: Signal iff the stored hash is `keccak256(0x)`; every other hash
+  is Executable. When bytes are present they must be empty for Signal and
+  non-empty for Executable and must verify against that stored hash. A
+  conflicting IPFS `proposalType` is a content inconsistency, not the
+  authoritative type.
 - `hashVerified` is `null` only when exact bytes are absent. When bytes exist,
   it equals the actual keccak comparison with the stored hash.
 - The six affected boost epochs start at `expectedVotingEpoch` and are

@@ -117,7 +117,7 @@
     "name": "simulation caller substitution",
     "path": ["proposals", 4, "analysis", "proposalSimulation", "caller"],
     "value": "0x9999999999999999999999999999999999999999",
-    "expectedMessage": "execution-equivalent caller"
+    "expectedMessage": "injected Executor frame caller"
   },
   {
     "name": "event emitter substitution",
@@ -274,5 +274,113 @@
     "path": ["contracts", 0, "votingAddress"],
     "value": "0x0000000000000000000000000000000000000000",
     "expectedMessage": "must match pattern"
+  },
+  {
+    "name": "snapshot configuration substitution",
+    "path": ["proposals", 0, "statusConfiguration", "configurationId"],
+    "value": "config-1",
+    "expectedMessage": "configuration effective at the end of the canonical snapshot block"
+  },
+  {
+    "name": "zero-length voting state contradiction",
+    "path": ["contracts", 0, "configurationHistory", 1, "votingWindowState"],
+    "value": "disabled_zero_length",
+    "expectedMessage": "zero-length disabled window"
+  },
+  {
+    "name": "stored script hash type contradiction with missing bytes",
+    "path": ["proposals", 22, "script", "hash"],
+    "value": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+    "expectedMessage": "stored script hash determines proposal type"
+  },
+  {
+    "name": "verified GitHub host substitution",
+    "path": ["proposals", 4, "analysis", "calls", 0, "verifiedSource", "url"],
+    "value": "https://evil.example/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+    "expectedMessage": "exact canonical GitHub source URL"
+  },
+  {
+    "name": "known chain creation timestamp substitution",
+    "path": ["proposals", 0, "chainCreatedAt", "timestamp"],
+    "value": 1787054401,
+    "expectedMessage": "Available chain creation time must equal"
+  },
+  {
+    "name": "pinned Voter source path substitution",
+    "path": ["contracts", 0, "configurationHistory", 0, "voterImplementation", "source", "sourcePath"],
+    "value": "contracts/governance/Voting.vy",
+    "expectedMessage": "exact pinned Voter GitHub blob URL"
+  },
+  {
+    "name": "conditional simulation origin substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "transactionOrigin"],
+    "value": "0x9999999999999999999999999999999999999999",
+    "expectedMessage": "frozen Propose-sender origin scenario"
+  },
+  {
+    "name": "conditional simulation code override",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "noCodeOverrides"],
+    "value": false,
+    "expectedMessage": "expected true"
+  },
+  {
+    "name": "legacy fake forum category",
+    "path": ["proposals", 0, "discussion", "categoryId"],
+    "value": 42,
+    "expectedMessage": "Invalid input"
+  },
+  {
+    "name": "forum ancestry substitution",
+    "path": ["proposals", 0, "discussion", "categoryAncestryIds"],
+    "value": [9],
+    "expectedMessage": "exact Proposals root 5 ancestry"
+  },
+  {
+    "name": "invalid content noncanonical Base64",
+    "path": ["proposals", 14, "content", "rawBytesBase64"],
+    "value": "AP8",
+    "expectedMessage": "must match pattern"
+  },
+  {
+    "name": "invalid content byte length substitution",
+    "path": ["proposals", 14, "content", "byteLength"],
+    "value": 999,
+    "expectedMessage": "byteLength must equal the exact decoded"
+  },
+  {
+    "name": "future content attempt",
+    "path": ["proposals", 13, "content", "retry", "lastAttemptAt"],
+    "value": "2027-08-18T12:02:00Z",
+    "expectedMessage": "last attempt cannot follow feed generation"
+  },
+  {
+    "name": "conditional simulation nonempty access list",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "gasContext",
+      "accessList"
+    ],
+    "value": [
+      "0x1111111111111111111111111111111111111111"
+    ],
+    "expectedMessage": "Too big"
+  },
+  {
+    "name": "conditional simulation context commitment substitution",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "gasContext",
+      "contextInputsSha256"
+    ],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "context input commitment"
   }
 ]
