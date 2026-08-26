@@ -7,22 +7,17 @@ package starts.
 
 ## Current state
 
-- Current milestone: M2 engineering and revised mock UAT complete through WP7C
-- Next package: none; stop for operator completion of the exact six-host Access
-  gate, an exact-SHA GitHub UI deployment, and user local and guarded-beta UAT
-  of the revised assembled mock UX
-- Product gate: revised assembled mock UX ready for presentation but explicitly
-  unaccepted
-- Preproduction readiness: WP7C adds deterministic execution-integrity
-  blockers, recoverable proposal indexing, typed authoring outcomes, and
-  host-aware application-home navigation. Local production-compiled DAO-on and
-  DAO-off proofs passed. Read-only probes found Access redirects on the five
-  existing beta hosts but not on `dao-beta.dao-ops.com`; the Cloudflare session
-  was unauthenticated, so the exact organization/team policy, approved-member
-  allow result, unrelated-account deny result, and authenticated wallet checks
-  remain unverified. The external six-host Access gate is blocked. No
-  Cloudflare, GitHub, DNS, Worker, or deployment state was changed.
-- Accepted milestone baseline: `integration/dao-m1` after the final M1 gate
+- Current milestone: M2 complete; M3 WP8 is next
+- Next package: M3 WP8 feed schema and producer brief
+- Product gate: the user explicitly accepted the M2 mock UX represented by
+  `8ffd3564f73ae5e0358c17c1d42a408eec2af92f` on 2026-08-26
+- Preproduction readiness: authenticated Cloudflare Access UAT passed for all
+  six beta hosts: `styfi-beta.dao-ops.com`, `veyfi-beta.dao-ops.com`,
+  `yeth-beta.dao-ops.com`, `teams-beta.dao-ops.com`, `ybc-beta.dao-ops.com`, and
+  `dao-beta.dao-ops.com`
+- Accepted milestone baseline: `integration/dao-m2` on the M2 acceptance commit
+- Producer gate: M3 WP9 and changes in `gov-apps-stats` remain blocked until the
+  consumer-owned WP8 schema is accepted
 
 ## Package ledger
 
@@ -46,6 +41,6 @@ package starts.
 | --- | --- | --- | --- |
 | M0 discovery | Accepted | Canonical DAO product documents | Begin mock foundation after the M0 tag is present |
 | M1 engineering | Accepted | WP1-WP3 independent reviews and specialist audits; final integration typecheck, lint, unit, smoke E2E, full E2E, and production build gates | Begin M2 WP4 and WP6 from the tagged M1 integration head; do not begin M3 before mock-UX acceptance |
-| M2 mock UX | Engineering/revised UAT accepted through WP7C; product gate unaccepted; external six-host Access gate blocked | WP4 proposal board and detail, WP6 proposal authoring, WP5 voting and lifecycle actions, WP7 assembled mock UAT, WP7A user-feedback and guarded-beta readiness, WP7B proposal content and lifecycle provenance, and WP7C execution integrity, typed authoring outcomes, recoverable indexing, responsive host-aware navigation, and guarded-beta evidence were independently approved. Final WP7C integration gates passed dependency policy, typecheck, lint, 139-file/1,191-test Vitest, 44-pass smoke E2E with 5 expected mode skips, 34-pass serial full E2E, and an unflagged production build. WP7C local compiled DAO-on/off and in-app-browser viewport evidence is in `docs/apps/dao/delivery/evidence/M2-WP7C/README.md`. Five existing beta hosts redirected all sanitized probes to Access, but `dao-beta.dao-ops.com` did not; policy identity and authenticated allow/deny/wallet checks remain unverified, and no external state changed | An operator must confirm and apply the intended exact GitHub organization/team Access policy without weakening the five protected hosts, complete the authenticated six-host runbook, and deploy the exact integration SHA through the GitHub UI. Then present local and guarded-beta UAT to the user and stop for explicit acceptance. Do not tag M2, begin M3, push, deploy from this task, or begin backend feeds, IPFS publication, onchain integration, fork work, or M7 without explicit product acceptance |
+| M2 mock UX | Accepted and complete on 2026-08-26 | The user explicitly accepted the mock UX represented by `8ffd3564f73ae5e0358c17c1d42a408eec2af92f`. WP4 proposal board and detail, WP6 proposal authoring, WP5 voting and lifecycle actions, WP7 assembled mock UAT, WP7A user-feedback and guarded-beta readiness, WP7B proposal content and lifecycle provenance, and WP7C execution integrity, typed authoring outcomes, recoverable indexing, responsive host-aware navigation, and guarded-beta evidence were independently approved. Authenticated Cloudflare Access UAT passed for `styfi-beta.dao-ops.com`, `veyfi-beta.dao-ops.com`, `yeth-beta.dao-ops.com`, `teams-beta.dao-ops.com`, `ybc-beta.dao-ops.com`, and `dao-beta.dao-ops.com` | Close M2 and tag the acceptance commit as `integration/dao-m2`. Begin consumer-owned M3 WP8. Do not begin M3 WP9 or edit `gov-apps-stats` until WP8 is accepted |
 | M6 fork UAT | Not started | None | Stop for user review |
 | M7 production | Not started | None | Requires explicit approval |

@@ -1,7 +1,7 @@
 # DAO Governance Delivery Plan
 
-Status: M2 WP7C is the active follow-up package; renewed user acceptance remains
-the next gate.
+Status: M2 is complete; M3 WP8 is the next package. M3 WP9 remains blocked until
+WP8 is accepted.
 
 This plan is the task source for implementing DAO Governance. It uses the shared
 workflow in [`docs/shared/codex-usage-guide.md`](../../../shared/codex-usage-guide.md)
@@ -20,8 +20,10 @@ and the product sources one directory above.
 | M6 | Fork deployment and full lifecycle proof | User accepts fork UAT |
 | M7 | Preproduction and controlled production rollout | Explicit production approval |
 
-Do not start M3 before the user accepts M2. Do not start M7 before fork evidence
-is accepted.
+M2 was accepted on 2026-08-26 after authenticated Cloudflare Access UAT passed
+for all six beta hosts. Start M3 with consumer-owned WP8. Do not start WP9 in
+`gov-apps-stats` until WP8 is accepted. Do not start M7 before fork evidence is
+accepted.
 
 ## Branches and worktrees
 

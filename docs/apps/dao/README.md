@@ -1,6 +1,6 @@
 # DAO Governance
 
-Status: M2 mock product assembled; WP7C is the active acceptance follow-up.
+Status: M2 mock product accepted; M3 WP8 is the next package.
 
 `DAO Governance` is the proposal, voting, and execution-review app for Yearn's
 onchain governance contracts.
@@ -86,8 +86,11 @@ contract revision as equivalent.
 
 ## Current gate
 
-M2 WP7C is the current product gate. The revised mock UX may be reviewed on the
-shared `/dao` path or an authenticated preproduction host, but it remains
-unaccepted.
-Do not begin M3, backend feeds, real forum validation, IPFS publication, onchain
-reads/writes, or public production rollout until the user explicitly accepts it.
+The user accepted the M2 mock UX represented by integration commit
+`8ffd3564f73ae5e0358c17c1d42a408eec2af92f` on 2026-08-26. Authenticated
+Cloudflare Access UAT also passed on all six beta hosts: `styfi-beta.dao-ops.com`,
+`veyfi-beta.dao-ops.com`, `yeth-beta.dao-ops.com`, `teams-beta.dao-ops.com`,
+`ybc-beta.dao-ops.com`, and `dao-beta.dao-ops.com`. M2 is complete.
+
+M3 WP8 is next. M3 WP9 and all `gov-apps-stats` changes remain blocked until
+the consumer-owned WP8 schema has been accepted.
