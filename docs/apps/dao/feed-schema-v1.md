@@ -2,8 +2,10 @@
 
 This document freezes the consumer-owned `yearn.dao.feed.v1` contract. The
 producer must emit this contract as one atomic JSON document. The browser must
-parse the document through `parseDaoFeedV1`; it must not trust a TypeScript cast
-or JSON Schema validation alone.
+admit the fetched text through the 64 MiB check in `parseDaoFeedJsonV1` before
+JSON parsing or deep schema traversal. In-memory fixtures use
+`parseDaoFeedV1`. Consumers must not trust a TypeScript cast or JSON Schema
+validation alone.
 
 ## Artifacts
 
@@ -19,12 +21,16 @@ or JSON Schema validation alone.
   [`examples/feed-v1/dao-feed-v1.rejections.json`](examples/feed-v1/dao-feed-v1.rejections.json)
 - Executable fixture builder:
   [`tests/fixtures/dao-feed-v1.ts`](../../../tests/fixtures/dao-feed-v1.ts)
+- Deterministic artifact generator:
+  [`scripts/generate-dao-feed-v1.mjs`](../../../scripts/generate-dao-feed-v1.mjs)
 
 The schema ID is
 `https://dao.yearn.fi/schemas/yearn.dao.feed.v1.schema.json`; the numeric
 version is `1`. Objects are strict. Unknown fields, coercion, uppercase
-addresses or hashes, odd hex, noncanonical unsigned integers, and invalid UTC
-instants fail at the boundary.
+addresses or hashes, odd hex, noncanonical or overflowing uint256 values, zero
+protocol identities, ambiguous URLs, and invalid UTC instants fail at the
+boundary. Contract-valid zero script targets, bytes32 content digests, storage
+words, and raw uint topics remain representable.
 
 ## Version policy
 
@@ -40,8 +46,9 @@ newer version from payload shape.
 Each document is an `atomic_snapshot` with one canonical block and one cursor.
 The cursor records chain ID, configured start block, last block number and hash,
 and the next block. The last block equals the root canonical block; the next
-block is exactly one higher. Publication requires eight confirmations, and the
-claimed count equals `head - canonical`.
+block is exactly one higher. Its start is exactly the earliest configured
+contract start and cannot skip historical admission. Publication requires eight
+confirmations, and the claimed count equals `head - canonical`.
 
 The producer uses one writer. It writes a local temporary file and renames it,
 then writes and validates an immutable audit object, and writes the stable R2
@@ -61,9 +68,13 @@ replays from exactly one block after the common ancestor.
 A proposal key is the tuple `(chainId, votingAddress, proposalId)`. Numeric IDs
 alone are invalid. Contract generations are positive, ordered, contiguous, and
 bound to unique Voting addresses. A retired generation points to the next
-generation. Each generation records its deployment block, producer start block,
-Voter, Executor, and the pinned Voting source. Events cannot predate that
-generation's start block.
+generation. Each generation records its deployment block and hash, deployed
+bytecode hash, producer start block, fixed genesis timestamp, the pinned
+`1,209,600`-second epoch length, ordered configuration history, and the exact
+pinned Voting source. Mutable Voter or Executor changes do not create a new
+Voting generation. Configuration evidence cannot predate deployment or start,
+follow the canonical snapshot, or move backward in block/transaction/log order.
+Events cannot predate that generation's start block.
 
 The root canonical block owns the snapshot time and hash. Events at one height
 share one hash and producer-owned timestamp. Transaction hashes remain nullable;
@@ -74,8 +85,10 @@ chainId:votingAddress:blockHash:transactionIndex:logIndex
 ```
 
 Event IDs and log coordinates are globally unique. Events within a proposal are
-strictly ordered. Events in one transaction group share block, timestamp, and
-nullable transaction-hash provenance.
+strictly ordered and their known block times are monotonic. Events in one
+transaction group share block, timestamp, and nullable transaction-hash
+provenance. The reverse relation is also unique: one non-null transaction hash
+maps to one canonical block hash and transaction position.
 
 ## Lifecycle ABI
 
@@ -102,6 +115,22 @@ An incomplete historical Propose record may retain its emitter and four topics
 while marking raw data and exact script unavailable with a provenance failure.
 An indexed creation cannot use that state.
 
+Every Veto retains an immutable `early_no_votes` or `post_participation` branch
+and the Yea/Nay/total state immediately before that log. The producer derives
+those totals from the last absolute contribution per actor at that event
+position, not from the final proposal totals. A later aggregate overwrite to
+zero cannot rewrite a post-participation branch. A Vote after an early veto is
+invalid; a Vote after a post-participation veto remains valid while the voting
+window is open. Veto is bounded by the end of the epoch following the voting
+epoch.
+
+Voting `Execute` may be retained for executable or empty-script signal
+proposals. Each Execute must have canonical time proving its correct following
+epoch and the delay effective at the event, positive-total threshold passage at
+that position, no earlier terminal action, the event-effective guard/operator,
+and exact retained hash-valid script bytes. A passed signal may also advance to
+raw `executed` after its following epoch without emitting an Execute event.
+
 ## Receipt-derived creation
 
 Indexed creation requires a successful receipt, a known transaction hash, and
@@ -121,12 +150,25 @@ Only `approvalThresholdBps` is a proposal snapshot. The normal and alternate
 vectors retain 5,000 and 6,000 bps. Passage requires a positive vote total and
 has no minimum turnout.
 
-Vote start, vote duration, execution delay and guard, Voter, Executor, hook,
-operator, and guardian are mutable observations. They include block number,
-block hash, transaction index, and log index, use `effective_at_propose_event`
-ordering, and declare that the values are not snapshots. They must match the
-proposal timeline and contract generation. The feed does not describe current
-configuration as historical truth.
+Vote-start offset, vote duration, execution delay and guard, Voter,
+delegated-staking and YBC aggregate addresses, Executor, hook, operator, and
+guardian are ordered historical observations. Each configuration has a stable
+ID and exact block/hash/transaction/log position. Proposal rules copy and bind
+the configuration effective at Propose; Vote classification and role evidence
+bind the configuration effective at their own event positions. Execute delay,
+guard, and operator checks bind the configuration effective at Execute. Copied
+observations retain the same block hash as their history record. The feed does
+not describe current configuration as historical truth.
+
+For voting epoch `E`, generation genesis `G`, fixed epoch length `L`, and the
+proposal-effective raw offset `O`, `voteStartsAt = G + E*L + O` and
+`voteEndsAt = voteStartsAt + votingPeriodSeconds`. Creation must occur in epoch
+`E-1`. The raw offset plus voting window must equal `L`. The proposal-time
+executable window begins at
+`G + (E+1)*L + executionDelaySeconds` and ends at `G + (E+2)*L`; an observed
+Execute is rechecked with the delay effective at that event. A passed signal
+remains raw `passed` for that entire following fixed epoch and auto-reports raw
+`executed` only afterward.
 
 Signal proposals keep the empty script and fixed empty-script hash. A passed
 signal may have raw protocol status `executed` without a Voting Execute event;
@@ -149,11 +191,20 @@ state and does not use current roles as a guess.
 
 ## Content and assets
 
+Content always names the expected onchain SHA-256 digest and its raw CID.
+Fetched states separately retain the digest and CID computed from the exact
+bytes and a `verified` or `mismatch` comparison. Unavailable content has no
+computed identity. This makes digest-invalid fetched bytes representable with
+the explicit `CONTENT_DIGEST_MISMATCH` failure instead of replacing the
+onchain identity with a reserialized guess.
+
 Available content retains the fetched canonical JSON byte-for-byte, including
-exactly one final LF. Its SHA-256 digest must equal the onchain digest. Its CID
-must be the CIDv1/raw/SHA-256/Base32 form of that digest. Consumers do not
-reserialize an object to choose a digest; reserialization in the semantic
-validator only checks that an available payload used the frozen field order.
+exactly one final LF, and requires expected and computed identities to agree.
+Consumers do not reserialize a parsed object to choose its digest;
+reserialization in the semantic validator only checks the frozen field order.
+Immutable content `createdAt` is its own authenticated publication field. It
+may precede and differ from the producer-owned Propose block time, but cannot
+follow it.
 
 The content parser enforces the WP7B limits: 32,768 Markdown UTF-8 bytes, 16
 assets, 512 UTF-8 path bytes, 127 UTF-8 media-type bytes, 2,097,152 bytes per
@@ -180,7 +231,13 @@ and a structurally valid zero target remain distinct. Malformed history remains
 representable; it does not become an executable script.
 
 Decoded records keep every raw frame in order. Verified calls require a complete
-HTTPS source with a normalized repository-relative path. Unknown calls keep raw
+control-free HTTPS source in canonical URL form, with a normalized
+repository-relative path. Default ports, case-normalized hosts, dot segments,
+empty query or fragment markers, credentials, and backslashes are rejected. The
+Voting source is the one exact `github.com/yearn/stYFI/blob/<pin>/contracts/governance/Voting.vy`
+URL with no query or fragment. Verified discussions require the canonical
+`gov.yearn.fi/t/<slug>/<id>` host/path and configured Proposals category ID and
+slug. Unknown calls keep raw
 target and calldata but have no contract name, signature, arguments, or verified
 source. Failed decoding uses a decoder failure. Decode state does not imply a
 simulation result.
@@ -188,10 +245,24 @@ simulation result.
 A completed proposal-time simulation uses `revm@34` and method
 `revm_voting_transition_then_executor_execute`. It executes at the Propose block
 number, hash, and block timestamp, with the Voting contract as caller, the
-generation's Executor, and the exact retained script hash. It applies one typed
-override that models Voting setting this proposal's stored `executed` flag to
-`true` before the Executor calls, using the pinned Voting source. It applies no
-time override. The result is atomic success or atomic revert.
+proposal-effective Executor, and the exact retained script hash. It applies one
+typed proposal-specific override proving `executed: false -> true` before the
+Executor calls. That proof includes the exact pinned source, `vyper@0.4.2`
+source SHA-256, and storage-layout artifact SHA-256. For the pinned source,
+`proposals` is mapping slot `17`; Vyper derives the proposal struct base as
+`keccak256(bytes32(17) || bytes32(proposalId))`, and `executed` is full storage
+word offset `8`. The proof retains both that base and the resolved slot, exact
+zero/one pre/post words, plus the byte length and Keccak-256 of
+`eth_getCode(Voting, proposeBlock)` bound to the proposal block hash and
+contract generation. It applies no time override. The result is atomic success
+or atomic revert.
+
+The pinned source SHA-256 is
+`0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e`.
+Running
+`uvx --from vyper==0.4.2 vyper -f layout -o Voting.layout.json Voting.vy`
+against those exact bytes produces the pinned layout-file SHA-256
+`0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26`.
 
 A bare `Executor.execute` call is not execution-equivalent. If the producer
 cannot establish the Propose state, timestamp, caller, exact script, and typed
@@ -212,6 +283,7 @@ optional fields.
 Run:
 
 ```bash
+npm run generate:dao-feed
 npm run test -- tests/unit/lib/schemas/dao-feed.test.ts
 npm run typecheck
 npm run lint
@@ -228,14 +300,16 @@ WP8 does not claim that live production is ready. WP9 must resolve and report:
 
 - archive RPC access;
 - exact live Voting generation addresses, deployment blocks, and producer start
-  blocks;
-- historical Voter, delegated-staking, YBC, hook, operator, and guardian
-  configuration at each relevant log;
+  blocks, genesis timestamp, deployed bytecode hashes, and configuration
+  histories;
+- historical Voter, delegated-staking, YBC, Executor, vote timing, execution
+  delay/guard, hook, operator, and guardian configuration at each relevant log;
 - the stable and immutable R2 object keys, cursor-state key, and local state-file
   paths, while keeping the publication order fixed above;
 - bounded raw content and asset fetch policy details within the v1 maxima; and
-- producer support for DAO event ABIs, nullable transaction hashes, block hashes,
-  transaction indices, CID and blob handling, and the typed REVM transition.
+- producer support for DAO event ABIs, nullable transaction hashes, reverse
+  transaction identity, block hashes, transaction indices, CID and blob
+  handling, and the pinned layout/bytecode proof for the typed REVM transition.
 
 Those are producer tasks and assumptions. WP8 adds no producer code and no
 frontend feed-backed reads.

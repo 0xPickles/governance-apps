@@ -15,11 +15,16 @@ import {
   DAO_MOCK_FEED,
   getDaoMockFixture,
 } from "@/lib/clients/dao/fixtures";
+import {
+  DAO_CREATION_IDENTITY_STAGES_V1_EXAMPLE,
+  createDaoFeedV1Example,
+} from "@/tests/fixtures/dao-feed-v1";
 import type {
   DaoMockFixtureId,
   DaoProposalContent,
 } from "@/lib/clients/dao/types";
 import {
+  DAO_FEED_EPOCH_LENGTH_SECONDS,
   DAO_FEED_LIFECYCLE_EVENT_TOPICS,
   DAO_FEED_SCHEMA_ID,
   DAO_FEED_SCHEMA_VERSION,
@@ -28,7 +33,9 @@ import {
   createDaoFeedEventId,
   encodeDaoFeedLifecycleEventAbi,
   parseDaoCreationIdentityStageV1,
+  parseDaoFeedJsonV1,
   parseDaoFeedV1,
+  safeParseDaoFeedV1,
 } from "@/lib/schemas/dao-feed";
 import { z } from "@/lib/schemas/zod";
 
@@ -158,8 +165,11 @@ function rebindAvailableContent(feed: JsonValue, proposalIndex: number): void {
   );
   const digest = sha256(new TextEncoder().encode(canonicalJson));
   content.canonicalJson = canonicalJson;
-  content.digest = digest;
-  content.cid = createDaoRawSha256Cid(digest);
+  content.expectedDigest = digest;
+  content.expectedCid = createDaoRawSha256Cid(digest);
+  content.computedDigest = digest;
+  content.computedCid = createDaoRawSha256Cid(digest);
+  content.digestComparison = "verified";
 
   const propose = (proposal.events as JsonValue[]).find(
     (candidate) =>
@@ -219,6 +229,36 @@ function rebindVoteAbi(
   abi.data = raw.data;
 }
 
+function rebindProposeAbi(feed: JsonValue, proposalIndex: number): void {
+  const proposal = getAtPath(feed, ["proposals", proposalIndex]) as Record<
+    string,
+    JsonValue
+  >;
+  const events = proposal.events as JsonValue[];
+  const propose = events.find(
+    (candidate) =>
+      candidate !== null &&
+      !Array.isArray(candidate) &&
+      typeof candidate === "object" &&
+      candidate.type === "propose"
+  ) as Record<string, JsonValue> | undefined;
+  if (!propose) throw new Error("Expected a Propose event.");
+  const data = propose.data as Record<string, JsonValue>;
+  const ref = proposal.ref as Record<string, JsonValue>;
+  const raw = encodeDaoFeedLifecycleEventAbi({
+    type: "propose",
+    votingAddress: ref.votingAddress as Address,
+    proposalId: BigInt(ref.proposalId as string),
+    proposer: proposal.proposer as Address,
+    votingEpoch: BigInt(proposal.votingEpoch as string),
+    contentDigest: data.contentDigest as Hex,
+    script: data.script as Hex,
+  });
+  const abi = data.abi as Record<string, JsonValue>;
+  abi.topics = raw.topics;
+  abi.data = raw.data;
+}
+
 function rebindReasonAbi(
   feed: JsonValue,
   proposalIndex: number,
@@ -244,6 +284,35 @@ function rebindReasonAbi(
     reason: data.reason as string,
   });
   const abi = data.abi as Record<string, JsonValue>;
+  abi.topics = raw.topics;
+  abi.data = raw.data;
+}
+
+function rebindExecuteAbi(
+  feed: JsonValue,
+  proposalIndex: number,
+  eventIndex: number
+): void {
+  const proposal = getAtPath(feed, ["proposals", proposalIndex]) as Record<
+    string,
+    JsonValue
+  >;
+  const event = getAtPath(feed, [
+    "proposals",
+    proposalIndex,
+    "events",
+    eventIndex,
+  ]) as Record<string, JsonValue>;
+  const ref = proposal.ref as Record<string, JsonValue>;
+  const actor = event.actor as Record<string, JsonValue>;
+  const data = event.data as Record<string, JsonValue>;
+  const abi = data.abi as Record<string, JsonValue>;
+  const raw = encodeDaoFeedLifecycleEventAbi({
+    type: "execute",
+    votingAddress: ref.votingAddress as Address,
+    proposalId: BigInt(ref.proposalId as string),
+    executionCaller: actor.address as Address,
+  });
   abi.topics = raw.topics;
   abi.data = raw.data;
 }
@@ -285,7 +354,7 @@ describe("DaoFeedV1Schema structural contract", () => {
       ])
     );
     expect(jsonSchema["x-semantic-validator"]).toBe(
-      "lib/schemas/dao-feed.ts#parseDaoFeedV1"
+      "lib/schemas/dao-feed.ts#parseDaoFeedJsonV1"
     );
   });
 
@@ -306,6 +375,11 @@ describe("DaoFeedV1Schema structural contract", () => {
       delete committed[key];
     }
     expect(committed).toEqual(generated);
+  });
+
+  it("keeps committed accepted payloads byte-structurally aligned with the generator", () => {
+    expect(feedExample).toEqual(createDaoFeedV1Example());
+    expect(identityStages).toEqual(DAO_CREATION_IDENTITY_STAGES_V1_EXAMPLE);
   });
 
   it("rejects unknown fields at every security-sensitive boundary", () => {
@@ -457,7 +531,7 @@ describe("DaoFeedV1Schema publication and contract semantics", () => {
     }, /start block/i);
     expectRejected((feed) => {
       setAtPath(feed, ["contracts", 0, "source", "revision"], "main");
-    }, /pinned voting revision/i);
+    }, /exact pinned voting github blob url/i);
     expectRejected((feed) => {
       setAtPath(feed, ["contracts", 0, "source", "url"], "https://user@example.com/source");
     }, /credentials/i);
@@ -465,6 +539,105 @@ describe("DaoFeedV1Schema publication and contract semantics", () => {
 });
 
 describe("DaoFeedV1Schema proposal identities and rules", () => {
+  it("binds proposal and vote behavior to ordered same-Voting configuration history", () => {
+    const parsed = parseDaoFeedV1(feedExample);
+    const contract = parsed.contracts[0];
+    expect(contract?.epochLengthSeconds).toBe(DAO_FEED_EPOCH_LENGTH_SECONDS);
+    expect(contract?.configurationHistory.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(contract?.configurationHistory.map((entry) => entry.voterAddress)).size)
+      .toBeGreaterThanOrEqual(2);
+    expect(new Set(contract?.configurationHistory.map((entry) => entry.executorAddress)).size)
+      .toBeGreaterThanOrEqual(2);
+    expect(new Set(contract?.configurationHistory.map((entry) => entry.voteStartOffsetSeconds)).size)
+      .toBeGreaterThanOrEqual(2);
+    expect(new Set(contract?.configurationHistory.map((entry) => entry.votingPeriodSeconds)).size)
+      .toBeGreaterThanOrEqual(2);
+    for (const field of [
+      "executionDelaySeconds",
+      "executionGuard",
+      "votingHookAddress",
+      "operatorAddress",
+      "guardianAddress",
+    ] as const) {
+      expect(
+        new Set(contract?.configurationHistory.map((entry) => entry[field]))
+          .size
+      ).toBeGreaterThanOrEqual(2);
+    }
+
+    const changed = parsed.proposals.find(
+      (proposal) => proposal.rules.mutableConfiguration.configurationId === "config-2"
+    );
+    expect(changed).toBeDefined();
+    expect(changed?.rules.mutableConfiguration.executorAddress).toBe(
+      contract?.configurationHistory[1]?.executorAddress
+    );
+    for (const vote of changed?.events.filter((event) => event.type === "vote") ?? []) {
+      expect(vote.data.classification.configurationId).toBe("config-2");
+      expect(vote.data.classification.voterAddress).toBe(
+        contract?.configurationHistory[1]?.voterAddress
+      );
+    }
+    const changedSimulation = parsed.proposals.find(
+      (proposal) =>
+        proposal.rules.mutableConfiguration.configurationId === "config-2" &&
+        proposal.analysis.proposalSimulation.state === "succeeded"
+    )?.analysis.proposalSimulation;
+    expect(changedSimulation?.executorAddress).toBe(
+      contract?.configurationHistory[1]?.executorAddress
+    );
+
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["contracts", 0, "configurationHistory", 1, "voterAddress"],
+        "0x7777777777777777777777777777777777777777"
+      );
+    }, /effective historical configuration/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", 0, "rules", "mutableConfiguration", "voteStartOffsetSeconds"],
+        604_700
+      );
+    }, /epoch formula|effective historical configuration/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["contracts", 0, "configurationHistory", 1, "effectiveAt", "blockHash"],
+        `0x${"ab".repeat(32)}`
+      );
+    }, /configuration.*block hash.*lifecycle provenance/i);
+  });
+
+  it("pins genesis and enforces the fixed epoch schedule formulas", () => {
+    const parsed = parseDaoFeedV1(feedExample);
+    const contract = parsed.contracts[0]!;
+    expect(contract.genesisTimestamp).toBe(1_543_946_400);
+    expect(contract.epochLengthSeconds).toBe(1_209_600);
+    for (const proposal of parsed.proposals) {
+      const config = proposal.rules.mutableConfiguration;
+      expect(proposal.voteStartsAt).toBe(
+        contract.genesisTimestamp +
+          Number(BigInt(proposal.votingEpoch)) * contract.epochLengthSeconds +
+          config.voteStartOffsetSeconds
+      );
+      expect(proposal.voteEndsAt).toBe(
+        proposal.voteStartsAt + config.votingPeriodSeconds
+      );
+    }
+    expectRejected((feed) => {
+      setAtPath(feed, ["contracts", 0, "genesisTimestamp"], 1_543_946_401);
+    }, /epoch formula/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["contracts", 0, "configurationHistory", 0, "votingPeriodSeconds"],
+        604_799
+      );
+    }, /vote-start offset.*voting window.*fixed epoch/i);
+  });
+
   it("retains 5,000 and 6,000 basis-point proposal snapshots", () => {
     const parsed = parseDaoFeedV1(feedExample);
     const thresholds = new Set(
@@ -515,10 +688,10 @@ describe("DaoFeedV1Schema proposal identities and rules", () => {
     expectRejected((feed) => {
       setAtPath(
         feed,
-        ["proposals", 0, "rules", "mutableConfiguration", "voteStartTimestamp"],
-        1_787_054_401
+        ["proposals", 0, "rules", "mutableConfiguration", "voteStartOffsetSeconds"],
+        604_799
       );
-    }, /mutable vote start/i);
+    }, /epoch formula|effective historical configuration/i);
     expectRejected((feed) => {
       const proposeLog = getAtPath(feed, ["proposals", 0, "events", 0, "log"]);
       if (proposeLog === null || Array.isArray(proposeLog) || typeof proposeLog !== "object") {
@@ -558,10 +731,94 @@ describe("DaoFeedV1Schema proposal identities and rules", () => {
     expect(signal).toBeDefined();
     expect(signal?.displayStatus).toBe("approved");
     expect(signal?.events.some((event) => event.type === "execute")).toBe(false);
+
+    const followingEpoch = cloneFeed();
+    const signalIndex = feedExample.proposals.findIndex(
+      (proposal) => proposal.ref.proposalId === "4"
+    );
+    const selected = structuredClone(
+      getAtPath(followingEpoch, ["proposals", signalIndex])
+    );
+    setAtPath(followingEpoch, ["proposals"], [selected]);
+    setAtPath(followingEpoch, ["publication", "counts", "proposals"], 1);
+    setAtPath(
+      followingEpoch,
+      ["publication", "counts", "events"],
+      feedExample.proposals[signalIndex]!.events.length
+    );
+    const epochStart =
+      feedExample.contracts[0]!.genesisTimestamp +
+      (Number(feedExample.proposals[signalIndex]!.votingEpoch) + 1) *
+        DAO_FEED_EPOCH_LENGTH_SECONDS;
+    setAtPath(followingEpoch, ["canonicalBlock", "timestamp"], epochStart + 100);
+    setAtPath(
+      followingEpoch,
+      ["publication", "finality", "headBlock", "timestamp"],
+      epochStart + 196
+    );
+    setAtPath(followingEpoch, ["proposals", 0, "protocolStatus"], "passed");
+    expect(DaoFeedV1Schema.safeParse(followingEpoch).success).toBe(true);
   });
 });
 
 describe("DaoFeedV1Schema content and script integrity", () => {
+  it("retains expected and computed content identities for digest-invalid bytes", () => {
+    const parsed = parseDaoFeedV1(feedExample);
+    const invalid = parsed.proposals.find(
+      (proposal) => proposal.content.state === "invalid" &&
+        proposal.content.digestComparison === "mismatch"
+    );
+    expect(invalid?.content.canonicalJson).not.toBeNull();
+    expect(invalid?.content.expectedDigest).not.toBe(
+      invalid?.content.computedDigest
+    );
+    expect(invalid?.content.expectedCid).not.toBe(invalid?.content.computedCid);
+    expectRejected((feed) => {
+      const candidate = getAtPath(feed, ["proposals", 14, "content", "computedDigest"]);
+      setAtPath(feed, ["proposals", 14, "content", "expectedDigest"], candidate);
+    }, /digest comparison|Propose event content digest/i);
+    expectRejected((feed) => {
+      const digest = getAtPath(
+        feed,
+        ["proposals", 14, "content", "computedDigest"]
+      );
+      const cid = getAtPath(
+        feed,
+        ["proposals", 14, "content", "computedCid"]
+      );
+      setAtPath(feed, ["proposals", 14, "content", "expectedDigest"], digest);
+      setAtPath(feed, ["proposals", 14, "content", "expectedCid"], cid);
+      setAtPath(feed, ["proposals", 14, "content", "digestComparison"], "verified");
+      setAtPath(
+        feed,
+        ["proposals", 14, "events", 0, "data", "contentDigest"],
+        digest
+      );
+      rebindProposeAbi(feed, 14);
+    }, /CONTENT_DIGEST_MISMATCH.*only represent.*mismatch/i);
+  });
+
+  it("preserves a contract-valid zero content digest when bytes are unavailable", () => {
+    const feed = cloneFeed();
+    const proposalIndex = feedExample.proposals.findIndex(
+      (proposal) => proposal.content.state === "unavailable"
+    );
+    const zeroDigest = `0x${"00".repeat(32)}`;
+    setAtPath(feed, ["proposals", proposalIndex, "content", "expectedDigest"], zeroDigest);
+    setAtPath(
+      feed,
+      ["proposals", proposalIndex, "content", "expectedCid"],
+      createDaoRawSha256Cid(zeroDigest as Hex)
+    );
+    setAtPath(
+      feed,
+      ["proposals", proposalIndex, "events", 0, "data", "contentDigest"],
+      zeroDigest
+    );
+    rebindProposeAbi(feed, proposalIndex);
+    expect(DaoFeedV1Schema.safeParse(feed).success).toBe(true);
+  });
+
   it("retains exact canonical JSON bytes, final LF, digest, CID, and both attachment forms", () => {
     const parsed = parseDaoFeedV1(feedExample);
     const relative = parsed.proposals.find(
@@ -576,10 +833,13 @@ describe("DaoFeedV1Schema content and script integrity", () => {
       throw new Error("Expected the attachment examples to be available.");
     }
 
+    expect(
+      Math.floor(Date.parse(relative.content.value.createdAt) / 1_000)
+    ).not.toBe(relative.createdAt);
     expect(relative.content.canonicalJson.endsWith("\n")).toBe(true);
     expect(relative.content.canonicalJson.endsWith("\n\n")).toBe(false);
     expect(sha256(new TextEncoder().encode(relative.content.canonicalJson))).toBe(
-      relative.content.digest
+      relative.content.expectedDigest
     );
     expect(relative.content.value.markdown).toContain("./assets/governance-flow.svg");
     expect(direct.content.value.markdown).toContain("ipfs://bafkrei");
@@ -766,12 +1026,12 @@ describe("DaoFeedV1Schema content and script integrity", () => {
     expectRejected((feed) => {
       setAtPath(
         feed,
-        ["proposals", 0, "content", "digest"],
+        ["proposals", 0, "content", "expectedDigest"],
         `0x${"aa".repeat(32)}`
       );
     }, /content digest/i);
     expectRejected((feed) => {
-      setAtPath(feed, ["proposals", 0, "content", "cid"], "bafk-invalid");
+      setAtPath(feed, ["proposals", 0, "content", "expectedCid"], "bafk-invalid");
     }, /content cid/i);
     expectRejected((feed) => {
       setAtPath(
@@ -851,6 +1111,133 @@ describe("DaoFeedV1Schema content and script integrity", () => {
 });
 
 describe("DaoFeedV1Schema event, receipt, and actor provenance", () => {
+  it("retains immutable ordered veto branches and post-veto aggregate rewrites", () => {
+    const parsed = parseDaoFeedV1(feedExample);
+    const early = parsed.proposals.find((proposal) =>
+      proposal.events.some(
+        (event) => event.type === "veto" && event.data.branch === "early_no_votes"
+      )
+    );
+    const post = parsed.proposals.find((proposal) =>
+      proposal.events.some(
+        (event) => event.type === "veto" && event.data.branch === "post_participation"
+      ) && proposal.events.some(
+        (event) => event.type === "vote" && event.data.actorKind !== "human" && event.data.weight === "0"
+      )
+    );
+    expect(early).toBeDefined();
+    expect(post).toBeDefined();
+
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", 11, "events", 1, "data", "branch"], "post_participation");
+    }, /veto branch/i);
+    expectRejected((feed) => {
+      const vote = structuredClone(getAtPath(feed, ["proposals", 12, "events", 1]));
+      const events = getAtPath(feed, ["proposals", 11, "events"]);
+      if (!Array.isArray(events) || events.length < 2 || vote === null || Array.isArray(vote) || typeof vote !== "object") {
+        throw new Error("Expected lifecycle fixture records.");
+      }
+      const veto = events[1] as Record<string, JsonValue>;
+      const log = veto.log as Record<string, JsonValue>;
+      const voteRecord = vote as Record<string, JsonValue>;
+      const voteLog = voteRecord.log as Record<string, JsonValue>;
+      voteRecord.proposalRef = structuredClone(getAtPath(feed, ["proposals", 11, "ref"]));
+      voteRecord.contractGeneration = "1";
+      voteLog.blockNumber = (BigInt(log.blockNumber as string) + 1n).toString();
+      voteLog.blockHash = `0x${"ab".repeat(32)}`;
+      voteLog.transactionIndex = 1;
+      voteLog.logIndex = 0;
+      voteRecord.eventId = createDaoFeedEventId(1, feedExample.contracts[0]!.votingAddress, {
+        blockHash: voteLog.blockHash as Hex,
+        transactionIndex: 1,
+        logIndex: 0,
+      });
+      events.push(voteRecord);
+      setAtPath(feed, ["publication", "counts", "events"], feedExample.publication.counts.events + 1);
+    }, /vote after an early veto/i);
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", 11, "events", 1, "log", "timestamp"], null);
+    }, /Veto.*canonical event time/i);
+  });
+
+  it("accepts both explicit and automatic empty-script signal execution", () => {
+    const parsed = parseDaoFeedV1(feedExample);
+    const automatic = parsed.proposals.find(
+      (proposal) => proposal.type === "signal" && proposal.protocolStatus === "executed" &&
+        !proposal.events.some((event) => event.type === "execute")
+    );
+    const explicit = parsed.proposals.find(
+      (proposal) => proposal.type === "signal" &&
+        proposal.events.some((event) => event.type === "execute")
+    );
+    expect(automatic).toBeDefined();
+    expect(explicit).toBeDefined();
+    expect(explicit?.displayStatus).toBe("approved");
+
+    const explicitIndex = feedExample.proposals.findIndex(
+      (proposal) => proposal.ref.proposalId === explicit?.ref.proposalId
+    );
+    const executeIndex = feedExample.proposals[explicitIndex]!.events.findIndex(
+      (event) => event.type === "execute"
+    );
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", explicitIndex, "events", executeIndex, "log", "timestamp"],
+        null
+      );
+    }, /every Voting Execute must prove/i);
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", explicitIndex, "thresholdBps"], 10_000);
+      setAtPath(
+        feed,
+        ["proposals", explicitIndex, "rules", "approvalThresholdBps"],
+        10_000
+      );
+    }, /positive-total threshold passage/i);
+    expectRejected((feed) => {
+      const proposal = feedExample.proposals[explicitIndex]!;
+      const contract = feedExample.contracts[0]!;
+      const followingEpochStart =
+        contract.genesisTimestamp +
+        (Number(proposal.votingEpoch) + 1) * contract.epochLengthSeconds;
+      setAtPath(
+        feed,
+        ["proposals", explicitIndex, "events", executeIndex, "log", "timestamp"],
+        followingEpochStart +
+          proposal.rules.mutableConfiguration.executionDelaySeconds -
+          1
+      );
+    }, /effective execution delay/i);
+  });
+
+  it("binds guarded Execute callers to the operator effective at the event", () => {
+    const executableIndex = feedExample.proposals.findIndex((proposal) =>
+      proposal.events.some((event) => event.type === "execute") &&
+      proposal.type === "executable"
+    );
+    const executeIndex = feedExample.proposals[executableIndex]!.events.findIndex(
+      (event) => event.type === "execute"
+    );
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", executableIndex, "events", executeIndex, "actor", "address"],
+        "0x7777777777777777777777777777777777777777"
+      );
+      rebindExecuteAbi(feed, executableIndex, executeIndex);
+    }, /guarded Execute caller.*effective operator/i);
+  });
+
+  it("rejects reverse transaction-hash reuse at a different block position", () => {
+    expectRejected((feed) => {
+      const first = getAtPath(feed, ["proposals", 0, "events", 0, "log", "transactionHash"]);
+      setAtPath(feed, ["proposals", 1, "events", 0, "log", "transactionHash"], first);
+      setAtPath(feed, ["proposals", 1, "creation", "transactionHash"], first);
+      setAtPath(feed, ["proposals", 1, "creation", "receipt", "transactionHash"], first);
+    }, /one transaction hash.*one canonical block.*position/i);
+  });
+
   it("retains full event identity and nullable transaction/time provenance", () => {
     const parsed = parseDaoFeedV1(feedExample);
     const events = parsed.proposals.flatMap((proposal) => proposal.events);
@@ -954,13 +1341,15 @@ describe("DaoFeedV1Schema event, receipt, and actor provenance", () => {
         .flatMap((proposal) => proposal.events)
         .some((event) => event.actor.evidence.state === "unavailable")
     ).toBe(true);
-    for (const execute of parsed.proposals.flatMap((proposal) =>
-      proposal.events.filter((event) => event.type === "execute")
-    )) {
-      expect(execute.actor.role).toBe("execution_caller");
-      expect(execute.actor.address).not.toBe(
-        parsed.contracts[0]?.executorAddress
-      );
+    for (const proposal of parsed.proposals) {
+      for (const execute of proposal.events.filter(
+        (event) => event.type === "execute"
+      )) {
+        expect(execute.actor.role).toBe("execution_caller");
+        expect(execute.actor.address).not.toBe(
+          proposal.rules.mutableConfiguration.executorAddress
+        );
+      }
     }
   });
 
@@ -1100,6 +1489,64 @@ describe("DaoFeedV1Schema event, receipt, and actor provenance", () => {
 });
 
 describe("DaoFeedV1Schema decoding and proposal-time simulation", () => {
+  it("requires a proven false-to-true proposal storage transition", () => {
+    const parsed = parseDaoFeedV1(feedExample);
+    const completed = parsed.proposals
+      .map((proposal) => proposal.analysis.proposalSimulation)
+      .find((simulation) => simulation.state === "succeeded");
+    expect(completed?.stateOverrides[0]).toMatchObject({
+      kind: "voting_proposal_executed_flag",
+      fromValue: false,
+      toValue: true,
+    });
+    if (completed?.state === "succeeded") {
+      const storage = completed.stateOverrides[0].proof.storageLayout;
+      expect(storage.compiler).toBe("vyper@0.4.2");
+      expect(storage.proposalStorageBaseSlot).toBe(
+        "0xa4e0f4432e44d027a7b3f953940f096bca7a9bd910297cad2ba7c703c2b799d3"
+      );
+      expect(storage.resolvedStorageSlot).toBe(
+        "0xa4e0f4432e44d027a7b3f953940f096bca7a9bd910297cad2ba7c703c2b799db"
+      );
+      expect(completed.stateOverrides[0].proof.bytecode.deployedBytecodeHash).toMatch(/^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$/);
+    }
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "fromValue"],
+        true
+      );
+    }, /false.*true|expected false/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proof", "storageLayout", "postStorageWord"],
+        `0x${"00".repeat(31)}02`
+      );
+    }, /false-to-true storage word/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proof", "bytecode", "deployedBytecodeHash"],
+        `0x${"ab".repeat(32)}`
+      );
+    }, /deployment bytecode/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proof", "storageLayout", "resolvedStorageSlot"],
+        `0x${"ab".repeat(32)}`
+      );
+    }, /mapping base.*proposal ID.*executed field/i);
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proof", "storageLayout", "layoutArtifactSha256"],
+        `0x${"cd".repeat(32)}`
+      );
+    }, /pinned Vyper storage-layout artifact/i);
+  });
+
   it("keeps decoding independent from atomic simulation outcomes", () => {
     const parsed = parseDaoFeedV1(feedExample);
     const partial = parsed.proposals.find(
@@ -1218,7 +1665,7 @@ describe("DaoFeedV1Schema decoding and proposal-time simulation", () => {
     expectRejected((feed) => {
       setAtPath(
         feed,
-        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "value"],
+        ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "toValue"],
         false
       );
     }, /expected true/i);
@@ -1391,6 +1838,62 @@ describe("DAO accepted mock-state mapping", () => {
 });
 
 describe("DAO schema artifact integrity", () => {
+  it("never throws while rejecting uint256 overflow at feed and receipt-stage boundaries", () => {
+    const overflowFeed = cloneFeed();
+    setAtPath(overflowFeed, ["proposals", 0, "ref", "proposalId"], (1n << 256n).toString());
+    expect(() => safeParseDaoFeedV1(overflowFeed)).not.toThrow();
+    expect(safeParseDaoFeedV1(overflowFeed).success).toBe(false);
+    expect(() => DaoFeedV1Schema.safeParse(overflowFeed)).not.toThrow();
+
+    const overflowStage = structuredClone(identityStages[0]) as JsonValue;
+    setAtPath(overflowStage, ["ref", "proposalId"], (1n << 256n).toString());
+    expect(() => DaoCreationIdentityStageV1Schema.safeParse(overflowStage)).not.toThrow();
+    expect(DaoCreationIdentityStageV1Schema.safeParse(overflowStage).success).toBe(false);
+  });
+
+  it("admits raw JSON under the 64 MiB cap before parsing its deep structure", () => {
+    expect(parseDaoFeedJsonV1(JSON.stringify(feedExample)).schemaVersion).toBe(1);
+    const oversized = `{"padding":"${"x".repeat(64 * 1024 * 1024)}"}`;
+    expect(() => parseDaoFeedJsonV1(oversized)).toThrow(/64 MiB.*admission/i);
+  });
+
+  it("rejects ambiguous URLs and requires exact pinned and forum provenance", () => {
+    expectRejected((feed) => {
+      setAtPath(
+        feed,
+        ["contracts", 0, "source", "url"],
+        `${feedExample.contracts[0]!.source.url}?raw=1`
+      );
+    }, /exact pinned Voting GitHub blob URL/i);
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", 0, "discussion", "url"], "https://example.com/t/dao-proposal/1");
+    }, /gov\.yearn\.fi/i);
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", 0, "discussion", "url"], "https://gov.yearn.fi/t/dao-proposal/1%0aevil");
+    }, /control character|canonical forum topic/i);
+    expectRejected((feed) => {
+      const ambiguous =
+        "https://gov.yearn.fi:443/t/archive/../dao-proposal/1";
+      setAtPath(
+        feed,
+        ["proposals", 0, "discussion", "url"],
+        ambiguous
+      );
+      setAtPath(
+        feed,
+        ["proposals", 0, "content", "value", "discussionUrl"],
+        ambiguous
+      );
+      rebindAvailableContent(feed, 0);
+    }, /canonical URL form/i);
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", 0, "discussion", "categoryId"], 43);
+    }, /configured Proposals category ID/i);
+    expectRejected((feed) => {
+      setAtPath(feed, ["proposals", 0, "discussion", "categorySlugPath"], ["other"]);
+    }, /stable slug path/i);
+  });
+
   it("rejects noncanonical uint256, hex, address, timestamp, and UTF-8 failure primitives", () => {
     expectRejected((feed) => {
       setAtPath(feed, ["proposals", 0, "totalWeight"], (1n << 256n).toString());

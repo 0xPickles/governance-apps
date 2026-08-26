@@ -33,7 +33,7 @@
     "name": "unpinned Voting source",
     "path": ["contracts", 0, "source", "revision"],
     "value": "main",
-    "expectedMessage": "pinned Voting revision"
+    "expectedMessage": "exact pinned Voting GitHub blob URL"
   },
   {
     "name": "proposal chain substitution",
@@ -67,9 +67,9 @@
   },
   {
     "name": "content CID substitution",
-    "path": ["proposals", 0, "content", "cid"],
+    "path": ["proposals", 0, "content", "expectedCid"],
     "value": "bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "expectedMessage": "Content CID"
+    "expectedMessage": "content CID"
   },
   {
     "name": "canonical JSON substitution",
@@ -127,9 +127,9 @@
   },
   {
     "name": "mutable vote start substitution",
-    "path": ["proposals", 0, "rules", "mutableConfiguration", "voteStartTimestamp"],
-    "value": 1787054401,
-    "expectedMessage": "observed mutable vote start"
+    "path": ["proposals", 0, "rules", "mutableConfiguration", "voteStartOffsetSeconds"],
+    "value": 604799,
+    "expectedMessage": "effective historical configuration"
   },
   {
     "name": "script event binding substitution",
@@ -147,7 +147,7 @@
     "name": "simulation Voting transition substitution",
     "path": ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proposalId"],
     "value": "999",
-    "expectedMessage": "REVM simulation must model"
+    "expectedMessage": "proposal-specific Voting executed transition"
   },
   {
     "name": "asset gateway suffix substitution",
@@ -184,5 +184,95 @@
     "path": ["publication", "atomicity", "retainLastGood"],
     "value": false,
     "expectedMessage": "expected true"
+  },
+  {
+    "name": "cursor skips earliest contract start",
+    "path": ["publication", "cursor", "startBlockNumber"],
+    "value": "23900001",
+    "expectedMessage": "earliest configured contract start block"
+  },
+  {
+    "name": "same-Voting configuration substitution",
+    "path": ["contracts", 0, "configurationHistory", 1, "executorAddress"],
+    "value": "0x7777777777777777777777777777777777777777",
+    "expectedMessage": "effective historical configuration"
+  },
+  {
+    "name": "configuration evidence predates start",
+    "path": ["contracts", 0, "configurationHistory", 0, "effectiveAt", "blockNumber"],
+    "value": "23899999",
+    "expectedMessage": "bounded by deployment"
+  },
+  {
+    "name": "early veto branch substitution",
+    "path": ["proposals", 11, "events", 1, "data", "branch"],
+    "value": "post_participation",
+    "expectedMessage": "immutable veto branch"
+  },
+  {
+    "name": "digest mismatch comparison substitution",
+    "path": ["proposals", 14, "content", "digestComparison"],
+    "value": "verified",
+    "expectedMessage": "Content digest comparison"
+  },
+  {
+    "name": "pinned source query substitution",
+    "path": ["contracts", 0, "source", "url"],
+    "value": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy?raw=1",
+    "expectedMessage": "exact pinned Voting GitHub blob URL"
+  },
+  {
+    "name": "verified discussion host substitution",
+    "path": ["proposals", 0, "discussion", "url"],
+    "value": "https://example.com/t/dao-proposal/1",
+    "expectedMessage": "canonical gov.yearn.fi"
+  },
+  {
+    "name": "simulation pre-state substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "fromValue"],
+    "value": true,
+    "expectedMessage": "expected false"
+  },
+  {
+    "name": "configuration voting window breaks fixed epoch",
+    "path": ["contracts", 0, "configurationHistory", 0, "votingPeriodSeconds"],
+    "value": 604799,
+    "expectedMessage": "vote-start offset plus voting window"
+  },
+  {
+    "name": "configuration observation block hash substitution",
+    "path": ["contracts", 0, "configurationHistory", 1, "effectiveAt", "blockHash"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "configuration block hash and position"
+  },
+  {
+    "name": "veto without canonical event time",
+    "path": ["proposals", 11, "events", 1, "log", "timestamp"],
+    "value": null,
+    "expectedMessage": "Veto requires canonical event time"
+  },
+  {
+    "name": "signal Execute before effective delay",
+    "path": ["proposals", 26, "events", 3, "log", "timestamp"],
+    "value": 1784829599,
+    "expectedMessage": "effective execution delay"
+  },
+  {
+    "name": "simulation resolved storage slot substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proof", "storageLayout", "resolvedStorageSlot"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "mapping base from slot 17"
+  },
+  {
+    "name": "simulation layout artifact substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "stateOverrides", 0, "proof", "storageLayout", "layoutArtifactSha256"],
+    "value": "0xcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "expectedMessage": "pinned Vyper storage-layout artifact"
+  },
+  {
+    "name": "zero Voting identity",
+    "path": ["contracts", 0, "votingAddress"],
+    "value": "0x0000000000000000000000000000000000000000",
+    "expectedMessage": "must match pattern"
   }
 ]

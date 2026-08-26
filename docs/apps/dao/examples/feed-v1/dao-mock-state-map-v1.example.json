@@ -20,7 +20,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose"
       ],
@@ -131,7 +131,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose",
         "vote",
@@ -272,7 +272,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose"
       ],
@@ -340,7 +340,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose",
         "retract"
@@ -374,7 +374,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose",
         "flag"
@@ -408,7 +408,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose",
         "veto"
@@ -447,7 +447,9 @@
         "propose",
         "vote",
         "vote",
-        "veto"
+        "vote",
+        "veto",
+        "vote"
       ],
       "flagReason": null,
       "vetoReason": "Guardian veto after participation began",
@@ -688,7 +690,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose"
       ],
@@ -756,7 +758,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "permissionless",
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose",
         "vote",
@@ -791,7 +793,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": null,
+      "executionGuard": "guarded",
       "eventTypes": [
         "propose"
       ],

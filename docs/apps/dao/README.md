@@ -46,6 +46,9 @@ contract revision as equivalent.
 - `yearn.dao.proposal.v1` contains one exact Markdown source and a bounded asset
   manifest. Title and summary are parsed results, not duplicate stored fields.
   The canonical JSON ends with one LF; its SHA-256 digest is the onchain value.
+  Immutable content `createdAt` remains distinct from the canonical Propose
+  block time. Digest-invalid fetched bytes retain both expected and computed
+  identities rather than replacing the onchain value.
 - Immutable images render as no-load attachment cards. Relative targets are
   authenticated manifest lookups, direct targets are exact raw CIDs, and both
   open the suffix-free trusted gateway URL only after user activation.
@@ -58,6 +61,9 @@ contract revision as equivalent.
   HTTPS records, and the approval threshold is the only proposal-owned rule
   snapshot. Vote timing, guard, contract, hook, and role values are ordered
   historical observations.
+- One Voting generation retains its fixed genesis and 14-day epoch formula plus
+  ordered Voter, Executor, timing, guard, hook, and role history. Mutable
+  configuration changes do not invent replacement Voting deployments.
 - Proposal-level execution readiness covers exact script integrity only. Missing
   event bytes and a stored-hash mismatch are hard blockers; lifecycle, account,
   guard, schedule, and simulation facts stay separate.
