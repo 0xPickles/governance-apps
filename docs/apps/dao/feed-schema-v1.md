@@ -54,8 +54,9 @@ Each document is an `atomic_snapshot` with one canonical block and one cursor.
 The cursor records chain ID, configured start block, last block number and hash,
 and the next block. The last block equals the root canonical block; the next
 block is exactly one higher. Its start is exactly the earliest configured
-contract start and cannot skip historical admission. Publication requires eight
-confirmations, and the claimed count equals `head - canonical`.
+contract start and cannot skip historical admission. The required confirmation
+threshold is exactly `8`; `observedConfirmations` may be greater than eight and
+must equal `head - canonical`.
 
 The producer uses one writer. It writes a local temporary file and renames it,
 then writes and validates an immutable audit object, and writes the stable R2
@@ -71,8 +72,12 @@ cannot precede the canonical block or confirmation-head timestamp. Content and
 asset retries use exactly eight attempts and a fixed 120-second backoff. A
 scheduled retry is exactly `lastAttemptAt + 120 seconds`, follows the snapshot,
 and binds the failure `observedAt` to the last attempt. A successful publication
-retry includes a retryable preceding failure exactly 120 seconds earlier. A
-recovered reorg replays from exactly one block after the common ancestor.
+retry includes a retryable preceding failure exactly 120 seconds earlier.
+`succeeded_after_bootstrap_retry` represents a first-ever stable publication
+retry without inventing `previousSnapshotId`. Likewise,
+`recovered_before_first_stable_snapshot` permits a canonical reorg recovery with
+null previous and replaced snapshot identities. Every recovered reorg replays
+from exactly one block after the common ancestor.
 
 ## Chain and proposal identity
 
@@ -85,7 +90,9 @@ bytecode hash, producer start block, fixed genesis timestamp, the pinned
 pinned Voting source. Mutable Voter or Executor changes do not create a new
 Voting generation. Configuration evidence cannot predate deployment or start,
 follow the canonical snapshot, or move backward in block/transaction/log order.
-Events cannot predate that generation's start block.
+Events cannot predate that generation's start block. When deployment time is
+known, pinned Voting construction requires
+`deploymentTimestamp >= genesisTimestamp + 1,209,600`.
 
 The root canonical block owns the snapshot time and hash. All block-bearing
 evidence enters one feed-wide canonical registry. At one chain height,
@@ -109,9 +116,13 @@ maps to one canonical block hash and transaction position. Ethereum `logIndex`
 is block-global: `(chainId, blockHash, logIndex)` cannot repeat across
 transactions, proposals, or Voting generations. After events in one block are
 ordered by nondecreasing `transactionIndex`, `logIndex` must rise strictly;
-uniqueness alone is not enough. A configuration `effectiveAt` position is an
-ordered observation boundary, not a claim that a lifecycle log was emitted
-there, so it is not enrolled in the lifecycle-log namespace.
+uniqueness alone is not enough. The first configuration uses the exact
+`deployment_start_sentinel` at transaction/log zero, meaning the state at the
+start of the deployment/start block. Every later configuration uses
+`setter_trace_observation`: it binds the successful setter transaction, raw
+calldata and full call-trace path, and becomes effective immediately after those
+setter calls and before `firstEffectiveLogIndex`. That observation boundary is
+not itself a lifecycle event and is not enrolled in the lifecycle-log namespace.
 
 ## Lifecycle ABI
 
@@ -161,6 +172,7 @@ Indexed creation requires a successful receipt, a known transaction hash, and
 exactly one matching Propose log from the proposal's Voting address. Receipt,
 event, proposal, content, and script records must agree on transaction, block,
 transaction index, proposal ID, proposer, epoch, digest, and exact script. The
+receipt transaction sender must equal the canonical Propose proposer. The
 consumer re-encodes all four topics and the full ABI data.
 
 `chainCreatedAt` is separate evidence. It is `available` only when the Propose
@@ -252,24 +264,47 @@ Each configuration records the effective Voter implementation as one of
 `contracts/governance/Voter.vy` at revision
 `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
 `0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
-`vyper@0.4.2` with gas optimization and Cancun, its immutable constructor
-genesis, a reproducible build artifact, and archive `eth_getCode` length/hash at
-the configuration position. The Voter constructor genesis must match its own
-build evidence. It is independent of the Voting generation genesis and may
-differ from it. `yearn.dao.voter-build-evidence.v1` is a fixed-order SHA-256
-commitment over the pinned source and compiler settings, constructor genesis,
-runtime length/hash, deployed-code hash, and build-artifact hash. Changing the
-constructor input without coherently changing and recommitting its dependent
-build evidence is invalid.
+and Vyper integrity digest
+`0x90d458df8321d2c845ad1a153b21fea3eeb6fa746feecc57d15beec3ae5f192d`.
+That digest is Vyper 0.4.2's SHA-256 import-tree integrity value; for this
+import-free source its preimage is the lowercase ASCII source digest without
+`0x`, not compiler bytes. Compilation uses the official Linux x86-64 Vyper
+`v0.4.2` release asset `vyper.0.4.2+commit.c216787f.linux`, release commit
+`c216787f5e355478733a05fa5f0fce93fa9a7126`, byte length `23,495,192`, and
+SHA-256 `0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
+Its exact URI is
+`https://github.com/vyperlang/vyper/releases/download/v0.4.2/vyper.0.4.2%2Bcommit.c216787f.linux`;
+the hash preimage is the unchanged downloaded asset bytes.
+
+The exact Voter build uses `-Werror -O gas --evm-version cancun`. Its creation
+stdout is 4,123 bytes with SHA-256 `0x25ca8e7899a40c5ae221fa5d8075816f7b36650b3ef6ef285b60fc5dcce362cc`;
+the decoded creation bytecode is 2,060 bytes with SHA-256
+`0xbcb72ccd8fec2d904ecd867503481abc4d841d4b1ef7d5104b6017ff15a93839`.
+The runtime-template stdout is 3,917 bytes with SHA-256
+`0x461f3f38e239d707be52a4c89d57d887c4c8e60b42b2032ebe6ed99b41e9cd54`;
+the decoded template is 1,957 bytes with SHA-256
+`0x452dcaf7aa5c7d647c694a424121737e691ab229ee33744e0773d8581d9eea8b`
+and Keccak-256 `0xdfc74b9ef65aba002169200841461f60261aa1e66380e0b867b085266f16acaf`.
+The pinned layout output proves a 32-byte `genesis` immutable at code offset
+zero. The committed fixture genesis `1542736800` appends word
+`0x000000000000000000000000000000000000000000000000000000005bf44ba0`,
+yielding 1,989 deployed runtime bytes with SHA-256
+`0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b`
+and Keccak-256 `0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e`.
+The constructor genesis is independent of Voting genesis, must not follow any
+Vote the Voter could emit, and must match its own code/build evidence.
+`yearn.dao.voter-build-evidence.v2` binds every source, compiler-distribution,
+command, stdout, template, immutable, final-runtime, archive/synthetic-code, and
+constructor fact. A timestamp-only rewrite is invalid.
 
 A complete pinned classification groups events by this invocation identity:
 
 ```text
-chainId:votingAddress:transactionHash:voterCallTraceAddress
+chainId:votingAddress:transactionHash:voterCallTraceAddress-or-root
 ```
 
-The group binds the outer Voter caller, `Yea(address,uint256)` selector
-`0x69586e2e` or `Nay(address,uint256)` selector `0xff855dde`, proposal ID,
+The group binds the outer Voter caller, `vote_yea(address,uint256)` selector
+`0x69586e2e` or `vote_nay(address,uint256)` selector `0xff855dde`, proposal ID,
 Voting target, parent and child trace paths, depths, emitted account, membership,
 and aggregator result. The invocation identity is feed-wide and may bind only
 one proposal/caller/selector invocation; it cannot be split across proposal
@@ -282,6 +317,24 @@ aggregate events use the same aggregate Yea basis points; their emitted weights
 remain the absolute `Voting.vote` contributions and need not equal the
 aggregator return value. One complete pinned caller may submit only once per
 proposal. Standalone aggregate labels are invalid.
+
+Trace evidence uses
+`debug_traceTransaction(..., {tracer: "callTracer", tracerConfig:
+{onlyTopCall:false, withLog:true}, reexec:0})`. Paths are unfiltered zero-based
+full call-tree child indices with root `[]`. For a direct root Voter call, the
+human, delegated, and YBC `Voting.vote` frames are exact children `[1]`, `[4]`,
+and `[5]`; intervening `voted`, membership, and aggregator calls are not erased.
+Committed examples use an explicit `committed_synthetic_fixture` projection;
+live output uses the separate `archive_rpc` branch and binds client version and
+raw trace hash. Synthetic and RPC fields cannot be mixed.
+
+For every pinned Voter/Voting/proposal, the consumer replays `ybc_votes` in
+canonical invocation order. The recorded Yea/Nay selector and aggregator-return
+weight update checked cumulative weight and Yea. Delegated and YBC Vote logs
+must both use `floor(10000 * cumulativeYea / cumulativeWeight)`. Cumulative
+weight, `10000 * weight`, `10000 * cumulativeYea`, and passage multiplication
+must not overflow uint256. A prior positive trace-unavailable Vote by the same
+account also consumes the pinned Voter's one-submission guard.
 
 When pinned Voter code is proved but the transaction trace is unavailable,
 `pinned_voter_trace_unavailable` retains the effective aggregate addresses and
@@ -326,7 +379,9 @@ order. The accepted codes are `CONTENT_DIGEST_MISMATCH`,
 `CONTENT_UTF8_INVALID`, `CONTENT_JSON_INVALID`, `CONTENT_SCHEMA_INVALID`,
 `CONTENT_FINAL_LF_INVALID`, and `CONTENT_CANONICAL_INVALID`. A substituted code
 is invalid. Bytes that pass every check are canonical available content and
-cannot be relabeled `invalid`.
+cannot be relabeled `invalid`. Schema reproduction parses RFC 3339 timestamps as
+real calendar instants; a regex-shaped impossible date such as February 30 is
+`CONTENT_SCHEMA_INVALID`.
 
 The content parser enforces the WP7B limits: 32,768 Markdown UTF-8 bytes, 16
 assets, 512 UTF-8 path bytes, 127 UTF-8 media-type bytes, 2,097,152 bytes per
@@ -360,15 +415,25 @@ Every historical configuration discriminates its Executor as
 proof binds `contracts/governance/Executor.vy` at revision
 `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
 `0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`,
-`vyper@0.4.2`, compiler integrity SHA-256
+`vyper@0.4.2`, Vyper source-integrity SHA-256
 `0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b`,
 gas optimization, Cancun, and experimental code generation disabled. The
-reproducible runtime is 1,157 bytes, with Keccak-256
+integrity preimage is the lowercase ASCII source digest without `0x`; it is not
+a compiler artifact hash. The compiler distribution is the same pinned official
+Linux x86-64 Vyper release asset described above. Exact `-Werror -O gas
+--evm-version cancun` creation stdout is 2,483 bytes with SHA-256
+`0x48dbf262a5e31ccdb52119174854e136d8070bbd67140e8b11f72d7b7b169f23`;
+the decoded 1,240-byte creation code has SHA-256
+`0xccb991a4222b9576e42f6d0da4e655069a4882532bf088e22c8a95b629862a60`.
+Runtime stdout is 2,317 bytes with SHA-256
+`0x9c50f7eb47e09e8349e896e0843f41c96a6b15c48c53c2855e4db709510e021b`.
+The decoded runtime is 1,157 bytes, with Keccak-256
 `0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
-and artifact SHA-256
+and raw-byte SHA-256
 `0x6515450d29d132991c615f1679eea39f8c095b3f71cc0e7a3ba3c446c8312f4c`.
-Archive `eth_getCode` evidence binds that exact runtime to the configured
-address and configuration block/hash.
+Live archive `eth_getCode` evidence binds that exact runtime to the configured
+address and configuration block/hash. Committed examples use a separate
+synthetic fixture projection and never claim an archive observation.
 
 Only `verified_pinned` authorizes the pinned 32-byte-header, 96-bit-length,
 64-call frame parser. Exact bytes and hash comparison remain required for a
@@ -386,7 +451,11 @@ revision, normalized source path, and the exact derived
 `https://github.com/<repository>/blob/<revision>/<sourcePath>` URL. Credentials,
 query, fragment, port, controls, backslashes, traversal, noncanonical paths, and
 other hosts are rejected. Voting and Voter records further bind their exact
-yearn/stYFI paths at the pinned revision.
+yearn/stYFI paths and canonical labels at the pinned revision. A failed decoder's
+candidate source is validated by the same rules; failure does not license an
+uncanonical source claim. A failed analysis summary names `decoder` only when a
+call actually failed decoding and names `simulation` only for a simulation-only
+failure, with the matching canonical error code.
 
 Verified discussions require canonical `gov.yearn.fi/t/<slug>/<id>` URLs. The
 authoritative public category metadata observed on 2026-08-26 fixes root
@@ -397,7 +466,7 @@ Unknown calls keep raw target and calldata but no contract name, signature,
 arguments, or verified source. Failed decoding uses a decoder failure. Decode
 state does not imply a simulation result.
 
-A completed proposal-time simulation uses `revm@34` and method
+A completed proposal-time simulation uses `revm@34.0.0` and method
 `revm_engine_injected_executor_frame_conditional_origin`. It is a disclosed,
 conditional proposal-time scenario, not a claim that an unknown future
 `Voting.execute` transaction will succeed. Only an executable proposal with
@@ -413,11 +482,14 @@ ensures each target sees `CALLER = Executor`. There is no ordinary deployed
 harness, top-level caller substitution, or code override. A zero, custom, or
 unproved Executor cannot produce a completed record.
 
-The method records the frame-injector revision and artifact hash. Its gas
-context authenticates the Propose header with `eth_getBlockByHash`, including
-positive u64 `gasLimit` and `baseFeePerGas`, and the successful Propose receipt
-with `eth_getTransactionReceipt`, including transaction hash, sender, block,
-and `effectiveGasPrice`. It derives:
+The method records the frame-injector revision and artifact hash. Live output
+authenticates the Propose header with `eth_getBlockByHash` and the successful
+Propose receipt with `eth_getTransactionReceipt`; committed examples use the
+strict, non-RPC `committed_synthetic_fixture` branches. The receipt sender equals
+the Propose proposer. The header binds block number/hash/timestamp, beneficiary,
+zero post-merge difficulty, PREVRANDAO, positive-u64 gas limit and base fee, and
+excess blob gas. The receipt binds transaction hash/sender, block identity,
+success, and effective gas price. It derives:
 
 ```text
 executorFrameInitialGas = min(proposeBlock.gasLimit, 30_000_000)
@@ -426,17 +498,41 @@ effectiveGasPriceWei = proposeReceipt.effectiveGasPrice
 
 The frame gas is positive and u64-bounded. The header base fee is recorded but
 is never substituted for `GASPRICE`; the authenticated receipt effective price
-cannot be lower than that base fee. The remaining inputs are a synthetic
-legacy no-blobs envelope, an exact empty access list, and the Cancun frame-entry
-warm set containing origin, Voting, Executor, and precompiles with no prewarmed
-storage.
+cannot be lower than that base fee. The pinned mainnet schedule comes from
+`ethereum/go-ethereum` revision
+`9621c6ad10934a01b5514886fb6fbd87640b6c05`, path `params/config.go`, source
+SHA-256 `0xbd6759b0b0d4e4f8191f25870e40abad46ef5fb70aacdd31bdf220b5212de361`.
+The Propose timestamp selects `SpecId::OSAKA` at activation `1764798551` and
+BPO2 at `1767747671`, not REVM's Prague default. BPO2 uses target/max blobs
+`14/21` and update fraction `11684671`; `blobBaseFeeWei` must equal REVM's
+`fake_exponential(1, excessBlobGas, 11684671)` result.
 
-`yearn.dao.simulation-context-inputs.v2` is a fixed-order SHA-256 commitment to
-the block/header and receipt facts, origin and caller chain, script hash,
-injector artifact, exact Executor source/build/runtime/archive-code proof, gas
-formula and values, envelope, access list, and warm-set policy. If the producer
-lacks or cannot reproduce any required fact, it emits a fully `unavailable`
-simulation instead of partial frame claims.
+The engine proof pins `revm@34.0.0`, producer `Cargo.lock` SHA-256
+`0x6edd1b9a62f867205f9fb59aef137aa0fb0d08def83a0932fc84f67efe32de19`,
+and crates.io artifact SHA-256
+`0xc2aabdebaa535b3575231a88d72b642897ae8106cf6b0d12eafc6bfdf50abfc7`.
+The injector enters Executor at frame depth 1 before its first opcode, with the
+omitted Voting parent at depth 0 and script targets at depth 2. It binds exact
+ABI `execute(bytes)` calldata, a synthetic legacy no-blobs envelope, empty
+access list, and the sorted deduplicated Osaka warm set: origin, Voting,
+Executor, beneficiary, addresses `0x01` through `0x11`, and `0x0100`, with no
+prewarmed storage.
+
+Osaka EIP-7825 caps an outer transaction gas limit at `16,777,216`, while this
+conditional injector deliberately permits
+`min(block.gasLimit, 30,000,000)`. The record therefore says
+`non_transactional_gas_overapproximation`, bypasses outer-transaction
+validation, does not model parent EIP-150 forwarding, and scopes the result only
+to recorded injected-frame script behavior. It is not evidence of future
+execution feasibility.
+
+`yearn.dao.simulation-context-inputs.v3` is a fixed-order SHA-256 commitment to
+the chain-spec and engine pins, block/header and receipt facts, synthetic/RPC
+projection digests, runtime fork/blob context, exact warm set and calldata,
+origin and caller chain, script, injector, Executor source/build/code proof,
+Voting state override, gas formula/disclosures, envelope, and access list. If
+the producer lacks or cannot reproduce any required fact, it emits a fully
+`unavailable` simulation instead of partial frame claims.
 
 Before entering the Executor frame, the method applies one typed
 proposal-specific override proving `executed: false -> true`. That proof
@@ -450,11 +546,10 @@ pre/post words, plus the byte length and Keccak-256 of
 contract generation. It applies no time override. `succeeded` and `failed` mean
 atomic success or revert only for the exact recorded conditional scenario.
 
-The pinned source SHA-256 is
+The pinned Voting source SHA-256 is
 `0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e`.
-Running
-`uvx --from vyper==0.4.2 vyper -f layout -o Voting.layout.json Voting.vy`
-against those exact bytes produces the pinned layout-file SHA-256
+The committed layout artifact produced from the pinned source and verified
+Vyper distribution has SHA-256
 `0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26`.
 
 A bare top-level `Executor.execute` call with caller set to Voting is invalid

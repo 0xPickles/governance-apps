@@ -130,7 +130,10 @@ normal fixture uses 5,000 basis points and an alternate fixture retains 6,000.
 That proposal-rule configuration remains the historical disclosure effective at
 Propose. Feed admission checks each Vote against its event-effective live
 window, while raw snapshot status and timing use the configuration effective at
-the end of the canonical block.
+the end of the canonical block. The initial configuration is a fixed
+deployment/start sentinel; every later configuration binds the successful
+setter transaction, calldata, trace path, and first log position at which the
+new values are effective.
 
 ### DAO-FR-013: signal display
 
@@ -158,10 +161,16 @@ source, reproducible bytecode, and one transaction-and-trace-path invocation.
 Pinned code without a usable trace and custom Voter code preserve the raw Vote
 as unclassified, with a provenance failure and lower-bound human participation.
 A Voter constructor genesis is proved from that Voter build and may differ from
-the Voting contract genesis. A fixed build-evidence commitment binds that
-constructor input to source/compiler inputs and runtime, deployed-code, and
-artifact hashes. Complete invocation identities are feed-wide, ordinals follow
-canonical log order, and one pinned caller submits at most once per proposal.
+the Voting contract genesis, but cannot follow a Vote it could emit. The v2
+build-evidence commitment binds that constructor input to the exact official
+compiler distribution, source-integrity preimage, build commands/output,
+runtime template/immutable, deployed code, and artifact hashes. Full geth
+call-trace paths are unfiltered: root is `[]`, and direct-root pinned Voter
+human/delegated/YBC calls use child paths `[1]`, `[4]`, and `[5]`. Complete
+invocation identities are feed-wide, ordinals follow canonical log order, and
+one pinned caller submits at most once per proposal. The consumer replays
+cumulative pinned `ybc_votes` with checked uint256 arithmetic and derives the
+shared aggregate basis points from cumulative Yea and weight.
 
 Only a verified pinned Executor permits pinned script framing, decoded calls,
 or a completed proposal-time simulation. Exact bytes and hash comparison remain
@@ -318,7 +327,8 @@ When retrieval yields invalid content, the feed retains the exact bytes and the
 consumer reproduces one non-retryable failure in this order: digest, UTF-8,
 JSON, proposal schema/domain parse, final LF, then canonical field order. A
 producer cannot substitute the failure code or label fully valid canonical
-bytes as invalid.
+bytes as invalid. Timestamp fields must parse as real RFC 3339 instants;
+regex-shaped impossible calendar dates are invalid.
 
 An image token renders an informative attachment card, never an image-producing
 element. A relative `./assets/...` target matches one exact authenticated
@@ -366,7 +376,8 @@ Step 1 retains its fingerprint receipt and focus moves to a distinct current
 Step 2 surface. When the transaction hash is known, View transaction appears
 before any proposal action. A successful receipt must bind the exact expected
 Voting address, transaction hash, proposer, voting epoch, content digest, and
-script to exactly one matching `Propose` log. That log must have four canonical
+script to exactly one matching `Propose` log, and the receipt sender must equal
+the Propose proposer. That log must have four canonical
 topics, and its decoded topics and non-indexed data must re-encode byte for byte
 with no trailing or dirty padding. Open proposal and Copy link appear only after
 that receipt supplies the composite identity. Receipt confirmation,
@@ -400,10 +411,19 @@ check, no code overrides, the exact block/time/script, and the typed Voting
 and successful receipt. Initial frame gas is
 `min(Propose block gasLimit, 30,000,000)` and `GASPRICE` is the receipt's
 effective gas price. The recorded header base fee is not a substitute, and the
-receipt effective price cannot be below it. The versioned commitment also binds
-source/build/code evidence, envelope, empty access list, and warm-set inputs.
-Its success or revert applies only to that
-recorded scenario, not an unknown future execution transaction.
+receipt effective price cannot be below it. Exact mainnet timestamp-schedule
+evidence selects REVM `SpecId::OSAKA` and BPO2, whose authenticated excess blob
+gas determines the blob base fee. The frame binds block beneficiary, zero
+difficulty, PREVRANDAO, exact `execute(bytes)` calldata, and the Osaka warm set
+including coinbase and all Osaka precompiles. The v3 commitment also binds the
+chain-spec and REVM 34.0.0 artifacts, source/build/code and synthetic-or-archive
+evidence, envelope, empty access list, and warm-set inputs.
+
+The 30,000,000 frame cap is explicitly a non-transactional gas
+overapproximation: outer transaction validation is bypassed, Osaka's
+16,777,216 transaction cap is disclosed, and parent EIP-150 forwarding is not
+modeled. Success or revert applies only to recorded injected-frame behavior,
+not an unknown future execution transaction or execution feasibility.
 
 Unknown call decoding does not force simulation failure. If an
 origin, pinned Executor implementation, authenticated header/receipt, or

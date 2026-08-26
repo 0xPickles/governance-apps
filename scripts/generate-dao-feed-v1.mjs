@@ -34,9 +34,9 @@ try {
       "proposal-time disclosure, event-effective admission, snapshot-effective status, zero-capable mutable configuration, and ordered same-Voting history",
       "one global block-number/hash/timestamp registry, strict block-global log order, reverse transaction identity, canonical ABI, receipt identity, veto branches, and last-write running totals",
       "explicit chain-time availability, exact arbitrary invalid bytes with reproduced typed failure codes, canonical available content, SHA-256/CIDv1 identity, attachment provenance, manifest and asset records",
-      "feed-wide complete pinned-Voter invocation identities with canonical ordinal order and one caller submission per proposal, trace-unavailable lower bounds, unclassified custom-Voter events, committed independent Voter genesis/build evidence, and disabled Voter states",
-      "verified, unverified, and constructor-zero Executor evidence; pinned-only framing; exact script retention/type/hash binding; and unavailable analysis and simulation for unproven implementations",
-      "conditional engine-injected simulation chronology and a v2 input commitment using min(Propose block gasLimit, 30000000) plus authenticated Propose-receipt effectiveGasPrice",
+      "feed-wide complete pinned-Voter full-call-trace invocation identities with canonical ordinal order and one caller submission per proposal, checked cumulative ybc_votes replay, trace-unavailable lower bounds, unclassified custom-Voter events, independent Voter genesis, and reproducible v2 source/compiler/template/immutable/runtime evidence",
+      "verified, unverified, and constructor-zero Executor evidence; official compiler and source-integrity pins; pinned-only framing; exact script retention/type/hash binding; and unavailable analysis and simulation for unproven implementations",
+      "conditional revm 34.0.0 OSAKA/BPO2 engine-injected simulation chronology and a v3 commitment binding synthetic-or-archive projections, block opcode context, exact warm set/calldata, and the disclosed non-transactional 30000000-gas overapproximation",
       "total nonthrowing safe admission across structural, semantic, and raw-JSON consumer boundaries",
     ],
   };

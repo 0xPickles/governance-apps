@@ -491,5 +491,71 @@
     "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "blockHeader", "baseFeePerGasWei"],
     "value": "18446744073709551616",
     "expectedMessage": "positive u64 block gas and base fee"
+  },
+  {
+    "name": "creation receipt sender differs from Propose proposer",
+    "path": ["proposals", 0, "creation", "receipt", "transactionSender"],
+    "value": "0x0101010101010101010101010101010101010101",
+    "expectedMessage": "receipt transaction sender"
+  },
+  {
+    "name": "impossible RFC3339 content creation instant",
+    "path": ["proposals", 0, "content", "value", "createdAt"],
+    "value": "2026-02-30T00:00:00Z",
+    "expectedMessage": "real canonical UTC instant"
+  },
+  {
+    "name": "substituted canonical Voting source label",
+    "path": ["contracts", 0, "source", "label"],
+    "value": "unrelated",
+    "expectedMessage": "canonical label"
+  },
+  {
+    "name": "later configuration boundary disagrees with effective log index",
+    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "firstEffectiveLogIndex"],
+    "value": 1,
+    "expectedMessage": "Setter trace evidence"
+  },
+  {
+    "name": "pinned Voter event predates its immutable genesis",
+    "path": ["proposals", 1, "events", 1, "log", "timestamp"],
+    "value": 1500000000,
+    "expectedMessage": "Voter genesis must not follow"
+  },
+  {
+    "name": "synthetic header evidence claims archive RPC",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "blockHeader", "rpcMethod"],
+    "value": "eth_getBlockByHash",
+    "expectedMessage": "Committed synthetic evidence"
+  },
+  {
+    "name": "synthetic header projection digest substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "blockHeader", "fixtureProjectionSha256"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "Committed synthetic evidence"
+  },
+  {
+    "name": "simulation block beneficiary duplicate substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "beneficiary"],
+    "value": "0x4343434343434343434343434343434343434343",
+    "expectedMessage": "exact Propose block opcode context"
+  },
+  {
+    "name": "simulation BPO2 blob base fee substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "blobBaseFeeWei"],
+    "value": "73",
+    "expectedMessage": "OSAKA/BPO2 schedule"
+  },
+  {
+    "name": "simulation exact Executor calldata substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executionInput", "calldata"],
+    "value": "0x",
+    "expectedMessage": "ABI-encoded retained execute(bytes) input"
+  },
+  {
+    "name": "simulation outer transaction validation claim",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "outerTransactionValidation"],
+    "value": "executed",
+    "expectedMessage": "Invalid input: expected"
   }
 ]

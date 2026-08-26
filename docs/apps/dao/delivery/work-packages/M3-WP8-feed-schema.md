@@ -28,7 +28,8 @@ the accepted mock domain.
   retains exact arbitrary bytes as Base64 without imposing UTF-8, JSON, or final
   LF rules. Those bytes must reproduce the exact first typed failure across
   digest, UTF-8, JSON, schema/domain, final-LF, and canonical-order checks;
-  canonical accepted bytes cannot be relabeled invalid.
+  canonical accepted bytes cannot be relabeled invalid, and regex-shaped
+  impossible RFC 3339 calendar instants fail schema reproduction.
 - Independent raw asset CIDs derived from manifest digests. A relative manifest
   attachment is an exact logical path lookup, never a content-CID descendant;
   a direct `ipfs://` attachment has no path, slash, query, or fragment. Both
@@ -37,8 +38,10 @@ the accepted mock domain.
   nested-frame/harness provenance, caller chain, real code context,
   authenticated Propose header and receipt, deterministic frame gas
   `min(block gasLimit, 30,000,000)`, receipt-derived effective gas price,
-  header base fee and fee-consistency check, envelope/access/warm-set inputs,
-  versioned v2 commitment, state block and hash, timestamp treatment,
+  header base fee and fee-consistency check, OSAKA/BPO2 execution context,
+  beneficiary/PREVRANDAO/blob inputs, exact warm set and `execute(bytes)`
+  calldata, conditional non-transactional gas-overapproximation disclosures,
+  versioned v3 commitment, state block and hash, timestamp treatment,
   state/time overrides, atomic
   conditional result, and failure state. Analysis, completed simulation, and
   unavailable-attempt timestamps must stay between known Propose time,
@@ -58,19 +61,24 @@ the accepted mock domain.
   proposal type, Propose-effective historical configuration, event-effective
   Vote timing, snapshot-effective raw status/timing, execution delay/guard,
   Voting identity/source, and exact configuration observation position.
+- Strict configuration-boundary provenance: an exact deployment/start sentinel
+  first, then successful setter transaction/calldata/full-trace observations
+  with one first effective log index for same-block comparisons.
 - Typed zero/disabling configuration states, including proposal blacklist, and
   the exact event-effective call matrix. Retract and Flag use running
   last-write-per-account totals, so zero-weight Vote history is valid. Vote
   multiplication and every running-total update use checked uint256 arithmetic.
 - Per-configuration pinned Voter source/build/archive-code provenance, with its
   constructor genesis independent of Voting genesis and bound by a deterministic
-  source/compiler/runtime/build-evidence commitment. Complete classification
-  requires feed-wide transaction-and-trace invocation grouping: one positive
+  source-integrity/official-compiler/runtime-template/immutable/final-runtime
+  v2 build-evidence commitment. Complete classification requires feed-wide
+  transaction-and-full-call-trace invocation grouping: one positive
   nonzero human ordinal, a human-only skipped/zero outcome, or the ordered
   human/delegated/YBC triplet in canonical log order, with one complete pinned
-  caller submission per proposal. Pinned trace-unavailable and custom Voter records
-  remain raw and unclassified; human participation becomes an explicit lower
-  bound.
+  caller submission per proposal. The consumer replays cumulative `ybc_votes`
+  and every intermediate/passage multiplication with checked uint256 arithmetic.
+  Pinned trace-unavailable and custom Voter records remain raw and unclassified;
+  human participation becomes an explicit lower bound.
 - Per-configuration Executor evidence discriminates verified pinned, custom
   unverified, and constructor zero. Exact pinned source/build/runtime/archive
   pins alone authorize script framing and a completed simulation. Custom or
@@ -80,12 +88,15 @@ the accepted mock domain.
   framing remains independently knowable.
 - Receipt-derived composite identity. Creation evidence binds a successful
   transaction hash and exactly one matching Voting `Propose` log to proposer,
-  voting epoch, content digest, and exact script. Awaiting-index and indexed
-  records retain that same ref.
+  receipt sender, voting epoch, content digest, and exact script. The receipt
+  sender equals the Propose proposer. Awaiting-index and indexed records retain
+  that same ref.
 - Human vote versus YBC/delegated aggregate classification.
 - Authoritative forum root category `5` and exact allowed descendant ancestry.
-- Producer start blocks, confirmation, fixed retry/backoff, cursor, reorg, and
-  atomic-publication requirements.
+- Producer start blocks, exact eight-confirmation threshold (with greater
+  observed depth allowed), fixed retry/backoff, bootstrap retry and reorg
+  recovery without invented prior snapshot IDs, cursor, and atomic-publication
+  requirements.
 - Completed producer handoff copied from `producer-handoff-template.md`.
 
 ## Non-goals
@@ -110,7 +121,7 @@ the accepted mock domain.
 - Completed simulation is impossible without exact pinned Executor evidence,
   exact retained hash-verified executable bytes and valid framing,
   authenticated Propose header and receipt, deterministic gas derivation, and
-  a reproducible v2 input commitment. Missing evidence, signal scripts, and
+  a reproducible v3 input commitment. Missing evidence, signal scripts, and
   malformed or mismatched bytes produce a fully unavailable record.
 - Consumer tests reject incompatible or internally inconsistent examples.
 - Consumer tests reject unsafe/incomplete verified sources, substituted event
@@ -144,8 +155,9 @@ the accepted mock domain.
   reproduction, global block identity, cross-transaction log ordering,
   event-effective capability zeros, running vote totals, exact Voter invocation
   outcomes and trace-unavailable lower bounds, independent Voter genesis,
-  per-config Executor evidence, deterministic gas/header/receipt inputs, v2
-  commitments, and complete/unavailable simulation chronology.
+  per-config Executor evidence, deterministic OSAKA/BPO2
+  gas/header/receipt/opcode inputs, v3 commitments, synthetic-vs-archive source
+  tuples, and complete/unavailable simulation chronology.
 - Standard repository checks.
 
 ## Review

@@ -184,7 +184,8 @@ type DaoAnalysis = {
 
 The `atomic_script_at_state` literal above belongs only to the accepted M2 mock
 view. It is not a producer method. The frozen feed's completed method is
-`revm_engine_injected_executor_frame_conditional_origin` with engine `revm@34`.
+`revm_engine_injected_executor_frame_conditional_origin` with engine
+`revm@34.0.0` and explicit historical `SpecId::OSAKA`.
 
 Raw author input remains a string until syntax validation succeeds. Invalid
 characters and odd nibble counts do not describe a byte sequence, so
@@ -208,18 +209,24 @@ the Propose header and successful receipt, derives initial frame gas as
 `min(block gasLimit, 30,000,000)`, and uses the receipt effective gas price for
 `GASPRICE`. The header base fee is recorded but is not a substitute, and the
 receipt effective price cannot be lower than it. A no-blobs envelope, empty
-access list, Cancun warm-set policy, and the versioned v2
-commitment bind those facts, the script, Executor source/build/code proof,
-caller chain, and injector artifact. Missing evidence produces a fully
-unavailable simulation.
+access list, Osaka coinbase/precompile warm set, BPO2 blob context, exact
+`execute(bytes)` calldata, and the versioned v3 commitment bind those facts, the
+script, chain-spec/engine evidence, Executor source/build/code proof, caller
+chain, and injector artifact. The 30,000,000 injected-frame cap is explicitly a
+non-transactional overapproximation with outer validation bypassed and parent
+EIP-150 forwarding unmodeled; it does not prove future execution feasibility.
+Missing evidence produces a fully unavailable simulation.
 
 That Executor proof is per configuration. `verified_pinned` binds
 `contracts/governance/Executor.vy` at revision
 `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
 `0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`,
-`vyper@0.4.2`, compiler integrity SHA-256
+`vyper@0.4.2`, Vyper source-integrity SHA-256
 `0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b`,
-gas optimization, Cancun, and experimental code generation disabled. Its exact
+whose preimage is the lowercase ASCII source digest without `0x`, plus the
+official Linux x86-64 compiler release asset SHA-256
+`0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
+Compilation uses gas optimization, Cancun, and no experimental codegen. Its exact
 1,157-byte runtime has Keccak-256
 `0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
 and artifact SHA-256
@@ -289,8 +296,10 @@ hash and one value for every known timestamp, and one hash maps to one height.
 Within a block, `logIndex` is unique and rises strictly with transaction order
 across proposals and Voting generations.
 
-A complete pinned-Voter classification groups one transaction by outer Voter
-trace path. Ordinal `0` is one nonzero, positive-weight binary human Vote. A
+A complete pinned-Voter classification groups one transaction by its unfiltered
+geth `callTracer` outer Voter path. Root is `[]`; direct-root human, delegated,
+and YBC `Voting.vote` child paths are `[1]`, `[4]`, and `[5]`. Ordinal `0` is one
+nonzero, positive-weight binary human Vote. A
 nonmember or member with a zero aggregator result produces only `{0}`. A
 positive result produces the exact ordered `{0,1,2}` human, delegated-staking,
 and YBC triplet. Missing traces under pinned code and custom Voter code preserve
@@ -298,9 +307,13 @@ raw events as unclassified provenance failures. Human participation is then an
 explicit lower bound rather than a guessed complete count. Disabled zero Voter
 state cannot produce a Vote. The Voter's proved constructor genesis is
 independent of the Voting generation genesis and is committed with its exact
-source/compiler/runtime/deployment build evidence. Invocation identity is
-feed-wide, binds one proposal, and each complete pinned caller appears only once
-per proposal.
+source integrity, official compiler distribution, command/stdout, runtime
+template/immutable, final deployed runtime, and code evidence through
+`yearn.dao.voter-build-evidence.v2`. It cannot follow a Vote that implementation
+could emit. Invocation identity is feed-wide, binds one proposal, and each
+complete pinned caller appears only once per proposal. The consumer replays
+cumulative pinned `ybc_votes` with checked uint256 arithmetic and derives the
+shared aggregate bps from cumulative Yea and weight.
 
 ## 6. Proposal view model
 
@@ -426,7 +439,9 @@ formats these supplied facts and does not reconstruct protocol rules. In the
 frozen feed, the copied proposal-rule configuration is the Propose-effective
 historical disclosure, each Vote uses its event-effective window, and raw
 snapshot timing/status uses the configuration effective at the end of the
-canonical block.
+canonical block. The first history entry is a fixed deployment/start sentinel;
+later entries bind successful setter calldata and full trace paths and become
+effective before one exact first log index.
 
 The frozen rule record also includes typed Voter, Executor, proposal-blacklist,
 hook, weight-measure, aggregate, operator, and guardian states. Historical

@@ -70,7 +70,8 @@ Proposal creation learns that identity only from a successful receipt. The
 receipt transaction hash must equal the submitted hash and exactly one
 `Propose` log must come from the expected Voting address. Its proposal ID,
 proposer, voting epoch, content digest, and exact script are decoded and checked
-against the submitted values. Chain context is supplied separately; it is not
+against the submitted values. The receipt sender must equal that Propose
+proposer. Chain context is supplied separately; it is not
 trusted from receipt data. Missing, duplicate, malformed, wrong-contract, or
 mismatched logs produce no proposal link.
 
@@ -96,6 +97,13 @@ The pinned Voting constructor default is 5,000 basis points. Normal deterministi
 fixtures use that 50% default; one historical fixture retains a 6,000-basis-point
 snapshot. A live deployment's mutable threshold, vote duration, execution delay,
 and guard remain observed configuration and must carry the observation block.
+The first configuration is an exact start-of-deployment sentinel at transaction
+and log zero. Every later entry binds one successful setter transaction, raw
+calldata, and full trace path, and becomes effective before the first stated
+subsequent log index. This makes same-block and same-transaction comparisons
+deterministic without pretending the observation is a lifecycle log. When a
+Voting deployment timestamp is known, it must satisfy the pinned constructor
+precondition `deploymentTimestamp >= genesisTimestamp + EPOCH_LENGTH`.
 
 ## 4. Voting
 
@@ -152,16 +160,24 @@ and a reproducible build must match at the effective configuration position.
 Custom or unverified Voters preserve raw Vote data as unclassified; they do not
 inherit pinned-Voter binary-human or aggregate semantics.
 
+The compiler is the official Linux x86-64 Vyper `v0.4.2` release asset at commit
+`c216787f5e355478733a05fa5f0fce93fa9a7126`, 23,495,192 bytes, SHA-256
+`0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
+The Voter source-integrity digest is
+`0x90d458df8321d2c845ad1a153b21fea3eeb6fa746feecc57d15beec3ae5f192d`;
+it hashes the Vyper import tree and is not a compiler-distribution hash.
+
 The Voter's immutable genesis is a constructor input proved by its own build and
 archive evidence. It does not have to equal the Voting contract generation's
-genesis timestamp. The feed's `yearn.dao.voter-build-evidence.v1` commitment
-binds that constructor value to the pinned source/compiler inputs, runtime and
-deployed-code hashes, code length, and build artifact; a timestamp-only rewrite
-against unchanged build evidence is invalid.
+genesis timestamp, but it must not follow any Vote event that implementation
+could emit. The feed's `yearn.dao.voter-build-evidence.v2` commitment binds that
+constructor value to the pinned source/compiler distribution, exact commands
+and stdout, runtime template and layout, immutable word, final runtime, code
+evidence, and build artifacts; a timestamp-only rewrite is invalid.
 
 Complete pinned classification groups logs by chain ID, Voting address,
-transaction hash, and outer Voter call trace address. `Yea(address,uint256)` is
-selector `0x69586e2e`; `Nay(address,uint256)` is `0xff855dde`. Ordinal `0` is one
+transaction hash, and outer Voter call trace address. `vote_yea(address,uint256)`
+is selector `0x69586e2e`; `vote_nay(address,uint256)` is `0xff855dde`. Ordinal `0` is one
 nonzero, positive-weight, binary human Vote bound to the outer caller and
 selector. A nonmember skips aggregation and produces only ordinal `{0}`. A
 member whose configured aggregator returns zero also produces only `{0}`. A
@@ -172,6 +188,16 @@ the aggregator return value. Invocation identity is feed-wide, binds only one
 proposal/caller/selector, and its ordinals must appear in canonical log order.
 The pinned Voter's one-submission guard also makes a complete ordinal-zero
 caller unique per proposal.
+
+Trace paths are unfiltered geth `callTracer` child indices from
+`debug_traceTransaction` with `onlyTopCall:false`, `withLog:true`, and `reexec:0`.
+Root is `[]`; direct-root Voter calls bind human/delegated/YBC frames at `[1]`,
+`[4]`, and `[5]`. Live trace evidence binds client version and raw trace hash;
+committed examples use a separate synthetic fixture projection. The consumer
+also replays pinned Voter `ybc_votes` cumulatively: each positive aggregator
+return updates checked cumulative weight/Yea, and both aggregate Vote logs use
+`floor(10000*cumulativeYea/cumulativeWeight)`. All intermediate products and
+sums, including passage multiplication, must fit uint256.
 
 Pinned code without a usable trace uses `pinned_voter_trace_unavailable` and
 keeps the raw Vote unclassified. Custom code uses
@@ -301,15 +327,23 @@ The feed applies that framing only when the event-effective Executor matches the
 pinned implementation. The proof binds `contracts/governance/Executor.vy` at
 revision `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
 `0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`,
-`vyper@0.4.2`, compiler integrity SHA-256
+`vyper@0.4.2`, Vyper source-integrity SHA-256
 `0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b`,
-gas optimization, Cancun, and experimental code generation disabled. The exact
-runtime is 1,157 bytes, with Keccak-256
+gas optimization, Cancun, and experimental code generation disabled. That
+digest hashes the lowercase ASCII source digest without `0x`; it is not a
+compiler artifact hash. The official Linux x86-64 compiler asset is 23,495,192
+bytes with SHA-256
+`0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
+Creation/runtime stdout SHA-256 values are
+`0x48dbf262a5e31ccdb52119174854e136d8070bbd67140e8b11f72d7b7b169f23`
+and `0x9c50f7eb47e09e8349e896e0843f41c96a6b15c48c53c2855e4db709510e021b`.
+The decoded runtime is 1,157 bytes, with Keccak-256
 `0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
-and artifact SHA-256
+and raw-byte SHA-256
 `0x6515450d29d132991c615f1679eea39f8c095b3f71cc0e7a3ba3c446c8312f4c`.
-Archive code at the configuration position must match the same address, length,
-hash, and build artifact.
+Live archive code at the configuration position must match the same address,
+length, hash, and build artifact. Synthetic examples use an explicit fixture
+projection and do not claim archive RPC.
 
 A custom nonzero Executor remains `unverified`; constructor zero remains
 `uninitialized_zero_address`. Exact script retention and hash comparison still
@@ -364,7 +398,7 @@ sender is a frozen hypothetical origin, Executor sees `CALLER = Voting`, targets
 see `CALLER = Executor`, real Voting and Executor code remains present, and only
 the proven proposal-specific `executed: false -> true` transition is applied.
 The completed record requires the proposal-effective pinned Executor proof and
-archive code at the Propose block. It authenticates the header with
+code evidence at the Propose block. Live records authenticate the header with
 `eth_getBlockByHash`, including positive u64 gas limit and base fee, and the
 successful Propose receipt with `eth_getTransactionReceipt`, including hash,
 sender, block, and effective gas price. It derives:
@@ -375,13 +409,24 @@ GASPRICE = Propose receipt effectiveGasPrice
 ```
 
 The base fee is evidence about the block, not a substitute for `GASPRICE`; the
-authenticated receipt effective price cannot be lower than it. The record also
-freezes a synthetic legacy no-blobs envelope, empty access list, and
-the Cancun warm set for origin, Voting, Executor, and precompiles with no
-prewarmed storage. The `yearn.dao.simulation-context-inputs.v2` SHA-256
-commitment binds the header and receipt, caller chain, script, injector,
-Executor source/build/code proof, derived gas values, envelope, access list, and
-warm set.
+authenticated receipt effective price cannot be lower than it. The exact
+go-ethereum timestamp schedule selects OSAKA and BPO2. BPO2 fraction
+`11684671` derives blob base fee from authenticated excess blob gas. REVM is
+pinned to `34.0.0` with explicit `SpecId::OSAKA`; its Prague default is rejected.
+The record binds beneficiary, zero difficulty, PREVRANDAO, exact ABI
+`execute(bytes)` calldata, a synthetic legacy no-blobs envelope, empty access
+list, and the Osaka warm set including coinbase and precompiles `0x01` through
+`0x11` plus `0x0100`.
+
+The 30,000,000 frame cap is a conditional non-transactional gas
+overapproximation: outer transaction validation is bypassed, Osaka's
+16,777,216 EIP-7825 transaction cap is disclosed, and parent EIP-150 forwarding
+is not modeled. It proves recorded injected-frame behavior, not future
+execution feasibility. The `yearn.dao.simulation-context-inputs.v3` SHA-256
+commitment binds chain-spec/engine pins, header/receipt and synthetic/RPC
+projection evidence, fork/blob/opcode context, caller chain, calldata, script,
+injector, Executor source/build/code proof, Voting override, gas disclosures,
+envelope, access list, and warm set.
 Success or revert is conditional on that exact recorded scenario, not a promise
 about the unknown future execution origin. If the origin, frame, code, state,
 time, authenticated header/receipt, gas/access context, pinned Executor, or
@@ -431,7 +476,9 @@ Voting source to exact stYFI revision
 `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`. Other hosts, credentials, query,
 fragment, controls, traversal, and noncanonical paths are invalid. That record
 proves the source used for decoding; it does not prove that a mock address is
-deployed. Unknown calls have no verified source.
+deployed. Failed decoder candidate sources obey the same canonical rules, and a
+failed analysis summary must name the component that actually failed. Unknown
+calls have no verified source.
 
 The producer verifies `keccak256(eventScript) == storedScriptHash`, fetches IPFS
 content, decodes known calls, runs the proposal-time simulation, and publishes a
@@ -456,7 +503,9 @@ Invalid retrieval records retain the exact bytes and must reproduce their
 non-retryable failure in order: digest mismatch, fatal UTF-8 decode, JSON parse,
 proposal schema/domain parse, final LF, then canonical field order. A valid
 canonical byte sequence cannot be relabeled invalid, and a producer cannot
-substitute a later failure code for the first failing check.
+substitute a later failure code for the first failing check. RFC 3339 values are
+parsed as real instants; regex-shaped impossible calendar dates are schema
+failures.
 
 Each asset-manifest digest authenticates one independent raw asset block. A
 relative manifest attachment such as `./assets/diagram.svg` is an exact logical

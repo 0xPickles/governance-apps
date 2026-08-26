@@ -1,9 +1,11 @@
 import {
   encodeAbiParameters,
   encodeEventTopics,
+  encodeFunctionData,
   isAddressEqual,
   keccak256,
   sha256,
+  toBytes,
   type Address,
   type Hex,
 } from "viem";
@@ -121,10 +123,16 @@ export const DAO_FEED_LIFECYCLE_EVENT_ABI = {
 } as const;
 
 const PINNED_VOTING_SOURCE_PATH = "contracts/governance/Voting.vy";
+const PINNED_VOTING_SOURCE_LABEL =
+  "Voting.vy at pinned stYFI revision" as const;
 const PINNED_VOTING_SOURCE_URL = `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${PINNED_VOTING_SOURCE_PATH}`;
 const PINNED_VOTER_SOURCE_PATH = "contracts/governance/Voter.vy";
+const PINNED_VOTER_SOURCE_LABEL =
+  "Voter.vy at pinned stYFI revision" as const;
 const PINNED_VOTER_SOURCE_URL = `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${PINNED_VOTER_SOURCE_PATH}`;
 const PINNED_EXECUTOR_SOURCE_PATH = "contracts/governance/Executor.vy";
+const PINNED_EXECUTOR_SOURCE_LABEL =
+  "Executor.vy at pinned stYFI revision" as const;
 const PINNED_EXECUTOR_SOURCE_URL = `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${PINNED_EXECUTOR_SOURCE_PATH}`;
 const PINNED_VOTING_SOURCE_SHA256 =
   "0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e" as const;
@@ -132,8 +140,67 @@ const PINNED_VOTER_SOURCE_SHA256 =
   "0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab" as const;
 const PINNED_EXECUTOR_SOURCE_SHA256 =
   "0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1" as const;
-const PINNED_EXECUTOR_COMPILER_INTEGRITY_SHA256 =
+const PINNED_EXECUTOR_SOURCE_INTEGRITY_SHA256 =
   "0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b" as const;
+const PINNED_VOTER_SOURCE_INTEGRITY_SHA256 =
+  "0x90d458df8321d2c845ad1a153b21fea3eeb6fa746feecc57d15beec3ae5f192d" as const;
+const PINNED_VYPER_COMPILER_ARTIFACT_NAME =
+  "vyper.0.4.2+commit.c216787f.linux" as const;
+const PINNED_VYPER_COMPILER_ARTIFACT_URI =
+  "https://github.com/vyperlang/vyper/releases/download/v0.4.2/vyper.0.4.2%2Bcommit.c216787f.linux" as const;
+const PINNED_VYPER_COMPILER_ARTIFACT_BYTE_LENGTH = 23_495_192 as const;
+const PINNED_VYPER_COMPILER_ARTIFACT_SHA256 =
+  "0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa" as const;
+const PINNED_VYPER_RELEASE_COMMIT =
+  "c216787f5e355478733a05fa5f0fce93fa9a7126" as const;
+const PINNED_VYPER_LONG_VERSION = "0.4.2+commit.c216787f" as const;
+const PINNED_VOTER_CREATION_BYTECODE_COMMAND =
+  "./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f bytecode contracts/governance/Voter.vy" as const;
+const PINNED_VOTER_CREATION_BYTECODE_STDOUT_SHA256 =
+  "0x25ca8e7899a40c5ae221fa5d8075816f7b36650b3ef6ef285b60fc5dcce362cc" as const;
+const PINNED_VOTER_CREATION_STDOUT_BYTE_LENGTH = 4_123 as const;
+const PINNED_VOTER_RUNTIME_TEMPLATE_COMMAND =
+  "./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f bytecode_runtime contracts/governance/Voter.vy" as const;
+const PINNED_VOTER_CREATION_BYTE_LENGTH = 2_060 as const;
+const PINNED_VOTER_CREATION_SHA256 =
+  "0xbcb72ccd8fec2d904ecd867503481abc4d841d4b1ef7d5104b6017ff15a93839" as const;
+const PINNED_VOTER_INITCODE_WITH_ARGUMENT_BYTE_LENGTH = 2_092 as const;
+const PINNED_VOTER_INITCODE_WITH_ARGUMENT_SHA256 =
+  "0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4" as const;
+const PINNED_VOTER_RUNTIME_TEMPLATE_BYTE_LENGTH = 1_957 as const;
+const PINNED_VOTER_RUNTIME_STDOUT_BYTE_LENGTH = 3_917 as const;
+const PINNED_VOTER_RUNTIME_STDOUT_SHA256 =
+  "0x461f3f38e239d707be52a4c89d57d887c4c8e60b42b2032ebe6ed99b41e9cd54" as const;
+const PINNED_VOTER_LAYOUT_COMMAND =
+  "./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f layout contracts/governance/Voter.vy" as const;
+const PINNED_VOTER_LAYOUT_STDOUT_BYTE_LENGTH = 578 as const;
+const PINNED_VOTER_LAYOUT_STDOUT_SHA256 =
+  "0x6486152f25f1fa13ac03681a2b2779d035577906cee90f6ebba302a28b460681" as const;
+const PINNED_VOTER_RUNTIME_TEMPLATE_SHA256 =
+  "0x452dcaf7aa5c7d647c694a424121737e691ab229ee33744e0773d8581d9eea8b" as const;
+const PINNED_VOTER_RUNTIME_TEMPLATE_KECCAK256 =
+  "0xdfc74b9ef65aba002169200841461f60261aa1e66380e0b867b085266f16acaf" as const;
+const PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH = 1_989 as const;
+const PINNED_VOTER_DEPLOYED_RUNTIME_SHA256 =
+  "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b" as const;
+const PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256 =
+  "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e" as const;
+const PINNED_VOTER_GENESIS_TIMESTAMP = 1_542_736_800 as const;
+const PINNED_VOTER_GENESIS_WORD =
+  "0x000000000000000000000000000000000000000000000000000000005bf44ba0" as const;
+const PINNED_EXECUTOR_CREATION_BYTECODE_COMMAND =
+  "./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f bytecode contracts/governance/Executor.vy" as const;
+const PINNED_EXECUTOR_RUNTIME_COMMAND =
+  "./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f bytecode_runtime contracts/governance/Executor.vy" as const;
+const PINNED_EXECUTOR_CREATION_STDOUT_SHA256 =
+  "0x48dbf262a5e31ccdb52119174854e136d8070bbd67140e8b11f72d7b7b169f23" as const;
+const PINNED_EXECUTOR_CREATION_STDOUT_BYTE_LENGTH = 2_483 as const;
+const PINNED_EXECUTOR_CREATION_BYTE_LENGTH = 1_240 as const;
+const PINNED_EXECUTOR_RUNTIME_STDOUT_BYTE_LENGTH = 2_317 as const;
+const PINNED_EXECUTOR_RUNTIME_STDOUT_SHA256 =
+  "0x9c50f7eb47e09e8349e896e0843f41c96a6b15c48c53c2855e4db709510e021b" as const;
+const PINNED_EXECUTOR_CREATION_SHA256 =
+  "0xccb991a4222b9576e42f6d0da4e655069a4882532bf088e22c8a95b629862a60" as const;
 const PINNED_EXECUTOR_RUNTIME_BYTE_LENGTH = 1_157 as const;
 const PINNED_EXECUTOR_RUNTIME_KECCAK256 =
   "0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151" as const;
@@ -156,7 +223,7 @@ const SNAPSHOT_ID_PATTERN = /^[a-z0-9][a-z0-9._:-]{0,127}$/u;
 const EVENT_ID_PATTERN = /^[0-9]+:0x[0-9a-f]{40}:0x[0-9a-f]{64}:[0-9]+:[0-9]+$/u;
 const CONFIGURATION_ID_PATTERN = /^config-[1-9]\d*$/u;
 const VOTER_INVOCATION_ID_PATTERN =
-  /^[0-9]+:0x[0-9a-f]{40}:0x[0-9a-f]{64}:(?:[0-9]+)(?:\.[0-9]+)*$/u;
+  /^[0-9]+:0x[0-9a-f]{40}:0x[0-9a-f]{64}:(?:root|(?:[0-9]+)(?:\.[0-9]+)*)$/u;
 const ISO_UTC_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u;
 const GITHUB_REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u;
@@ -164,6 +231,32 @@ const GITHUB_REVISION_PATTERN = /^[0-9a-f]{40}$/u;
 const SOURCE_PATH_PATTERN = /^[A-Za-z0-9_.\/-]+$/u;
 const CANONICAL_BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u;
 const ZERO_ADDRESS = `0x${"00".repeat(20)}`;
+const OSAKA_PRECOMPILE_ADDRESSES = [
+  ...Array.from(
+    { length: 17 },
+    (_, index) => `0x${(index + 1).toString(16).padStart(40, "0")}`
+  ),
+  `0x${(256).toString(16).padStart(40, "0")}`,
+] as const;
+const PINNED_MAINNET_CHAIN_SPEC = {
+  kind: "github",
+  label: "go-ethereum mainnet chain config at pinned revision",
+  repository: "ethereum/go-ethereum",
+  revision: "9621c6ad10934a01b5514886fb6fbd87640b6c05",
+  sourcePath: "params/config.go",
+  url: "https://github.com/ethereum/go-ethereum/blob/9621c6ad10934a01b5514886fb6fbd87640b6c05/params/config.go",
+} as const;
+const PINNED_MAINNET_CHAIN_SPEC_SHA256 =
+  "0xbd6759b0b0d4e4f8191f25870e40abad46ef5fb70aacdd31bdf220b5212de361" as const;
+const PINNED_REVM_CARGO_LOCK_SHA256 =
+  "0x6edd1b9a62f867205f9fb59aef137aa0fb0d08def83a0932fc84f67efe32de19" as const;
+const PINNED_REVM_CRATE_SHA256 =
+  "0xc2aabdebaa535b3575231a88d72b642897ae8106cf6b0d12eafc6bfdf50abfc7" as const;
+const MAINNET_OSAKA_ACTIVATION_TIMESTAMP = 1_764_798_551 as const;
+const MAINNET_BPO2_ACTIVATION_TIMESTAMP = 1_767_747_671 as const;
+const MAINNET_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION = 11_684_671n;
+const UINT64_MAX = (1n << 64n) - 1n;
+const MAX_BPS_SAFE_WEIGHT = ((1n << 256n) - 1n) / BigInt(DAO_BPS);
 const DAO_FORUM_PROPOSAL_CATEGORIES = new Map<
   number,
   { name: string; slug: string }
@@ -188,6 +281,10 @@ const zNonZeroAddress = z.string().regex(LOWER_NONZERO_ADDRESS_PATTERN);
 const zHash = z.string().regex(LOWER_HASH_PATTERN);
 const zNonZeroHash = z.string().regex(LOWER_NONZERO_HASH_PATTERN);
 const zBytes = z.string().max(4_098).regex(LOWER_BYTES_PATTERN);
+const zSimulationCalldata = z
+  .string()
+  .max(4_500)
+  .regex(LOWER_BYTES_PATTERN);
 const zContentBase64 = z
   .string()
   .max(174_764)
@@ -256,6 +353,147 @@ const VerifiedSourceSchema = z.strictObject({
   repository: z.string().regex(GITHUB_REPOSITORY_PATTERN),
   revision: z.string().regex(GITHUB_REVISION_PATTERN),
   sourcePath: z.string().min(1).max(512).regex(SOURCE_PATH_PATTERN),
+});
+
+const PinnedCompilerDistributionSchema = z.strictObject({
+  kind: z.literal("github_release_pyinstaller_onefile"),
+  releaseTag: z.literal("v0.4.2"),
+  artifactName: z.literal(PINNED_VYPER_COMPILER_ARTIFACT_NAME),
+  releaseCommit: z.literal(PINNED_VYPER_RELEASE_COMMIT),
+  longVersion: z.literal(PINNED_VYPER_LONG_VERSION),
+  platform: z.literal("linux-x86_64-gnu"),
+  buildRunner: z.literal("github-actions-ubuntu-22.04"),
+  uri: z.literal(PINNED_VYPER_COMPILER_ARTIFACT_URI),
+  byteLength: z.literal(PINNED_VYPER_COMPILER_ARTIFACT_BYTE_LENGTH),
+  sha256: z.literal(PINNED_VYPER_COMPILER_ARTIFACT_SHA256),
+  derivation: z.literal("sha256_exact_download_bytes"),
+});
+
+function pinnedSourceIntegritySchema(
+  preimage: string,
+  digest: string
+) {
+  return z.strictObject({
+    algorithm: z.literal("vyper_0_4_2_sha256_import_tree"),
+    preimageEncoding: z.literal("lowercase_ascii_hex_without_0x"),
+    preimage: z.literal(preimage),
+    digest: z.literal(digest),
+    derivation: z.literal(
+      "vyper_0_4_2_integrity_for_import_free_source"
+    ),
+  });
+}
+
+const PinnedVoterSourceIntegritySchema = pinnedSourceIntegritySchema(
+  PINNED_VOTER_SOURCE_SHA256.slice(2),
+  PINNED_VOTER_SOURCE_INTEGRITY_SHA256
+);
+const PinnedExecutorSourceIntegritySchema = pinnedSourceIntegritySchema(
+  PINNED_EXECUTOR_SOURCE_SHA256.slice(2),
+  PINNED_EXECUTOR_SOURCE_INTEGRITY_SHA256
+);
+
+const PinnedVoterBuildArtifactSchema = z.strictObject({
+  outputKind: z.literal("vyper_creation_bytecode_hex_stdout"),
+  exactBytesEncoding: z.literal("utf8_lowercase_0x_hex_with_final_lf"),
+  command: z.literal(PINNED_VOTER_CREATION_BYTECODE_COMMAND),
+  stdoutByteLength: z.literal(PINNED_VOTER_CREATION_STDOUT_BYTE_LENGTH),
+  sha256: z.literal(PINNED_VOTER_CREATION_BYTECODE_STDOUT_SHA256),
+  derivation: z.literal("sha256_exact_stdout_bytes"),
+  decodedCreationByteLength: z.literal(PINNED_VOTER_CREATION_BYTE_LENGTH),
+  decodedCreationSha256: z.literal(PINNED_VOTER_CREATION_SHA256),
+  constructorInputEncoding: z.literal("abi_uint256_big_endian_word"),
+  initcodeWithArgumentByteLength: z.literal(
+    PINNED_VOTER_INITCODE_WITH_ARGUMENT_BYTE_LENGTH
+  ),
+  initcodeWithArgumentSha256: z.literal(
+    PINNED_VOTER_INITCODE_WITH_ARGUMENT_SHA256
+  ),
+});
+
+const PinnedVoterRuntimeTemplateSchema = z.strictObject({
+  outputKind: z.literal("vyper_runtime_template_raw_bytes"),
+  compilerStdoutDecoding: z.literal(
+    "strip_exact_0x_prefix_and_one_final_lf_then_lowercase_hex_decode"
+  ),
+  command: z.literal(PINNED_VOTER_RUNTIME_TEMPLATE_COMMAND),
+  stdoutByteLength: z.literal(PINNED_VOTER_RUNTIME_STDOUT_BYTE_LENGTH),
+  stdoutSha256: z.literal(PINNED_VOTER_RUNTIME_STDOUT_SHA256),
+  byteLength: z.literal(PINNED_VOTER_RUNTIME_TEMPLATE_BYTE_LENGTH),
+  sha256: z.literal(PINNED_VOTER_RUNTIME_TEMPLATE_SHA256),
+  keccak256: z.literal(PINNED_VOTER_RUNTIME_TEMPLATE_KECCAK256),
+  immutableLayout: z.strictObject({
+    evidenceCommand: z.literal(PINNED_VOTER_LAYOUT_COMMAND),
+    evidenceStdoutByteLength: z.literal(
+      PINNED_VOTER_LAYOUT_STDOUT_BYTE_LENGTH
+    ),
+    evidenceStdoutSha256: z.literal(PINNED_VOTER_LAYOUT_STDOUT_SHA256),
+    field: z.literal("genesis"),
+    codeOffset: z.literal(0),
+    byteLength: z.literal(32),
+    encoding: z.literal("abi_uint256_big_endian_word_appended_to_template"),
+  }),
+});
+
+const PinnedExecutorBuildArtifactSchema = z.strictObject({
+  creationOutputKind: z.literal("vyper_creation_bytecode_hex_stdout"),
+  runtimeOutputKind: z.literal("vyper_runtime_bytecode_hex_stdout"),
+  compilerStdoutDecoding: z.literal(
+    "strip_exact_0x_prefix_and_one_final_lf_then_lowercase_hex_decode"
+  ),
+  creationCommand: z.literal(PINNED_EXECUTOR_CREATION_BYTECODE_COMMAND),
+  runtimeCommand: z.literal(PINNED_EXECUTOR_RUNTIME_COMMAND),
+  creationStdoutSha256: z.literal(
+    PINNED_EXECUTOR_CREATION_STDOUT_SHA256
+  ),
+  creationStdoutByteLength: z.literal(
+    PINNED_EXECUTOR_CREATION_STDOUT_BYTE_LENGTH
+  ),
+  runtimeStdoutByteLength: z.literal(
+    PINNED_EXECUTOR_RUNTIME_STDOUT_BYTE_LENGTH
+  ),
+  runtimeStdoutSha256: z.literal(PINNED_EXECUTOR_RUNTIME_STDOUT_SHA256),
+  creationByteLength: z.literal(PINNED_EXECUTOR_CREATION_BYTE_LENGTH),
+  creationSha256: z.literal(PINNED_EXECUTOR_CREATION_SHA256),
+  runtimeByteLength: z.literal(PINNED_EXECUTOR_RUNTIME_BYTE_LENGTH),
+  runtimeSha256: z.literal(PINNED_EXECUTOR_RUNTIME_SHA256),
+  runtimeKeccak256: z.literal(PINNED_EXECUTOR_RUNTIME_KECCAK256),
+  immutableLayout: z.literal("none"),
+});
+
+const MainnetChainSpecEvidenceSchema = z.strictObject({
+  source: VerifiedSourceSchema,
+  sourceSha256: z.literal(PINNED_MAINNET_CHAIN_SPEC_SHA256),
+  schedule: z.strictObject({
+    derivation: z.literal("ethereum_mainnet_timestamp_schedule_v1"),
+    osakaActivationTimestamp: z.literal(
+      MAINNET_OSAKA_ACTIVATION_TIMESTAMP
+    ),
+    bpo2ActivationTimestamp: z.literal(MAINNET_BPO2_ACTIVATION_TIMESTAMP),
+    bpo2BlobBaseFeeUpdateFraction: z.literal(
+      MAINNET_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION.toString()
+    ),
+    targetBlobsPerBlock: z.literal(14),
+    maxBlobsPerBlock: z.literal(21),
+  }),
+});
+
+const RevmEngineEvidenceSchema = z.strictObject({
+  engine: z.literal("revm@34.0.0"),
+  explicitSpecSelection: z.literal("SpecId::OSAKA"),
+  defaultSpecRejected: z.literal("PRAGUE"),
+  producerCargoLockSha256: z.literal(PINNED_REVM_CARGO_LOCK_SHA256),
+  crate: z.literal("revm-34.0.0.crate"),
+  crateUri: z.literal(
+    "https://crates.io/api/v1/crates/revm/34.0.0/download"
+  ),
+  crateSha256: z.literal(PINNED_REVM_CRATE_SHA256),
+  crateHashDerivation: z.literal("sha256_exact_download_bytes"),
+  implicitPragueBlobFractionRejected: z.literal("5007716"),
+  bpo2FractionOverride: z.literal("11684671"),
+  blobEnvironmentInitialization: z.literal(
+    "cfg_blob_base_fee_update_fraction_then_block_set_blob_excess_gas_and_price"
+  ),
 });
 
 const ProposalRefSchema = z.strictObject({
@@ -436,11 +674,52 @@ const VoteClassificationCommonShape = {
 };
 
 const PinnedVoterTraceSchema = z.strictObject({
+  traceEvidence: z.discriminatedUnion("sourceKind", [
+    z.strictObject({
+      sourceKind: z.literal("committed_synthetic_fixture"),
+      rpcMethod: z.literal("debug_traceTransaction"),
+      tracer: z.literal("callTracer"),
+      fixtureMethod: z.literal(
+        "committed_synthetic_geth_call_tracer_fixture_v1"
+      ),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+      fixtureProjectionSha256: zNonZeroHash,
+      clientVersion: z.null(),
+      rawTraceSha256: z.null(),
+      tracerConfig: z.strictObject({
+        onlyTopCall: z.literal(false),
+        withLog: z.literal(true),
+      }),
+      reexec: z.literal(0),
+      normalization: z.literal(
+        "root_empty_array_then_zero_based_full_call_tree_child_indices"
+      ),
+    }),
+    z.strictObject({
+      sourceKind: z.literal("archive_rpc"),
+      rpcMethod: z.literal("debug_traceTransaction"),
+      tracer: z.literal("callTracer"),
+      fixtureMethod: z.null(),
+      fixturePath: z.null(),
+      fixtureProjectionSha256: z.null(),
+      clientVersion: z.string().min(1).max(256),
+      rawTraceSha256: zNonZeroHash,
+      tracerConfig: z.strictObject({
+        onlyTopCall: z.literal(false),
+        withLog: z.literal(true),
+      }),
+      reexec: z.literal(0),
+      normalization: z.literal(
+        "root_empty_array_then_zero_based_full_call_tree_child_indices"
+      ),
+    }),
+  ]),
+  pathSemantics: z.literal("full_call_tree_child_indices"),
   invocationId: z.string().max(512).regex(VOTER_INVOCATION_ID_PATTERN),
   transactionHash: zNonZeroHash,
-  voterCallTraceAddress: z.array(zSafeUint).min(1).max(64),
-  votingCallTraceAddress: z.array(zSafeUint).min(2).max(65),
-  voterCallDepth: zPositiveSafeUint.max(64),
+  voterCallTraceAddress: z.array(zSafeUint).max(64),
+  votingCallTraceAddress: z.array(zSafeUint).min(1).max(65),
+  voterCallDepth: zSafeUint.max(64),
   votingCallDepth: zPositiveSafeUint.max(65),
   voterSelector: z.enum(["0x69586e2e", "0xff855dde"]),
   voterCaller: zNonZeroAddress,
@@ -831,8 +1110,10 @@ const VotingTransitionOverrideSchema = z.strictObject({
       postStorageWord: zNonZeroHash,
     }),
     bytecode: z.strictObject({
-      evidenceKind: z.literal("archive_rpc"),
-      rpcMethod: z.literal("eth_getCode"),
+      evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+      rpcMethod: z.literal("eth_getCode").nullable(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+      fixtureProjectionSha256: zNonZeroHash.nullable(),
       hashMethod: z.literal("keccak256"),
       address: zNonZeroAddress,
       blockNumber: zUint,
@@ -849,7 +1130,7 @@ const VotingTransitionOverrideSchema = z.strictObject({
 
 const SimulationCompleteShape = {
   method: z.literal("revm_engine_injected_executor_frame_conditional_origin"),
-  engine: z.literal("revm@34"),
+  engine: z.literal("revm@34.0.0"),
   executorAddress: zNonZeroAddress,
   scriptHash: zNonZeroHash,
   blockNumber: zUint,
@@ -877,6 +1158,14 @@ const SimulationCompleteShape = {
     callValue: z.literal("0"),
     noCodeOverrides: z.literal(true),
     operatorCheckExecuted: z.literal(true),
+    executionInput: z.strictObject({
+      functionSignature: z.literal("execute(bytes)"),
+      calldata: zSimulationCalldata,
+      calldataSha256: zNonZeroHash,
+      derivation: z.literal(
+        "abi_encode_execute_bytes_from_exact_retained_script"
+      ),
+    }),
     executorImplementation: z.lazy(() => ExecutorImplementationSchema),
     harness: z.strictObject({
       name: z.literal("gov-apps-stats-revm-frame-injector"),
@@ -884,6 +1173,49 @@ const SimulationCompleteShape = {
       artifactSha256: zNonZeroHash,
     }),
     gasContext: z.strictObject({
+      chainId: zPositiveSafeUint,
+      chainSpec: MainnetChainSpecEvidenceSchema,
+      engineEvidence: RevmEngineEvidenceSchema,
+      blockTimestamp: zUnixSeconds,
+      runtimeSpecId: z.literal("OSAKA"),
+      runtimeSpecDerivation: z.literal(
+        "ethereum_mainnet_timestamp_schedule_v1"
+      ),
+      runtimeSpecActivationTimestamp: z.literal(1_764_798_551),
+      blobScheduleId: z.literal("BPO2"),
+      blobScheduleActivationTimestamp: z.literal(1_767_747_671),
+      blobBaseFeeUpdateFraction: z.literal("11684671"),
+      frameSemantics: z.literal(
+        "engine_injected_executor_child_frame_before_first_opcode_after_voting_gate"
+      ),
+      executorFrameDepth: z.literal(1),
+      omittedVotingParentDepth: z.literal(0),
+      targetCallDepth: z.literal(2),
+      callScheme: z.literal("CALL"),
+      injectionPoint: z.literal("before_executor_first_opcode"),
+      parentEip150GasDeductionApplied: z.literal(false),
+      outerTransactionValidation: z.literal("bypassed"),
+      osakaTransactionGasLimitCap: z.literal("16777216"),
+      gasScenario: z.literal("non_transactional_gas_overapproximation"),
+      resultScope: z.literal(
+        "recorded_injected_frame_script_behavior_not_future_execution_feasibility"
+      ),
+      parentEip150Forwarding: z.literal("not_modeled"),
+      beneficiary: zAddress,
+      difficulty: z.literal("0"),
+      prevRandao: zHash,
+      excessBlobGas: zUint,
+      blobBaseFeeWei: zPositiveUint,
+      blobBaseFeeDerivation: z.literal(
+        "revm_context_interface_14_fake_exponential"
+      ),
+      coinbaseWarm: z.literal(true),
+      warmSet: z.strictObject({
+        stage: z.literal("immediately_before_executor_first_opcode"),
+        warmAddresses: z.array(zAddress).min(18).max(22),
+        precompileAddresses: z.array(zAddress).length(18),
+        warmStorageKeys: z.tuple([]),
+      }),
       derivationPolicy: z.literal(
         "min_propose_block_gas_limit_and_30000000"
       ),
@@ -892,16 +1224,25 @@ const SimulationCompleteShape = {
       executorFrameInitialGas: zPositiveU64,
       effectiveGasPriceWei: zUint,
       blockHeader: z.strictObject({
-        evidenceKind: z.literal("archive_rpc"),
-        rpcMethod: z.literal("eth_getBlockByHash"),
+        evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+        rpcMethod: z.literal("eth_getBlockByHash").nullable(),
+        fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+        fixtureProjectionSha256: zNonZeroHash.nullable(),
         blockNumber: zUint,
         blockHash: zNonZeroHash,
+        timestamp: zUnixSeconds,
         gasLimit: zPositiveU64,
         baseFeePerGasWei: zPositiveU64,
+        beneficiary: zAddress,
+        difficulty: z.literal("0"),
+        prevRandao: zHash,
+        excessBlobGas: zUint,
       }),
       proposeReceipt: z.strictObject({
-        evidenceKind: z.literal("archive_rpc"),
-        rpcMethod: z.literal("eth_getTransactionReceipt"),
+        evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+        rpcMethod: z.literal("eth_getTransactionReceipt").nullable(),
+        fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+        fixtureProjectionSha256: zNonZeroHash.nullable(),
         transactionHash: zNonZeroHash,
         transactionSender: zNonZeroAddress,
         blockNumber: zUint,
@@ -912,7 +1253,7 @@ const SimulationCompleteShape = {
       transactionEnvelope: z.literal("synthetic_legacy_no_blobs"),
       accessList: z.tuple([]),
       initialWarmSetPolicy: z.literal(
-        "cancun_frame_entry_origin_voting_executor_and_precompiles_no_storage"
+        "osaka_frame_entry_origin_voting_executor_coinbase_precompiles_0x01_through_0x11_and_0x0100_no_storage"
       ),
       contextInputsSha256: zNonZeroHash,
     }),
@@ -1027,23 +1368,45 @@ const VoterImplementationSchema = z.discriminatedUnion("state", [
     address: zNonZeroAddress,
     source: VerifiedSourceSchema,
     sourceSha256: z.literal(PINNED_VOTER_SOURCE_SHA256),
+    sourceIntegrity: PinnedVoterSourceIntegritySchema,
     compiler: z.literal("vyper@0.4.2"),
+    compilerDistribution: PinnedCompilerDistributionSchema,
     optimization: z.literal("gas"),
     evmVersion: z.literal("cancun"),
+    buildArtifact: PinnedVoterBuildArtifactSchema,
+    runtimeTemplate: PinnedVoterRuntimeTemplateSchema,
     immutableGenesisTimestamp: zUnixSeconds,
-    compiledRuntimeBytecodeHash: zNonZeroHash,
+    compiledRuntimeBytecodeHash: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
+    ),
     bytecode: z.strictObject({
-      evidenceKind: z.literal("archive_rpc_and_reproducible_build"),
-      rpcMethod: z.literal("eth_getCode"),
+      evidenceKind: z.enum([
+        "archive_rpc_and_reproducible_build",
+        "committed_synthetic_fixture_and_reproducible_build",
+      ]),
+      rpcMethod: z.literal("eth_getCode").nullable(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+      fixtureProjectionSha256: zNonZeroHash.nullable(),
       hashMethod: z.literal("keccak256"),
       address: zNonZeroAddress,
       blockNumber: zUint,
       blockHash: zNonZeroHash,
-      codeByteLength: zPositiveSafeUint,
-      deployedBytecodeHash: zNonZeroHash,
-      buildArtifactSha256: zNonZeroHash,
+      codeByteLength: z.literal(PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH),
+      deployedBytecodeHash: z.literal(
+        PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
+      ),
+      deployedRuntimeSha256: z.literal(
+        PINNED_VOTER_DEPLOYED_RUNTIME_SHA256
+      ),
+      buildArtifactSha256: z.literal(
+        PINNED_VOTER_CREATION_BYTECODE_STDOUT_SHA256
+      ),
       buildEvidenceSha256: zNonZeroHash,
       constructorGenesisTimestamp: zUnixSeconds,
+      immutableGenesisWord: zNonZeroHash,
+      runtimeDerivation: z.literal(
+        "compiled_runtime_template_append_abi_uint256_genesis"
+      ),
     }),
     classificationSemantics: z.literal(
       "pinned_voter_trace_required_for_human_and_aggregate_labels"
@@ -1055,9 +1418,13 @@ const VoterImplementationSchema = z.discriminatedUnion("state", [
     address: z.literal(ZERO_ADDRESS),
     source: z.null(),
     sourceSha256: z.null(),
+    sourceIntegrity: z.null(),
     compiler: z.null(),
+    compilerDistribution: z.null(),
     optimization: z.null(),
     evmVersion: z.null(),
+    buildArtifact: z.null(),
+    runtimeTemplate: z.null(),
     immutableGenesisTimestamp: z.null(),
     compiledRuntimeBytecodeHash: z.null(),
     bytecode: z.null(),
@@ -1069,9 +1436,13 @@ const VoterImplementationSchema = z.discriminatedUnion("state", [
     address: zNonZeroAddress,
     source: z.null(),
     sourceSha256: z.null(),
+    sourceIntegrity: z.null(),
     compiler: z.null(),
+    compilerDistribution: z.null(),
     optimization: z.null(),
     evmVersion: z.null(),
+    buildArtifact: z.null(),
+    runtimeTemplate: z.null(),
     immutableGenesisTimestamp: z.null(),
     compiledRuntimeBytecodeHash: z.null(),
     bytecode: z.null(),
@@ -1086,13 +1457,13 @@ const ExecutorImplementationSchema = z.discriminatedUnion("state", [
     address: zNonZeroAddress,
     source: VerifiedSourceSchema,
     sourceSha256: z.literal(PINNED_EXECUTOR_SOURCE_SHA256),
+    sourceIntegrity: PinnedExecutorSourceIntegritySchema,
     compiler: z.literal("vyper@0.4.2"),
-    compilerIntegritySha256: z.literal(
-      PINNED_EXECUTOR_COMPILER_INTEGRITY_SHA256
-    ),
+    compilerDistribution: PinnedCompilerDistributionSchema,
     optimization: z.literal("gas"),
     evmVersion: z.literal("cancun"),
     experimentalCodegen: z.literal(false),
+    buildArtifact: PinnedExecutorBuildArtifactSchema,
     compiledRuntimeByteLength: z.literal(
       PINNED_EXECUTOR_RUNTIME_BYTE_LENGTH
     ),
@@ -1103,8 +1474,13 @@ const ExecutorImplementationSchema = z.discriminatedUnion("state", [
       PINNED_EXECUTOR_RUNTIME_SHA256
     ),
     bytecode: z.strictObject({
-      evidenceKind: z.literal("archive_rpc_and_reproducible_build"),
-      rpcMethod: z.literal("eth_getCode"),
+      evidenceKind: z.enum([
+        "archive_rpc_and_reproducible_build",
+        "committed_synthetic_fixture_and_reproducible_build",
+      ]),
+      rpcMethod: z.literal("eth_getCode").nullable(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+      fixtureProjectionSha256: zNonZeroHash.nullable(),
       hashMethod: z.literal("keccak256"),
       address: zNonZeroAddress,
       blockNumber: zUint,
@@ -1124,11 +1500,13 @@ const ExecutorImplementationSchema = z.discriminatedUnion("state", [
     address: z.literal(ZERO_ADDRESS),
     source: z.null(),
     sourceSha256: z.null(),
+    sourceIntegrity: z.null(),
     compiler: z.null(),
-    compilerIntegritySha256: z.null(),
+    compilerDistribution: z.null(),
     optimization: z.null(),
     evmVersion: z.null(),
     experimentalCodegen: z.null(),
+    buildArtifact: z.null(),
     compiledRuntimeByteLength: z.null(),
     compiledRuntimeBytecodeHash: z.null(),
     compiledRuntimeArtifactSha256: z.null(),
@@ -1141,11 +1519,13 @@ const ExecutorImplementationSchema = z.discriminatedUnion("state", [
     address: zNonZeroAddress,
     source: z.null(),
     sourceSha256: z.null(),
+    sourceIntegrity: z.null(),
     compiler: z.null(),
-    compilerIntegritySha256: z.null(),
+    compilerDistribution: z.null(),
     optimization: z.null(),
     evmVersion: z.null(),
     experimentalCodegen: z.null(),
+    buildArtifact: z.null(),
     compiledRuntimeByteLength: z.null(),
     compiledRuntimeBytecodeHash: z.null(),
     compiledRuntimeArtifactSha256: z.null(),
@@ -1189,9 +1569,52 @@ const HistoricalConfigurationValuesShape = {
   guardianAddress: zNonZeroAddress,
 };
 
+const ConfigurationSetterCallSchema = z.strictObject({
+  target: zNonZeroAddress,
+  sourceContract: z.enum(["Voting", "Voter", "Executor"]),
+  traceAddress: z.array(zSafeUint).max(64),
+  selector: zSelector,
+  calldata: zBytes,
+  result: z.literal("success"),
+});
+
+const ConfigurationBoundarySchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("deployment_start_sentinel"),
+    positionSemantics: z.literal(
+      "start_of_block_before_transaction_zero_log_zero"
+    ),
+    transactionHash: z.null(),
+    rpcMethod: z.null(),
+    tracer: z.null(),
+    transactionIndex: z.null(),
+    firstEffectiveLogIndex: z.null(),
+    effectiveness: z.literal(
+      "effective_for_all_positions_at_or_after_start_block"
+    ),
+    setterCalls: z.tuple([]),
+  }),
+  z.strictObject({
+    kind: z.literal("setter_trace_observation"),
+    positionSemantics: z.literal(
+      "first_lifecycle_log_position_after_successful_setter_calls"
+    ),
+    transactionHash: zNonZeroHash,
+    rpcMethod: z.literal("debug_traceTransaction"),
+    tracer: z.literal("callTracer"),
+    transactionIndex: zSafeUint,
+    firstEffectiveLogIndex: zSafeUint,
+    effectiveness: z.literal(
+      "after_successful_setter_calls_before_first_effective_log"
+    ),
+    setterCalls: z.array(ConfigurationSetterCallSchema).min(1).max(64),
+  }),
+]);
+
 const HistoricalConfigurationSchema = z.strictObject({
   ...HistoricalConfigurationValuesShape,
   effectiveAt: EventPositionSchema,
+  boundary: ConfigurationBoundarySchema,
   source: VerifiedSourceSchema,
 });
 
@@ -1370,6 +1793,12 @@ const ReorgSchema = z.discriminatedUnion("state", [
     commonAncestor: NullableBlockTimeSchema,
     replacedSnapshotId: z.string().regex(SNAPSHOT_ID_PATTERN),
   }),
+  z.strictObject({
+    state: z.literal("recovered_before_first_stable_snapshot"),
+    replayFromBlock: zUint,
+    commonAncestor: NullableBlockTimeSchema,
+    replacedSnapshotId: z.null(),
+  }),
 ]);
 
 const PublicationSchema = z.strictObject({
@@ -1408,6 +1837,16 @@ const PublicationSchema = z.strictObject({
     }),
     z.strictObject({
       state: z.literal("succeeded_after_retry"),
+      attempt: zPositiveSafeUint.min(2).max(DAO_FEED_MAX_RETRY_ATTEMPTS),
+      maxAttempts: z.literal(DAO_FEED_MAX_RETRY_ATTEMPTS),
+      lastAttemptAt: zIsoUtc,
+      policy: z.literal("fixed_120_seconds"),
+      lastFailure: PublicationFailureSchema,
+      nextRetryAt: z.null(),
+      backoffSeconds: z.literal(DAO_FEED_RETRY_BACKOFF_SECONDS),
+    }),
+    z.strictObject({
+      state: z.literal("succeeded_after_bootstrap_retry"),
       attempt: zPositiveSafeUint.min(2).max(DAO_FEED_MAX_RETRY_ATTEMPTS),
       maxAttempts: z.literal(DAO_FEED_MAX_RETRY_ATTEMPTS),
       lastAttemptAt: zIsoUtc,
@@ -1577,16 +2016,121 @@ export function createDaoFeedEventId(
   return `${chainId}:${votingAddress.toLowerCase()}:${log.blockHash.toLowerCase()}:${log.transactionIndex}:${log.logIndex}`;
 }
 
+export function deriveDaoVoterTraceProjectionSha256(input: {
+  transactionHash: Hex;
+  voterCallTraceAddress: readonly number[];
+  voterSelector: "0x69586e2e" | "0xff855dde";
+  voterCaller: Address;
+  votingTarget: Address;
+  proposalId: string;
+  ybcMembership: boolean;
+  aggregatePathExecuted: boolean;
+  aggregatorResult:
+    | { state: "skipped_non_member"; weight: null }
+    | { state: "returned_zero"; weight: "0" }
+    | { state: "returned_positive"; weight: string };
+}): Hex {
+  return sha256(
+    new TextEncoder().encode(
+      JSON.stringify({
+        schema: "yearn.dao.synthetic-geth-call-tracer-projection.v1",
+        rpcMethod: "debug_traceTransaction",
+        tracer: "callTracer",
+        tracerConfig: { onlyTopCall: false, withLog: true },
+        reexec: 0,
+        normalization:
+          "root_empty_array_then_zero_based_full_call_tree_child_indices",
+        transactionHash: input.transactionHash,
+        voterCallTraceAddress: input.voterCallTraceAddress,
+        voterSelector: input.voterSelector,
+        voterCaller: input.voterCaller,
+        votingTarget: input.votingTarget,
+        proposalId: input.proposalId,
+        ybcMembership: input.ybcMembership,
+        aggregatePathExecuted: input.aggregatePathExecuted,
+        aggregatorResult: input.aggregatorResult,
+      })
+    )
+  );
+}
+
+export function deriveDaoSyntheticEvidenceSha256(
+  evidenceType: string,
+  payload: unknown
+): Hex {
+  return sha256(
+    new TextEncoder().encode(
+      JSON.stringify({
+        schema: "yearn.dao.committed-synthetic-evidence.v1",
+        fixturePath: "tests/fixtures/dao-feed-v1.ts",
+        evidenceType,
+        payload,
+      })
+    )
+  );
+}
+
+export function deriveDaoExecutorExecuteCalldata(script: Hex): Hex {
+  return encodeFunctionData({
+    abi: [
+      {
+        type: "function",
+        name: "execute",
+        stateMutability: "nonpayable",
+        inputs: [{ name: "script", type: "bytes" }],
+        outputs: [],
+      },
+    ] as const,
+    functionName: "execute",
+    args: [script],
+  });
+}
+
+function encodeUint256Word(value: bigint): Hex {
+  if (value < 0n || value > (1n << 256n) - 1n) {
+    throw new RangeError("Value is outside uint256.");
+  }
+  return `0x${value.toString(16).padStart(64, "0")}` as Hex;
+}
+
+function deriveExpectedOsakaWarmAddresses(input: {
+  transactionOrigin: Address;
+  votingAddress: Address;
+  executorAddress: Address;
+  beneficiary: Address;
+}): Address[] {
+  return [
+    input.transactionOrigin,
+    input.votingAddress,
+    input.executorAddress,
+    input.beneficiary,
+    ...OSAKA_PRECOMPILE_ADDRESSES,
+  ]
+    .map((address) => address.toLowerCase() as Address)
+    .filter((address, index, values) => values.indexOf(address) === index)
+    .sort();
+}
+
 export function deriveDaoSimulationContextInputsSha256(input: {
+  chainId: number;
   blockNumber: string;
   blockHash: Hex;
+  blockTimestamp: number;
   blockGasLimit: string;
   blockBaseFeePerGasWei: string;
+  blockBeneficiary: Address;
+  blockPrevRandao: Hex;
+  blockExcessBlobGas: string;
+  blobBaseFeeWei: string;
+  blockHeaderEvidenceKind: "archive_rpc" | "committed_synthetic_fixture";
+  blockHeaderFixtureProjectionSha256: Hex | null;
   proposeTransactionHash: Hex;
   proposeTransactionSender: Address;
   proposeReceiptBlockNumber: string;
   proposeReceiptBlockHash: Hex;
   proposeReceiptEffectiveGasPriceWei: string;
+  proposeReceiptEvidenceKind: "archive_rpc" | "committed_synthetic_fixture";
+  proposeReceiptFixtureProjectionSha256: Hex | null;
   transactionOrigin: Address;
   votingCaller: Address;
   executorAddress: Address;
@@ -1596,10 +2140,10 @@ export function deriveDaoSimulationContextInputsSha256(input: {
   harnessRevision: string;
   harnessArtifactSha256: Hex;
   scriptHash: Hex;
+  executeCalldataSha256: Hex;
   executorSourceRevision: string;
   executorSourcePath: string;
   executorSourceSha256: Hex;
-  executorCompilerIntegritySha256: Hex;
   executorRuntimeByteLength: number;
   executorRuntimeBytecodeHash: Hex;
   executorRuntimeArtifactSha256: Hex;
@@ -1608,21 +2152,78 @@ export function deriveDaoSimulationContextInputsSha256(input: {
   executorEvidenceBlockHash: Hex;
   executorEvidenceCodeByteLength: number;
   executorEvidenceDeployedBytecodeHash: Hex;
+  executorEvidenceKind:
+    | "archive_rpc_and_reproducible_build"
+    | "committed_synthetic_fixture_and_reproducible_build";
+  executorEvidenceFixtureProjectionSha256: Hex | null;
   executorFrameInitialGas: string;
   effectiveGasPriceWei: string;
+  overrideVotingAddress: Address;
+  overrideProposalId: string;
+  overrideResolvedStorageSlot: Hex;
+  overridePreStorageWord: Hex;
+  overridePostStorageWord: Hex;
+  overrideVotingCodeHash: Hex;
+  overrideVotingEvidenceKind: "archive_rpc" | "committed_synthetic_fixture";
+  overrideVotingFixtureProjectionSha256: Hex | null;
 }): Hex {
+  const warmAddresses = deriveExpectedOsakaWarmAddresses({
+    transactionOrigin: input.transactionOrigin,
+    votingAddress: input.votingCaller,
+    executorAddress: input.executorAddress,
+    beneficiary: input.blockBeneficiary,
+  });
   const canonicalInputs = JSON.stringify({
-    schema: "yearn.dao.simulation-context-inputs.v2",
+    schema: "yearn.dao.simulation-context-inputs.v3",
+    chainId: input.chainId,
     blockNumber: input.blockNumber,
     blockHash: input.blockHash,
+    blockTimestamp: input.blockTimestamp,
     blockGasLimit: input.blockGasLimit,
     blockBaseFeePerGasWei: input.blockBaseFeePerGasWei,
-    blockHeaderEvidenceKind: "archive_rpc",
-    blockHeaderRpcMethod: "eth_getBlockByHash",
+    blockBeneficiary: input.blockBeneficiary,
+    blockDifficulty: "0",
+    blockPrevRandao: input.blockPrevRandao,
+    blockExcessBlobGas: input.blockExcessBlobGas,
+    blobBaseFeeWei: input.blobBaseFeeWei,
+    blobBaseFeeDerivation: "revm_context_interface_14_fake_exponential",
+    blobScheduleId: "BPO2",
+    blobBaseFeeUpdateFraction:
+      MAINNET_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION.toString(),
+    blockHeaderEvidenceKind: input.blockHeaderEvidenceKind,
+    blockHeaderRpcMethod:
+      input.blockHeaderEvidenceKind === "archive_rpc"
+        ? "eth_getBlockByHash"
+        : null,
+    blockHeaderFixtureProjectionSha256:
+      input.blockHeaderFixtureProjectionSha256,
+    chainSpecRepository: PINNED_MAINNET_CHAIN_SPEC.repository,
+    chainSpecRevision: PINNED_MAINNET_CHAIN_SPEC.revision,
+    chainSpecPath: PINNED_MAINNET_CHAIN_SPEC.sourcePath,
+    chainSpecSha256: PINNED_MAINNET_CHAIN_SPEC_SHA256,
+    runtimeSpecId: "OSAKA",
+    runtimeSpecActivationTimestamp: MAINNET_OSAKA_ACTIVATION_TIMESTAMP,
+    runtimeSpecDerivation: "ethereum_mainnet_timestamp_schedule_v1",
+    blobScheduleActivationTimestamp: MAINNET_BPO2_ACTIVATION_TIMESTAMP,
+    targetBlobsPerBlock: 14,
+    maxBlobsPerBlock: 21,
+    engine: "revm@34.0.0",
+    engineExplicitSpecSelection: "SpecId::OSAKA",
+    producerCargoLockSha256: PINNED_REVM_CARGO_LOCK_SHA256,
+    revmCrateSha256: PINNED_REVM_CRATE_SHA256,
+    implicitPragueBlobFractionRejected: "5007716",
+    bpo2FractionOverride: "11684671",
+    blobEnvironmentInitialization:
+      "cfg_blob_base_fee_update_fraction_then_block_set_blob_excess_gas_and_price",
     proposeTransactionHash: input.proposeTransactionHash,
     proposeTransactionSender: input.proposeTransactionSender,
-    proposeReceiptEvidenceKind: "archive_rpc",
-    proposeReceiptRpcMethod: "eth_getTransactionReceipt",
+    proposeReceiptEvidenceKind: input.proposeReceiptEvidenceKind,
+    proposeReceiptRpcMethod:
+      input.proposeReceiptEvidenceKind === "archive_rpc"
+        ? "eth_getTransactionReceipt"
+        : null,
+    proposeReceiptFixtureProjectionSha256:
+      input.proposeReceiptFixtureProjectionSha256,
     proposeReceiptStatus: "success",
     proposeReceiptBlockNumber: input.proposeReceiptBlockNumber,
     proposeReceiptBlockHash: input.proposeReceiptBlockHash,
@@ -1641,21 +2242,39 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     harnessRevision: input.harnessRevision,
     harnessArtifactSha256: input.harnessArtifactSha256,
     scriptHash: input.scriptHash,
+    executeFunctionSignature: "execute(bytes)",
+    executeCalldataSha256: input.executeCalldataSha256,
+    executeCalldataDerivation:
+      "abi_encode_execute_bytes_from_exact_retained_script",
     executorSourceRepository: "yearn/stYFI",
     executorSourceRevision: input.executorSourceRevision,
     executorSourcePath: input.executorSourcePath,
     executorSourceSha256: input.executorSourceSha256,
     executorCompiler: "vyper@0.4.2",
-    executorCompilerIntegritySha256:
-      input.executorCompilerIntegritySha256,
+    executorSourceIntegritySha256:
+      PINNED_EXECUTOR_SOURCE_INTEGRITY_SHA256,
+    compilerDistributionUri: PINNED_VYPER_COMPILER_ARTIFACT_URI,
+    compilerDistributionByteLength:
+      PINNED_VYPER_COMPILER_ARTIFACT_BYTE_LENGTH,
+    compilerDistributionSha256: PINNED_VYPER_COMPILER_ARTIFACT_SHA256,
     executorOptimization: "gas",
     executorEvmVersion: "cancun",
     executorExperimentalCodegen: false,
     executorRuntimeByteLength: input.executorRuntimeByteLength,
     executorRuntimeBytecodeHash: input.executorRuntimeBytecodeHash,
     executorRuntimeArtifactSha256: input.executorRuntimeArtifactSha256,
-    executorEvidenceKind: "archive_rpc_and_reproducible_build",
-    executorEvidenceRpcMethod: "eth_getCode",
+    executorCreationCommand: PINNED_EXECUTOR_CREATION_BYTECODE_COMMAND,
+    executorRuntimeCommand: PINNED_EXECUTOR_RUNTIME_COMMAND,
+    executorCreationStdoutSha256:
+      PINNED_EXECUTOR_CREATION_STDOUT_SHA256,
+    executorCreationRawSha256: PINNED_EXECUTOR_CREATION_SHA256,
+    executorEvidenceKind: input.executorEvidenceKind,
+    executorEvidenceRpcMethod:
+      input.executorEvidenceKind === "archive_rpc_and_reproducible_build"
+        ? "eth_getCode"
+        : null,
+    executorEvidenceFixtureProjectionSha256:
+      input.executorEvidenceFixtureProjectionSha256,
     executorEvidenceAddress: input.executorEvidenceAddress,
     executorEvidenceBlockNumber: input.executorEvidenceBlockNumber,
     executorEvidenceBlockHash: input.executorEvidenceBlockHash,
@@ -1669,8 +2288,36 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     effectiveGasPriceWei: input.effectiveGasPriceWei,
     transactionEnvelope: "synthetic_legacy_no_blobs",
     accessList: [],
+    frameSemantics:
+      "engine_injected_executor_child_frame_before_first_opcode_after_voting_gate",
+    executorFrameDepth: 1,
+    omittedVotingParentDepth: 0,
+    scriptTargetFrameDepth: 2,
+    callScheme: "CALL",
+    injectionPoint: "before_executor_first_opcode",
+    parentEip150GasDeductionApplied: false,
+    outerTransactionValidation: "bypassed",
+    osakaTransactionGasLimitCap: "16777216",
+    gasScenario: "non_transactional_gas_overapproximation",
+    resultScope:
+      "recorded_injected_frame_script_behavior_not_future_execution_feasibility",
+    parentEip150Forwarding: "not_modeled",
+    coinbaseWarm: true,
+    warmAddresses,
+    precompileAddresses: [...OSAKA_PRECOMPILE_ADDRESSES],
+    warmStorageKeys: [],
     initialWarmSetPolicy:
-      "cancun_frame_entry_origin_voting_executor_and_precompiles_no_storage",
+      "osaka_frame_entry_origin_voting_executor_coinbase_precompiles_0x01_through_0x11_and_0x0100_no_storage",
+    stateOverrideKind: "voting_proposal_executed_flag",
+    overrideVotingAddress: input.overrideVotingAddress,
+    overrideProposalId: input.overrideProposalId,
+    overrideResolvedStorageSlot: input.overrideResolvedStorageSlot,
+    overridePreStorageWord: input.overridePreStorageWord,
+    overridePostStorageWord: input.overridePostStorageWord,
+    overrideVotingCodeHash: input.overrideVotingCodeHash,
+    overrideVotingEvidenceKind: input.overrideVotingEvidenceKind,
+    overrideVotingFixtureProjectionSha256:
+      input.overrideVotingFixtureProjectionSha256,
   });
   return sha256(new TextEncoder().encode(canonicalInputs));
 }
@@ -1681,14 +2328,21 @@ export function deriveDaoVoterBuildEvidenceSha256(input: {
   codeByteLength: number;
   deployedBytecodeHash: Hex;
   buildArtifactSha256: Hex;
+  deployedRuntimeSha256?: Hex;
+  immutableGenesisWord?: Hex;
 }): Hex {
   const canonicalEvidence = JSON.stringify({
-    schema: "yearn.dao.voter-build-evidence.v1",
+    schema: "yearn.dao.voter-build-evidence.v2",
     sourceRepository: "yearn/stYFI",
     sourceRevision: DAO_PINNED_VOTING_REVISION,
     sourcePath: PINNED_VOTER_SOURCE_PATH,
     sourceSha256: PINNED_VOTER_SOURCE_SHA256,
+    sourceIntegritySha256: PINNED_VOTER_SOURCE_INTEGRITY_SHA256,
     compiler: "vyper@0.4.2",
+    compilerDistributionUri: PINNED_VYPER_COMPILER_ARTIFACT_URI,
+    compilerDistributionByteLength:
+      PINNED_VYPER_COMPILER_ARTIFACT_BYTE_LENGTH,
+    compilerDistributionSha256: PINNED_VYPER_COMPILER_ARTIFACT_SHA256,
     optimization: "gas",
     evmVersion: "cancun",
     constructorGenesisTimestamp: input.constructorGenesisTimestamp,
@@ -1696,6 +2350,27 @@ export function deriveDaoVoterBuildEvidenceSha256(input: {
     codeByteLength: input.codeByteLength,
     deployedBytecodeHash: input.deployedBytecodeHash,
     buildArtifactSha256: input.buildArtifactSha256,
+    creationCommand: PINNED_VOTER_CREATION_BYTECODE_COMMAND,
+    creationStdoutByteLength: PINNED_VOTER_CREATION_STDOUT_BYTE_LENGTH,
+    creationRawByteLength: PINNED_VOTER_CREATION_BYTE_LENGTH,
+    creationRawSha256: PINNED_VOTER_CREATION_SHA256,
+    runtimeTemplateCommand: PINNED_VOTER_RUNTIME_TEMPLATE_COMMAND,
+    runtimeTemplateStdoutByteLength:
+      PINNED_VOTER_RUNTIME_STDOUT_BYTE_LENGTH,
+    runtimeTemplateStdoutSha256: PINNED_VOTER_RUNTIME_STDOUT_SHA256,
+    runtimeTemplateByteLength: PINNED_VOTER_RUNTIME_TEMPLATE_BYTE_LENGTH,
+    runtimeTemplateSha256: PINNED_VOTER_RUNTIME_TEMPLATE_SHA256,
+    runtimeTemplateKeccak256: PINNED_VOTER_RUNTIME_TEMPLATE_KECCAK256,
+    immutableLayoutCommand: PINNED_VOTER_LAYOUT_COMMAND,
+    immutableLayoutStdoutByteLength:
+      PINNED_VOTER_LAYOUT_STDOUT_BYTE_LENGTH,
+    immutableLayoutStdoutSha256: PINNED_VOTER_LAYOUT_STDOUT_SHA256,
+    immutableGenesisWord:
+      input.immutableGenesisWord ??
+      encodeUint256Word(BigInt(input.constructorGenesisTimestamp)),
+    deployedRuntimeSha256:
+      input.deployedRuntimeSha256 ?? PINNED_VOTER_DEPLOYED_RUNTIME_SHA256,
+    deployedRuntimeByteLength: PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH,
   });
   return sha256(new TextEncoder().encode(canonicalEvidence));
 }
@@ -2147,7 +2822,10 @@ function validatePublication(
     issue(context, ["publication", "previousSnapshotId"], "A snapshot cannot replace itself.");
   }
 
-  if (publication.retry.state === "succeeded_after_retry") {
+  if (
+    publication.retry.state === "succeeded_after_retry" ||
+    publication.retry.state === "succeeded_after_bootstrap_retry"
+  ) {
     const failedAt = publication.retry.lastFailure.observedAt;
     const attemptedAt = Date.parse(publication.retry.lastAttemptAt);
     const expectedAttemptedAt =
@@ -2167,6 +2845,16 @@ function validatePublication(
         "A preceding publication failure must be retryable before a successful retry occurs at publishedAt after the exact bounded backoff."
       );
     }
+    if (
+      (publication.retry.state === "succeeded_after_bootstrap_retry") !==
+      (publication.previousSnapshotId === null)
+    ) {
+      issue(
+        context,
+        ["publication", "retry", "state"],
+        "Bootstrap retry is used exactly when no prior stable snapshot identity exists; ordinary retry requires the prior identity."
+      );
+    }
   } else if (publication.retry.lastAttemptAt !== publication.publishedAt) {
     issue(
       context,
@@ -2182,9 +2870,16 @@ function validatePublication(
   } else {
     const ancestor = toUint(publication.reorg.commonAncestor.number);
     const replay = toUint(publication.reorg.replayFromBlock);
+    const bootstrapRecovery =
+      publication.reorg.state ===
+      "recovered_before_first_stable_snapshot";
     if (
-      publication.previousSnapshotId === null ||
-      publication.reorg.replacedSnapshotId !== publication.previousSnapshotId
+      bootstrapRecovery
+        ? publication.previousSnapshotId !== null ||
+          publication.reorg.replacedSnapshotId !== null
+        : publication.previousSnapshotId === null ||
+          publication.reorg.replacedSnapshotId !==
+            publication.previousSnapshotId
     ) {
       issue(context, ["publication", "reorg"], "A recovered reorg must identify the replaced last-good snapshot.");
     }
@@ -2241,6 +2936,17 @@ function validateContracts(
     if (deployment === null || start === null || start < deployment) {
       issue(context, [...path, "startBlock"], "The producer start block cannot precede contract deployment.");
     }
+    if (
+      contract.deploymentBlock.timestamp !== null &&
+      contract.deploymentBlock.timestamp <
+        contract.genesisTimestamp + contract.epochLengthSeconds
+    ) {
+      issue(
+        context,
+        [...path, "deploymentBlock", "timestamp"],
+        "Known Voting deployment time must satisfy the pinned constructor precondition deployment >= genesis + one full epoch."
+      );
+    }
     let previousConfiguration: z.infer<typeof HistoricalConfigurationSchema> | null = null;
     const configurationIds = new Set<string>();
     for (const [configurationIndex, configuration] of contract.configurationHistory.entries()) {
@@ -2265,6 +2971,44 @@ function validateContracts(
         context,
         configurationPath
       );
+      if (configurationIndex === 0) {
+        if (
+          configuration.boundary.kind !== "deployment_start_sentinel" ||
+          configuration.effectiveAt.transactionIndex !== 0 ||
+          configuration.effectiveAt.logIndex !== 0
+        ) {
+          issue(
+            context,
+            [...configurationPath, "boundary"],
+            "The first configuration must use the exact producer-start sentinel at transaction zero/log zero; it is not a synthetic setter log."
+          );
+        }
+      } else if (configuration.boundary.kind !== "setter_trace_observation") {
+        issue(
+          context,
+          [...configurationPath, "boundary"],
+          "Every later configuration must bind exact successful setter-call trace evidence and its first effective lifecycle-log position."
+        );
+      } else {
+        const boundary = configuration.boundary;
+        if (
+          boundary.transactionIndex !==
+            configuration.effectiveAt.transactionIndex ||
+          boundary.firstEffectiveLogIndex !==
+            configuration.effectiveAt.logIndex ||
+          boundary.setterCalls.some(
+            (call) =>
+              !call.calldata.startsWith(call.selector) ||
+              call.traceAddress.length === 0
+          )
+        ) {
+          issue(
+            context,
+            [...configurationPath, "boundary"],
+            "Setter trace evidence must bind the effective transaction, exact first lifecycle log, non-root call path, and selector-prefixed calldata; values become effective after those successful calls."
+          );
+        }
+      }
       if (
         previousConfiguration !== null &&
         ((previousConfiguration.executorState === "configured" &&
@@ -3071,6 +3815,9 @@ function reproduceInvalidContentFailureCode(
   }
   const structural = ProposalContentValueSchema.safeParse(decoded);
   if (!structural.success) return "CONTENT_SCHEMA_INVALID";
+  if (!isCanonicalIsoUtc(structural.data.createdAt)) {
+    return "CONTENT_SCHEMA_INVALID";
+  }
   let parsed: ReturnType<typeof parseDaoProposalContent>;
   try {
     parsed = parseDaoProposalContent(
@@ -3295,11 +4042,20 @@ function validatePinnedVoterInvocations(
   type Vote = Extract<FeedEvent, { type: "vote" }>;
   const groups = new Map<string, Array<{ event: Vote; index: number }>>();
   const completePinnedHumanCallers = new Set<string>();
+  const opaquePositivePinnedVotes: Array<{ event: Vote; index: number }> = [];
   for (const [index, candidate] of proposal.events.entries()) {
+    if (candidate.type !== "vote") {
+      continue;
+    }
     if (
-      candidate.type !== "vote" ||
-      candidate.data.classification.method !== "pinned_voter_call_trace"
+      candidate.data.classification.method ===
+        "pinned_voter_trace_unavailable" &&
+      (toUint(candidate.data.weight) ?? 0n) > 0n
     ) {
+      opaquePositivePinnedVotes.push({ event: candidate, index });
+      continue;
+    }
+    if (candidate.data.classification.method !== "pinned_voter_call_trace") {
       continue;
     }
     const invocationId = candidate.data.classification.trace.invocationId;
@@ -3308,12 +4064,23 @@ function validatePinnedVoterInvocations(
     groups.set(invocationId, group);
   }
 
-  for (const group of groups.values()) {
+  const cumulativeAggregates = new Map<
+    string,
+    { total: bigint; scaledYea: bigint }
+  >();
+  const orderedGroups = [...groups.values()].sort((left, right) =>
+    comparePositions(left[0]!.event.log, right[0]!.event.log)
+  );
+  for (const group of orderedGroups) {
     const first = group[0]!;
     const classification = first.event.data.classification;
     if (classification.method !== "pinned_voter_call_trace") continue;
     const trace = classification.trace;
-    const expectedInvocationId = `${proposal.ref.chainId}:${proposal.ref.votingAddress.toLowerCase()}:${trace.transactionHash.toLowerCase()}:${trace.voterCallTraceAddress.join(".")}`;
+    const normalizedVoterPath =
+      trace.voterCallTraceAddress.length === 0
+        ? "root"
+        : trace.voterCallTraceAddress.join(".");
+    const expectedInvocationId = `${proposal.ref.chainId}:${proposal.ref.votingAddress.toLowerCase()}:${trace.transactionHash.toLowerCase()}:${normalizedVoterPath}`;
     const expectedOrdinals =
       trace.aggregatorResult.state === "returned_positive"
         ? [0, 1, 2]
@@ -3359,8 +4126,30 @@ function validatePinnedVoterInvocations(
       const itemTrace = item.trace;
       const tracePath = itemTrace.votingCallTraceAddress.join(".");
       const hasVoterPrefix = itemTrace.voterCallTraceAddress.every(
-        (value, pathIndex) => itemTrace.votingCallTraceAddress[pathIndex] === value
+        (value, pathIndex) =>
+          itemTrace.votingCallTraceAddress[pathIndex] === value
       );
+      const expectedChildIndex =
+        itemTrace.votingCallOrdinal === 0
+          ? 1
+          : itemTrace.votingCallOrdinal === 1
+            ? 4
+            : 5;
+      const expectedVotingPath = [
+        ...itemTrace.voterCallTraceAddress,
+        expectedChildIndex,
+      ];
+      const expectedTraceProjection = deriveDaoVoterTraceProjectionSha256({
+        transactionHash: itemTrace.transactionHash as Hex,
+        voterCallTraceAddress: itemTrace.voterCallTraceAddress,
+        voterSelector: itemTrace.voterSelector,
+        voterCaller: itemTrace.voterCaller as Address,
+        votingTarget: itemTrace.votingTarget as Address,
+        proposalId: itemTrace.proposalId,
+        ybcMembership: itemTrace.ybcMembership,
+        aggregatePathExecuted: itemTrace.aggregatePathExecuted,
+        aggregatorResult: itemTrace.aggregatorResult,
+      });
       if (
         itemTrace.invocationId !== trace.invocationId ||
         itemTrace.transactionHash !== trace.transactionHash ||
@@ -3372,12 +4161,23 @@ function validatePinnedVoterInvocations(
         itemTrace.voterSelector !== trace.voterSelector ||
         itemTrace.ybcMembership !== trace.ybcMembership ||
         itemTrace.aggregatePathExecuted !== trace.aggregatePathExecuted ||
+        itemTrace.pathSemantics !== "full_call_tree_child_indices" ||
+        JSON.stringify(itemTrace.traceEvidence) !==
+          JSON.stringify(trace.traceEvidence) ||
         JSON.stringify(itemTrace.aggregatorResult) !==
           JSON.stringify(trace.aggregatorResult) ||
         itemTrace.voterCallDepth !== itemTrace.voterCallTraceAddress.length ||
         itemTrace.votingCallDepth !== itemTrace.votingCallTraceAddress.length ||
         itemTrace.votingCallDepth !== itemTrace.voterCallDepth + 1 ||
         !hasVoterPrefix ||
+        !numberArraysEqual(
+          itemTrace.votingCallTraceAddress,
+          expectedVotingPath
+        ) ||
+        (itemTrace.traceEvidence.sourceKind ===
+          "committed_synthetic_fixture" &&
+          itemTrace.traceEvidence.fixtureProjectionSha256 !==
+            expectedTraceProjection) ||
         seenTracePaths.has(tracePath) ||
         (previousPosition !== null &&
           comparePositions(previousPosition, event.log) >= 0)
@@ -3385,7 +4185,7 @@ function validatePinnedVoterInvocations(
         issue(
           context,
           [...proposalPath, "events", index, "data", "classification", "trace"],
-          "Pinned Voter invocation events must share one unambiguous parent trace, use unique child frame paths, and preserve strict emitted-log order."
+          "Pinned Voter invocation events must share one reproducible, unambiguous parent trace and use unique child frame paths [1]/[4]/[5] in strict emitted-log order."
         );
       }
       seenTracePaths.add(tracePath);
@@ -3436,6 +4236,28 @@ function validatePinnedVoterInvocations(
           "A complete pinned Voter caller has exactly one public submission per proposal; ordinal-zero caller identity must be unique for that proposal."
         );
       }
+      if (
+        opaquePositivePinnedVotes.some(
+          ({ event }) =>
+            event.actor.address !== null &&
+            sameAddress(event.actor.address, trace.voterCaller) &&
+            comparePositions(event.log, human.event.log) < 0
+        )
+      ) {
+        issue(
+          context,
+          [
+            ...proposalPath,
+            "events",
+            first.index,
+            "data",
+            "classification",
+            "trace",
+            "voterCaller",
+          ],
+          "The caller already voted: a complete pinned Voter call must reject an account with a prior positive trace-unavailable raw Vote because Voting.voted permits one submission."
+        );
+      }
       completePinnedHumanCallers.add(callerKey);
     }
 
@@ -3481,6 +4303,64 @@ function validatePinnedVoterInvocations(
           "A positive pinned-Voter aggregate result requires the exact same-invocation ordered human, delegated-staking, and YBC Vote triplet with configured accounts and matching basis points."
         );
       }
+      const aggregateWeight = toUint(trace.aggregatorResult.weight);
+      const aggregateKey = classification.voterAddress.toLowerCase();
+      const prior = cumulativeAggregates.get(aggregateKey) ?? {
+        total: 0n,
+        scaledYea: 0n,
+      };
+      const scaledIncrement =
+        aggregateWeight !== null && trace.voterSelector === "0x69586e2e"
+          ? aggregateWeight * BigInt(DAO_BPS)
+          : 0n;
+      const nextTotal =
+        aggregateWeight === null ? UINT256_MAX + 1n : prior.total + aggregateWeight;
+      const nextScaledYea = prior.scaledYea + scaledIncrement;
+      if (
+        aggregateWeight === null ||
+        (trace.voterSelector === "0x69586e2e" &&
+          aggregateWeight > MAX_BPS_SAFE_WEIGHT) ||
+        nextTotal > UINT256_MAX ||
+        nextScaledYea > UINT256_MAX
+      ) {
+        issue(
+          context,
+          [
+            ...proposalPath,
+            "events",
+            first.index,
+            "data",
+            "classification",
+            "trace",
+            "aggregatorResult",
+          ],
+          "Pinned Voter ybc_votes cumulative Voter weight overflow or 10000-scaled cumulative Yea overflow is invalid under checked uint256 arithmetic."
+        );
+      } else {
+        cumulativeAggregates.set(aggregateKey, {
+          total: nextTotal,
+          scaledYea: nextScaledYea,
+        });
+        const expectedAggregateBps = Number(nextScaledYea / nextTotal);
+        if (
+          delegated?.event.data.yeaBps !== expectedAggregateBps ||
+          ybc?.event.data.yeaBps !== expectedAggregateBps
+        ) {
+          issue(
+            context,
+            [
+              ...proposalPath,
+              "events",
+              first.index,
+              "data",
+              "classification",
+              "trace",
+              "aggregatorResult",
+            ],
+            `Pinned Voter ybc_votes cumulative aggregator basis points must equal ${expectedAggregateBps} for both aggregate Vote logs.`
+          );
+        }
+      }
     }
   }
 }
@@ -3507,6 +4387,30 @@ function calculateVoteTotals(events: readonly FeedEvent[]): {
     yea += (weight * BigInt(vote.data.yeaBps)) / BigInt(DAO_BPS);
   }
   return { total, yea, nay: total - yea };
+}
+
+function deriveCheckedPassage(
+  total: bigint,
+  yea: bigint,
+  thresholdBps: number
+): { arithmeticValid: boolean; passed: boolean } {
+  const threshold = BigInt(thresholdBps);
+  if (
+    total < 0n ||
+    yea < 0n ||
+    total > UINT256_MAX ||
+    yea > UINT256_MAX ||
+    yea > MAX_BPS_SAFE_WEIGHT ||
+    (threshold > 0n && total > UINT256_MAX / threshold)
+  ) {
+    return { arithmeticValid: false, passed: false };
+  }
+  return {
+    arithmeticValid: true,
+    passed:
+      total > 0n &&
+      yea * BigInt(DAO_BPS) >= total * threshold,
+  };
 }
 
 function validateProposeBindings(
@@ -3668,6 +4572,13 @@ function validateCreation(
   ) {
     issue(context, [...path, "receipt"], "Creation receipt block and transaction identity must match the Propose log.");
   }
+  if (!sameAddress(creation.receipt.transactionSender, proposal.proposer)) {
+    issue(
+      context,
+      [...path, "receipt", "transactionSender"],
+      "Creation receipt transaction sender must equal the canonical Propose proposer."
+    );
+  }
 }
 
 function validateStatus(
@@ -3751,10 +4662,12 @@ function validateStatus(
     }
     if (event.type === "execute") {
       const totals = calculateVoteTotals(proposal.events.slice(0, index));
-      const passes =
-        totals.total > 0n &&
-        totals.yea * BigInt(DAO_BPS) >=
-          totals.total * BigInt(proposal.thresholdBps);
+      const passage = deriveCheckedPassage(
+        totals.total,
+        totals.yea,
+        proposal.thresholdBps
+      );
+      const passes = passage.passed;
       const precedingTerminal = proposal.events
         .slice(0, index)
         .some((candidate) =>
@@ -3818,6 +4731,13 @@ function validateStatus(
           "Every Voting Execute must prove positive-total threshold passage, nonterminal eligibility, its exact epoch/delay window, and compatible retained script integrity."
         );
       }
+      if (!passage.arithmeticValid) {
+        issue(
+          context,
+          [...path, "events", index],
+          "Execute passage proof is impossible when checked yea * 10000 or total * threshold uint256 arithmetic would overflow."
+        );
+      }
       hardTerminalSeen = true;
     }
     if (event.type === "veto") {
@@ -3868,8 +4788,27 @@ function validateStatus(
   ) {
     issue(context, [...path, "votingEpoch"], "Proposal status requires an exactly representable fixed epoch boundary.");
   }
+  const finalTotals = calculateVoteTotals(proposal.events);
+  const checkedPassage = deriveCheckedPassage(
+    finalTotals.total,
+    finalTotals.yea,
+    proposal.thresholdBps
+  );
+  const passageEvaluationRequired =
+    feed.canonicalBlock.timestamp >= proposal.voteEndsAt &&
+    !eventTypes.has("retract") &&
+    !eventTypes.has("flag") &&
+    !eventTypes.has("veto");
+  if (passageEvaluationRequired && !checkedPassage.arithmeticValid) {
+    issue(
+      context,
+      [...path, "protocolStatus"],
+      "Protocol passage cannot be derived when checked yea * 10000 or total * threshold uint256 arithmetic would overflow."
+    );
+  }
   if (
     derivationPrerequisitesValid &&
+    (!passageEvaluationRequired || checkedPassage.arithmeticValid) &&
     postVoteEpochEnd !== null &&
     postVoteEpochEnd <= BigInt(Number.MAX_SAFE_INTEGER)
   ) {
@@ -4099,6 +5038,26 @@ function validateAnalysis(
   if (analysis.state === "failed" && simulation.state !== "failed" && !analysis.calls.some((call) => call.decodeStatus === "failed")) {
     issue(context, path, "Failed analysis must identify a failed decode or failed atomic simulation.");
   }
+  if (analysis.state === "failed") {
+    const hasFailedDecode = analysis.calls.some(
+      (call) => call.decodeStatus === "failed"
+    );
+    const simulationFailed = simulation.state === "failed";
+    const expectedSource = hasFailedDecode ? "decoder" : "simulation";
+    if (
+      analysis.error.source !== expectedSource ||
+      (hasFailedDecode && !analysis.error.code.includes("DECODE")) ||
+      (!hasFailedDecode &&
+        simulationFailed &&
+        analysis.error.code !== "SIMULATION_REVERTED")
+    ) {
+      issue(
+        context,
+        [...path, "error"],
+        `Failed analysis summary must name the actual failed component ${expectedSource} with its canonical code.`
+      );
+    }
+  }
   if (analysis.state === "complete" && analysis.calls.some((call) => call.decodeStatus !== "verified")) {
     issue(context, [...path, "calls"], "Complete analysis cannot contain unknown or failed decoding.");
   }
@@ -4114,6 +5073,13 @@ function validateAnalysis(
   for (const [index, call] of analysis.calls.entries()) {
     if (call.decodeStatus === "verified") {
       validateSource(call.verifiedSource, context, [...path, "calls", index, "verifiedSource"]);
+    }
+    if (call.decodeStatus === "failed" && call.verifiedSource !== null) {
+      validateSource(
+        call.verifiedSource,
+        context,
+        [...path, "calls", index, "verifiedSource"]
+      );
     }
     if (call.decodeStatus === "unknown" && call.verifiedSource !== null) {
       issue(context, [...path, "calls", index, "verifiedSource"], "Unknown calls cannot claim a verified source.");
@@ -4302,6 +5268,32 @@ function validateAnalysis(
           "source",
         ]
       );
+      validateRpcOrSyntheticEvidence(
+        simulationExecutor.bytecode,
+        {
+          archiveKind: "archive_rpc_and_reproducible_build",
+          syntheticKind:
+            "committed_synthetic_fixture_and_reproducible_build",
+          rpcMethod: "eth_getCode",
+          projectionType: "executor_eth_getCode_projection",
+          projection: {
+            address: simulationExecutor.bytecode.address,
+            blockNumber: simulationExecutor.bytecode.blockNumber,
+            blockHash: simulationExecutor.bytecode.blockHash,
+            codeByteLength: simulationExecutor.bytecode.codeByteLength,
+            deployedBytecodeHash:
+              simulationExecutor.bytecode.deployedBytecodeHash,
+          },
+        },
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "executorImplementation",
+          "bytecode",
+        ]
+      );
     }
     if (
       proposal.rules.mutableConfiguration.executorState !== "configured" ||
@@ -4342,7 +5334,8 @@ function validateAnalysis(
     const effectiveGasPriceWei = toUint(
       gasContext.effectiveGasPriceWei
     );
-    const u64Max = (1n << 64n) - 1n;
+    const excessBlobGas = toUint(gasContext.blockHeader.excessBlobGas);
+    const blobBaseFeeWei = toUint(gasContext.blobBaseFeeWei);
     const expectedExecutorFrameInitialGas =
       headerGasLimit === null
         ? null
@@ -4351,17 +5344,171 @@ function validateAnalysis(
           : 30_000_000n;
     const creation =
       proposal.creation.state === "indexed" ? proposal.creation : null;
+    validateSource(
+      gasContext.chainSpec.source,
+      context,
+      [
+        ...path,
+        "proposalSimulation",
+        "frameContext",
+        "gasContext",
+        "chainSpec",
+        "source",
+      ]
+    );
+    const chainSpecSource = gasContext.chainSpec.source;
+    if (
+      chainSpecSource.kind !== PINNED_MAINNET_CHAIN_SPEC.kind ||
+      chainSpecSource.label !== PINNED_MAINNET_CHAIN_SPEC.label ||
+      chainSpecSource.repository !== PINNED_MAINNET_CHAIN_SPEC.repository ||
+      chainSpecSource.revision !== PINNED_MAINNET_CHAIN_SPEC.revision ||
+      chainSpecSource.sourcePath !== PINNED_MAINNET_CHAIN_SPEC.sourcePath ||
+      chainSpecSource.url !== PINNED_MAINNET_CHAIN_SPEC.url
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "gasContext",
+          "chainSpec",
+          "source",
+        ],
+        "Completed simulation must bind the exact pinned go-ethereum mainnet chain-spec source, revision, path, label, and URL."
+      );
+    }
+
+    validateRpcOrSyntheticEvidence(
+      gasContext.blockHeader,
+      {
+        archiveKind: "archive_rpc",
+        syntheticKind: "committed_synthetic_fixture",
+        rpcMethod: "eth_getBlockByHash",
+        projectionType: "block_header_projection",
+        projection: {
+          blockNumber: gasContext.blockHeader.blockNumber,
+          blockHash: gasContext.blockHeader.blockHash,
+          timestamp: gasContext.blockHeader.timestamp,
+          gasLimit: gasContext.blockHeader.gasLimit,
+          baseFeePerGasWei: gasContext.blockHeader.baseFeePerGasWei,
+          beneficiary: gasContext.blockHeader.beneficiary,
+          difficulty: gasContext.blockHeader.difficulty,
+          prevRandao: gasContext.blockHeader.prevRandao,
+          excessBlobGas: gasContext.blockHeader.excessBlobGas,
+        },
+      },
+      context,
+      [
+        ...path,
+        "proposalSimulation",
+        "frameContext",
+        "gasContext",
+        "blockHeader",
+      ]
+    );
+    validateRpcOrSyntheticEvidence(
+      gasContext.proposeReceipt,
+      {
+        archiveKind: "archive_rpc",
+        syntheticKind: "committed_synthetic_fixture",
+        rpcMethod: "eth_getTransactionReceipt",
+        projectionType: "propose_receipt_projection",
+        projection: {
+          transactionHash: gasContext.proposeReceipt.transactionHash,
+          transactionSender: gasContext.proposeReceipt.transactionSender,
+          blockNumber: gasContext.proposeReceipt.blockNumber,
+          blockHash: gasContext.proposeReceipt.blockHash,
+          status: gasContext.proposeReceipt.status,
+          effectiveGasPriceWei:
+            gasContext.proposeReceipt.effectiveGasPriceWei,
+        },
+      },
+      context,
+      [
+        ...path,
+        "proposalSimulation",
+        "frameContext",
+        "gasContext",
+        "proposeReceipt",
+      ]
+    );
+
+    const expectedBlobBaseFeeWei =
+      excessBlobGas === null
+        ? null
+        : deriveFakeExponential(
+            1n,
+            excessBlobGas,
+            MAINNET_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION
+          );
+    const expectedWarmAddresses = deriveExpectedOsakaWarmAddresses({
+      transactionOrigin: simulation.transactionOrigin as Address,
+      votingAddress: proposal.ref.votingAddress as Address,
+      executorAddress: simulation.executorAddress as Address,
+      beneficiary: gasContext.blockHeader.beneficiary as Address,
+    });
+    const expectedExecutionCalldata =
+      proposal.script.bytes === null
+        ? null
+        : deriveDaoExecutorExecuteCalldata(proposal.script.bytes as Hex);
+    const expectedExecutionCalldataSha256 =
+      expectedExecutionCalldata === null
+        ? null
+        : sha256(toBytes(expectedExecutionCalldata));
+    if (
+      gasContext.chainId !== feed.chainId ||
+      gasContext.chainId !== proposal.ref.chainId ||
+      gasContext.blockTimestamp !== propose.log.timestamp ||
+      gasContext.blockHeader.timestamp !== propose.log.timestamp ||
+      gasContext.blockTimestamp !== gasContext.blockHeader.timestamp ||
+      gasContext.blockTimestamp < MAINNET_OSAKA_ACTIVATION_TIMESTAMP ||
+      gasContext.blockTimestamp < MAINNET_BPO2_ACTIVATION_TIMESTAMP ||
+      gasContext.beneficiary !== gasContext.blockHeader.beneficiary ||
+      gasContext.difficulty !== gasContext.blockHeader.difficulty ||
+      gasContext.prevRandao !== gasContext.blockHeader.prevRandao ||
+      gasContext.excessBlobGas !== gasContext.blockHeader.excessBlobGas ||
+      excessBlobGas === null ||
+      excessBlobGas > UINT64_MAX ||
+      blobBaseFeeWei === null ||
+      expectedBlobBaseFeeWei === null ||
+      blobBaseFeeWei !== expectedBlobBaseFeeWei ||
+      !stringArraysEqual(
+        gasContext.warmSet.precompileAddresses,
+        OSAKA_PRECOMPILE_ADDRESSES
+      ) ||
+      !stringArraysEqual(
+        gasContext.warmSet.warmAddresses,
+        expectedWarmAddresses
+      ) ||
+      expectedExecutionCalldata === null ||
+      simulation.frameContext.executionInput.calldata !==
+        expectedExecutionCalldata ||
+      simulation.frameContext.executionInput.calldataSha256 !==
+        expectedExecutionCalldataSha256
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "gasContext",
+        ],
+        "Completed simulation must bind the chain, exact Propose block opcode context, OSAKA/BPO2 schedule and derived blob fee, exact coinbase/precompile warm set, and ABI-encoded retained execute(bytes) input."
+      );
+    }
     if (
       headerGasLimit === null ||
       headerGasLimit === 0n ||
-      headerGasLimit > u64Max ||
+      headerGasLimit > UINT64_MAX ||
       executorFrameInitialGas === null ||
       executorFrameInitialGas === 0n ||
-      executorFrameInitialGas > u64Max ||
+      executorFrameInitialGas > UINT64_MAX ||
       executorFrameInitialGas !== expectedExecutorFrameInitialGas ||
       blockBaseFeePerGasWei === null ||
       blockBaseFeePerGasWei === 0n ||
-      blockBaseFeePerGasWei > u64Max ||
+      blockBaseFeePerGasWei > UINT64_MAX ||
       effectiveGasPriceWei === null ||
       effectiveGasPriceWei < blockBaseFeePerGasWei ||
       gasContext.blockHeader.blockNumber !== propose.log.blockNumber ||
@@ -4414,14 +5561,51 @@ function validateAnalysis(
       );
     }
 
+    const override = simulation.stateOverrides[0];
+    validateRpcOrSyntheticEvidence(
+      override.proof.bytecode,
+      {
+        archiveKind: "archive_rpc",
+        syntheticKind: "committed_synthetic_fixture",
+        rpcMethod: "eth_getCode",
+        projectionType: "voting_eth_getCode_projection",
+        projection: {
+          address: override.proof.bytecode.address,
+          blockNumber: override.proof.bytecode.blockNumber,
+          blockHash: override.proof.bytecode.blockHash,
+          codeByteLength: override.proof.bytecode.codeByteLength,
+          deployedBytecodeHash: override.proof.bytecode.deployedBytecodeHash,
+        },
+      },
+      context,
+      [
+        ...path,
+        "proposalSimulation",
+        "stateOverrides",
+        0,
+        "proof",
+        "bytecode",
+      ]
+    );
+
     const expectedContextInputsSha256 =
       simulationExecutor.state === "verified_pinned"
         ? deriveDaoSimulationContextInputsSha256({
+            chainId: gasContext.chainId,
             blockNumber: simulation.blockNumber,
             blockHash: simulation.blockHash as Hex,
+            blockTimestamp: gasContext.blockTimestamp,
             blockGasLimit: gasContext.blockHeader.gasLimit,
             blockBaseFeePerGasWei:
               gasContext.blockHeader.baseFeePerGasWei,
+            blockBeneficiary: gasContext.blockHeader.beneficiary as Address,
+            blockPrevRandao: gasContext.blockHeader.prevRandao as Hex,
+            blockExcessBlobGas: gasContext.blockHeader.excessBlobGas,
+            blobBaseFeeWei: gasContext.blobBaseFeeWei,
+            blockHeaderEvidenceKind:
+              gasContext.blockHeader.evidenceKind,
+            blockHeaderFixtureProjectionSha256:
+              gasContext.blockHeader.fixtureProjectionSha256 as Hex | null,
             proposeTransactionHash:
               gasContext.proposeReceipt.transactionHash as Hex,
             proposeTransactionSender:
@@ -4432,6 +5616,10 @@ function validateAnalysis(
               gasContext.proposeReceipt.blockHash as Hex,
             proposeReceiptEffectiveGasPriceWei:
               gasContext.proposeReceipt.effectiveGasPriceWei,
+            proposeReceiptEvidenceKind:
+              gasContext.proposeReceipt.evidenceKind,
+            proposeReceiptFixtureProjectionSha256:
+              gasContext.proposeReceipt.fixtureProjectionSha256 as Hex | null,
             transactionOrigin: simulation.transactionOrigin as Address,
             votingCaller: simulation.caller as Address,
             executorAddress: simulation.executorAddress as Address,
@@ -4443,11 +5631,11 @@ function validateAnalysis(
             harnessArtifactSha256: simulation.frameContext.harness
               .artifactSha256 as Hex,
             scriptHash: simulation.scriptHash as Hex,
+            executeCalldataSha256: simulation.frameContext.executionInput
+              .calldataSha256 as Hex,
             executorSourceRevision: simulationExecutor.source.revision,
             executorSourcePath: simulationExecutor.source.sourcePath,
             executorSourceSha256: simulationExecutor.sourceSha256,
-            executorCompilerIntegritySha256:
-              simulationExecutor.compilerIntegritySha256,
             executorRuntimeByteLength:
               simulationExecutor.compiledRuntimeByteLength,
             executorRuntimeBytecodeHash:
@@ -4464,9 +5652,29 @@ function validateAnalysis(
               simulationExecutor.bytecode.codeByteLength,
             executorEvidenceDeployedBytecodeHash:
               simulationExecutor.bytecode.deployedBytecodeHash,
+            executorEvidenceKind:
+              simulationExecutor.bytecode.evidenceKind,
+            executorEvidenceFixtureProjectionSha256:
+              simulationExecutor.bytecode.fixtureProjectionSha256 as
+                | Hex
+                | null,
             executorFrameInitialGas:
               gasContext.executorFrameInitialGas,
             effectiveGasPriceWei: gasContext.effectiveGasPriceWei,
+            overrideVotingAddress: override.votingAddress as Address,
+            overrideProposalId: override.proposalId,
+            overrideResolvedStorageSlot: override.proof.storageLayout
+              .resolvedStorageSlot as Hex,
+            overridePreStorageWord: override.proof.storageLayout
+              .preStorageWord as Hex,
+            overridePostStorageWord: override.proof.storageLayout
+              .postStorageWord as Hex,
+            overrideVotingCodeHash: override.proof.bytecode
+              .deployedBytecodeHash as Hex,
+            overrideVotingEvidenceKind:
+              override.proof.bytecode.evidenceKind,
+            overrideVotingFixtureProjectionSha256: override.proof.bytecode
+              .fixtureProjectionSha256 as Hex | null,
           })
         : null;
     if (
@@ -4482,7 +5690,7 @@ function validateAnalysis(
           "gasContext",
           "contextInputsSha256",
         ],
-        "Simulation context input commitment must bind the exact block, origin, caller chain, injector artifact, gas, envelope, access list, and Cancun warm-set policy."
+        "Simulation context input commitment must bind the exact block, provenance projections, OSAKA/BPO2 execution context, origin, caller chain, injector artifact, gas scenario, envelope, access list, and warm-set policy."
       );
     }
     if (
@@ -4515,7 +5723,6 @@ function validateAnalysis(
         "A completed reverting simulation must bind its failure observation to the exact simulation attempt time."
       );
     }
-    const override = simulation.stateOverrides[0];
     if (
       !sameAddress(override.votingAddress, proposal.ref.votingAddress) ||
       override.proposalId !== proposal.ref.proposalId ||
@@ -4670,6 +5877,26 @@ function validateEvent(
 
   if (event.type === "vote") {
     const voteWeight = toUint(event.data.weight);
+    if (voteWeight === null || voteWeight > MAX_BPS_SAFE_WEIGHT) {
+      issue(
+        context,
+        [...path, "data", "weight"],
+        "Pinned Voting Vote weight must not exceed floor(UINT256_MAX / 10000) so basis-point multiplication cannot overflow."
+      );
+    }
+    const voterImplementation =
+      effectiveConfiguration?.voterImplementation;
+    if (
+      voterImplementation?.state === "verified_pinned" &&
+      event.log.timestamp !== null &&
+      voterImplementation.immutableGenesisTimestamp > event.log.timestamp
+    ) {
+      issue(
+        context,
+        [...path, "data", "classification"],
+        "Verified pinned Voter genesis must not follow any Vote event or invocation it could emit."
+      );
+    }
     if (
       !effectiveConfiguration ||
       effectiveConfiguration.voterState === "disabled_zero_address" ||
@@ -5059,12 +6286,13 @@ function validatePinnedVotingSource(
   validateSource(source, context, path);
   if (
     source.kind !== "github" ||
+    source.label !== PINNED_VOTING_SOURCE_LABEL ||
     source.repository !== "yearn/stYFI" ||
     source.revision !== DAO_PINNED_VOTING_REVISION ||
     source.sourcePath !== PINNED_VOTING_SOURCE_PATH ||
     source.url !== PINNED_VOTING_SOURCE_URL
   ) {
-    issue(context, path, "Voting provenance must use the exact pinned Voting GitHub blob URL, revision, and source path.");
+    issue(context, path, "Voting provenance must use the exact pinned Voting GitHub blob URL, revision, source path, and canonical label.");
   }
 }
 
@@ -5076,6 +6304,7 @@ function validatePinnedVoterSource(
   validateSource(source, context, path);
   if (
     source.kind !== "github" ||
+    source.label !== PINNED_VOTER_SOURCE_LABEL ||
     source.repository !== "yearn/stYFI" ||
     source.revision !== DAO_PINNED_VOTING_REVISION ||
     source.sourcePath !== PINNED_VOTER_SOURCE_PATH ||
@@ -5084,7 +6313,7 @@ function validatePinnedVoterSource(
     issue(
       context,
       path,
-      "Voter provenance must use the exact pinned Voter GitHub blob URL, repository, revision, and source path."
+      "Voter provenance must use the exact pinned Voter GitHub blob URL, repository, revision, source path, and canonical label."
     );
   }
 }
@@ -5097,6 +6326,7 @@ function validatePinnedExecutorSource(
   validateSource(source, context, path);
   if (
     source.kind !== "github" ||
+    source.label !== PINNED_EXECUTOR_SOURCE_LABEL ||
     source.repository !== "yearn/stYFI" ||
     source.revision !== DAO_PINNED_VOTING_REVISION ||
     source.sourcePath !== PINNED_EXECUTOR_SOURCE_PATH ||
@@ -5105,7 +6335,7 @@ function validatePinnedExecutorSource(
     issue(
       context,
       path,
-      "Executor provenance must use the exact pinned Executor GitHub blob URL, repository, revision, and source path."
+      "Executor provenance must use the exact pinned Executor GitHub blob URL, repository, revision, source path, and canonical label."
     );
   }
 }
@@ -5136,7 +6366,7 @@ function validateSource(
     issue(
       context,
       [...path, "url"],
-      "Verified GitHub provenance must bind repository, revision, source path, and the exact canonical GitHub source URL."
+      "Verified source GitHub provenance must bind repository, revision, source path, and the exact canonical GitHub source URL."
     );
   }
 }
@@ -5409,6 +6639,90 @@ function numberArraysEqual(
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
+type RpcOrSyntheticEvidence = {
+  evidenceKind: string;
+  rpcMethod: string | null;
+  fixturePath: string | null;
+  fixtureProjectionSha256: string | null;
+};
+
+function validateRpcOrSyntheticEvidence(
+  evidence: RpcOrSyntheticEvidence,
+  expected: {
+    archiveKind: string;
+    syntheticKind: string;
+    rpcMethod: string;
+    projectionType: string;
+    projection: unknown;
+  },
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  if (evidence.evidenceKind === expected.archiveKind) {
+    if (
+      evidence.rpcMethod !== expected.rpcMethod ||
+      evidence.fixturePath !== null ||
+      evidence.fixtureProjectionSha256 !== null
+    ) {
+      issue(
+        context,
+        path,
+        `Archive evidence must use exact ${expected.rpcMethod} provenance and cannot claim committed synthetic fixture fields.`
+      );
+    }
+    return;
+  }
+
+  if (evidence.evidenceKind === expected.syntheticKind) {
+    const expectedProjectionSha256 = deriveDaoSyntheticEvidenceSha256(
+      expected.projectionType,
+      expected.projection
+    );
+    if (
+      evidence.rpcMethod !== null ||
+      evidence.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
+      evidence.fixtureProjectionSha256 !== expectedProjectionSha256
+    ) {
+      issue(
+        context,
+        path,
+        "Committed synthetic evidence must name the exact fixture path, omit RPC claims, and reproduce the canonical projection digest."
+      );
+    }
+    return;
+  }
+
+  issue(
+    context,
+    [...path, "evidenceKind"],
+    "Evidence must use one exact archive-RPC or committed-synthetic provenance branch."
+  );
+}
+
+function deriveFakeExponential(
+  factor: bigint,
+  numerator: bigint,
+  denominator: bigint
+): bigint | null {
+  if (
+    factor < 0n ||
+    numerator < 0n ||
+    denominator <= 0n ||
+    numerator > denominator * 512n
+  ) {
+    return null;
+  }
+  let accumulator = factor * denominator;
+  let output = 0n;
+  let iteration = 1n;
+  while (accumulator > 0n && iteration <= 4_096n) {
+    output += accumulator;
+    accumulator = (accumulator * numerator) / (denominator * iteration);
+    iteration += 1n;
+  }
+  return accumulator === 0n ? output / denominator : null;
+}
+
 function proposalRefKey(ref: z.infer<typeof ProposalRefSchema>): string {
   return `${ref.chainId}:${ref.votingAddress.toLowerCase()}:${ref.proposalId}`;
 }
@@ -5478,17 +6792,52 @@ function validateConfigurationSemantics(
           implementation.bytecode.deployedBytecodeHash as Hex,
         buildArtifactSha256:
           implementation.bytecode.buildArtifactSha256 as Hex,
+        deployedRuntimeSha256:
+          implementation.bytecode.deployedRuntimeSha256 as Hex,
+        immutableGenesisWord:
+          implementation.bytecode.immutableGenesisWord as Hex,
       });
+    const expectedGenesisWord = encodeUint256Word(
+      BigInt(implementation.bytecode.constructorGenesisTimestamp)
+    );
+    validateRpcOrSyntheticEvidence(
+      implementation.bytecode,
+      {
+        archiveKind: "archive_rpc_and_reproducible_build",
+        syntheticKind:
+          "committed_synthetic_fixture_and_reproducible_build",
+        rpcMethod: "eth_getCode",
+        projectionType: "voter_eth_getCode_projection",
+        projection: {
+          address: implementation.bytecode.address,
+          blockNumber: implementation.bytecode.blockNumber,
+          blockHash: implementation.bytecode.blockHash,
+          codeByteLength: implementation.bytecode.codeByteLength,
+          deployedBytecodeHash:
+            implementation.bytecode.deployedBytecodeHash,
+        },
+      },
+      context,
+      [...path, "voterImplementation", "bytecode"]
+    );
     if (
       configuration.voterState !== "configured" ||
       implementation.immutableGenesisTimestamp !==
         implementation.bytecode.constructorGenesisTimestamp ||
+      implementation.immutableGenesisTimestamp !==
+        PINNED_VOTER_GENESIS_TIMESTAMP ||
       !sameAddress(implementation.bytecode.address, configuration.voterAddress) ||
       implementation.bytecode.blockNumber !==
         configuration.effectiveAt.blockNumber ||
       implementation.bytecode.blockHash !== configuration.effectiveAt.blockHash ||
       implementation.compiledRuntimeBytecodeHash !==
         implementation.bytecode.deployedBytecodeHash ||
+      implementation.bytecode.immutableGenesisWord !==
+        expectedGenesisWord ||
+      implementation.bytecode.immutableGenesisWord !==
+        PINNED_VOTER_GENESIS_WORD ||
+      implementation.bytecode.deployedRuntimeSha256 !==
+        PINNED_VOTER_DEPLOYED_RUNTIME_SHA256 ||
       implementation.bytecode.buildEvidenceSha256 !==
         expectedBuildEvidenceSha256
     ) {
@@ -5527,6 +6876,26 @@ function validateConfigurationSemantics(
       executorImplementation.source,
       context,
       [...path, "executorImplementation", "source"]
+    );
+    validateRpcOrSyntheticEvidence(
+      executorImplementation.bytecode,
+      {
+        archiveKind: "archive_rpc_and_reproducible_build",
+        syntheticKind:
+          "committed_synthetic_fixture_and_reproducible_build",
+        rpcMethod: "eth_getCode",
+        projectionType: "executor_eth_getCode_projection",
+        projection: {
+          address: executorImplementation.bytecode.address,
+          blockNumber: executorImplementation.bytecode.blockNumber,
+          blockHash: executorImplementation.bytecode.blockHash,
+          codeByteLength: executorImplementation.bytecode.codeByteLength,
+          deployedBytecodeHash:
+            executorImplementation.bytecode.deployedBytecodeHash,
+        },
+      },
+      context,
+      [...path, "executorImplementation", "bytecode"]
     );
     if (
       configuration.executorState !== "configured" ||
