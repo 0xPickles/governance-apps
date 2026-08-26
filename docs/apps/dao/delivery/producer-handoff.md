@@ -24,7 +24,7 @@ live deployment claim. WP9 must begin only after WP8 is accepted and integrated.
   `[UNRESOLVED — its package worktree path cannot be set until the producer
   integration lane and package-worktree workflow are named.]`
 - Frontend schema commit SHA:
-  `c7bb6eb7268264335bad06c9fd3549f065cbe425`. This is the exact schema and
+  `5e64a1249732a14fcf90427352c0ef3c331ab876`. This is the exact schema and
   fixture implementation commit, not this later handoff-document commit or the
   eventual WP8 integration merge.
 - Pinned contract commit SHA:
@@ -60,7 +60,7 @@ live deployment claim. WP9 must begin only after WP8 is accepted and integrated.
   and canonical snapshot block `24000000` with hash
   `0x39c219e27639654c0e593394e979a69bbd28433bd8609a522a46d6fb1432cf7d`.
   It contains one contract, two ordered configurations, 27 proposals, 81
-  lifecycle events, all 23 accepted M2 mock mappings, and 46 rejection vectors.
+  lifecycle events, all 23 accepted M2 mock mappings, and 61 rejection vectors.
   `[UNRESOLVED — an archive RPC and the exact live Voting generation addresses,
   deployment blocks/hashes, deployed-bytecode hashes, genesis timestamps,
   producer start blocks, and ordered configuration history are required before
@@ -72,9 +72,11 @@ live deployment claim. WP9 must begin only after WP8 is accepted and integrated.
     execution delay `86400`, guard `guarded`, Voter
     `0x2222222222222222222222222222222222222222`, delegated-staking aggregate
     `0x8888888888888888888888888888888888888888`, YBC aggregate
-    `0x7777777777777777777777777777777777777777`, Executor
+    `0x7777777777777777777777777777777777777777`, YBC weight aggregator
+    `0x1212121212121212121212121212121212121212`, Executor
     `0x3333333333333333333333333333333333333333`, hook
-    `0x9999999999999999999999999999999999999999`, operator
+    `0x9999999999999999999999999999999999999999`, weight measure
+    `0x1414141414141414141414141414141414141414`, operator
     `0x5555555555555555555555555555555555555555`, and guardian
     `0x6666666666666666666666666666666666666666`.
   - `config-2` changes those values without changing the Voting generation. It
@@ -84,15 +86,21 @@ live deployment claim. WP9 must begin only after WP8 is accepted and integrated.
     `172800`, guard `permissionless`, Voter
     `0x8888888888888888888888888888888888888888`, delegated-staking aggregate
     `0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`, YBC aggregate
-    `0xcccccccccccccccccccccccccccccccccccccccc`, Executor
+    `0xcccccccccccccccccccccccccccccccccccccccc`, YBC weight aggregator
+    `0x1313131313131313131313131313131313131313`, Executor
     `0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`, hook
-    `0xdddddddddddddddddddddddddddddddddddddddd`, operator
+    `0xdddddddddddddddddddddddddddddddddddddddd`, weight measure
+    `0x1515151515151515151515151515151515151515`, operator
     `0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee`, and guardian
     `0xffffffffffffffffffffffffffffffffffffffff`.
   Configuration IDs, positions, block hashes, and copied proposal/event
   observations must match exactly. The offset plus window equals the fixed
-  epoch length. Changes to Voter, Executor, timing, delay, guard, hook, or roles
-  never create a new Voting generation.
+  epoch length. Changes to Voter, aggregates, Executor, timing, delay, guard,
+  hook, weight measure, or roles never create a new Voting generation.
+  Each fixture Voter is `verified_pinned`: it binds exact `Voter.vy` source,
+  compiler settings, immutable genesis, reproducible runtime-bytecode equality,
+  archive code length/hash, and build-artifact hash at that configuration
+  position. Live values and code evidence remain producer-owned assumptions.
 - CID fixture convention and test-vector location: content and assets use
   CIDv1 with the raw codec, SHA-256 multihash, and lowercase unpadded Base32.
   Proposal `1` in `docs/apps/dao/examples/feed-v1/dao-feed-v1.example.json`
@@ -105,38 +113,60 @@ live deployment claim. WP9 must begin only after WP8 is accepted and integrated.
   digest-invalid vector: expected digest
   `0x7302a81f54f32e8cafe000b437923b87574bcc2fe6e873b78de86dfbd9484ab2`,
   computed digest
-  `0x73c4f1c10c831b63bde5e09019a04d1aa91282200a4b32996a45d78b6dbec6bb`,
+  `0x07a76b841c4b2221d14376d25ce68b7486fc7b80035ded7288c818af89eed26f`,
   comparison `mismatch`, and failure `CONTENT_DIGEST_MISMATCH`.
+  It retains 38 exact malformed, no-final-LF bytes as canonical RFC 4648
+  Base64. Focused vectors also admit invalid UTF-8 bytes and reject malformed
+  Base64, byte-length, digest, and CID substitutions. Proposal `20` proves that
+  missing Propose block time uses explicit unavailable `chainCreatedAt`; its
+  authenticated content time is not substituted as chain time.
   Accepted, boundary, and rejection vectors are in
   `tests/fixtures/dao-feed-v1.ts` and
   `docs/apps/dao/examples/feed-v1/dao-feed-v1.rejections.json`.
 - Simulation engine, method, caller/context, and override policy: REVM `34`,
-  method `revm_voting_transition_then_executor_execute`, using archive state at
-  the proposal's exact Propose block number and hash and that block's timestamp.
-  The producer must prove and apply the proposal-specific Voting storage
-  transition `executed: false -> true`, derived from the exact pinned Voting
-  source before calling the proposal-effective Executor with caller set to the
-  Voting contract and the exact retained event script. The source SHA-256 is
-  `0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e`.
-  Compile those bytes with `vyper@0.4.2` using
-  `uvx --from vyper==0.4.2 vyper -f layout -o Voting.layout.json Voting.vy`;
-  the pinned layout-file SHA-256 is
-  `0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26`.
-  The `proposals` mapping base slot is `17`, Vyper hashes
-  `bytes32(17) || bytes32(proposalId)`, and the `executed` full-word offset is
-  `8`. The proof retains the derived struct base, resolved slot, exact zero/one
-  pre/post words, and `keccak256(eth_getCode(Voting, proposeBlock))` plus byte
-  length, address, proposal block number/hash, and generation bytecode-hash
-  match. Proposal `2` pins struct base
-  `0xa4e0f4432e44d027a7b3f953940f096bca7a9bd910297cad2ba7c703c2b799d3`
-  and resolved slot
-  `0xa4e0f4432e44d027a7b3f953940f096bca7a9bd910297cad2ba7c703c2b799db`.
-  The operation is atomic and permits no timestamp override or other state
-  override. If the source, layout, archive bytecode, proposal pre-state, or any
-  equivalent context element cannot be proved, the entire simulation is
-  `unavailable` with no partial method/context claims. `failed` means the
-  complete equivalent simulation ran and reverted. A bare direct
-  `Executor.execute` call is not equivalent.
+  method `revm_engine_injected_executor_frame_conditional_origin`, using archive
+  state at the exact Propose block number, hash, and timestamp. This is a
+  conditional historical scenario, not proof that an unknown future execution
+  transaction will succeed.
+  - Freeze the authenticated Propose transaction sender as the hypothetical
+    `tx.origin`. Missing sender/receipt provenance makes the simulation
+    `unavailable`.
+  - Enter real Executor code through an engine-injected nested frame immediately
+    before `operators[Voting]` is checked. Executor sees `CALLER = Voting`;
+    targets see `CALLER = Executor`; value is zero; the operator check runs; no
+    Voting or Executor code override is allowed. Record the exact injector
+    revision and artifact SHA-256.
+  - Record positive `executorFrameInitialGas`, canonical uint
+    `effectiveGasPriceWei`, envelope `synthetic_legacy_no_blobs`, an exactly
+    empty access list, and warm-set policy
+    `cancun_frame_entry_origin_voting_executor_and_precompiles_no_storage`.
+    The exact block hash binds header gas limit/base fee. Recompute
+    `contextInputsSha256` with
+    `deriveDaoSimulationContextInputsSha256`; it binds the block, origin, caller
+    chain, injector artifact, gas, envelope, access list, and warm-set inputs.
+  - Prove and apply only the proposal-specific Voting storage transition
+    `executed: false -> true` before Executor entry. The Voting source SHA-256 is
+    `0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e`.
+    Compile those exact bytes with `vyper@0.4.2` using
+    `uvx --from vyper==0.4.2 vyper -f layout -o Voting.layout.json Voting.vy`;
+    the layout-file SHA-256 is
+    `0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26`.
+    The `proposals` mapping base slot is `17`, the hash input is
+    `bytes32(17) || bytes32(proposalId)`, and `executed` is full-word offset `8`.
+    Retain the derived struct base, resolved slot, exact zero/one pre/post words,
+    and `keccak256(eth_getCode(Voting, proposeBlock))` with byte length, address,
+    proposal block number/hash, and generation bytecode-hash match. Proposal `2`
+    pins struct base
+    `0xa4e0f4432e44d027a7b3f953940f096bca7a9bd910297cad2ba7c703c2b799d3`
+    and resolved slot
+    `0xa4e0f4432e44d027a7b3f953940f096bca7a9bd910297cad2ba7c703c2b799db`.
+  - Apply no timestamp override or other state override. `succeeded` and
+    `failed` mean atomic success or revert only for the exact recorded scenario.
+    A bare top-level Executor call with caller Voting changes `tx.origin`; an
+    ordinary harness changes caller/code identity. Either method is invalid.
+    Missing or substituted source, layout, code, pre-state, origin, frame, gas,
+    access, warm-set, script, or input commitment makes the whole simulation
+    `unavailable`, with every partial context field null.
 
 ## Consumer contract to implement
 
@@ -201,7 +231,12 @@ block hash, producer-owned timestamp, proposal reference, and contract
 generation must remain coherent. Forward groups use block hash plus transaction
 index; the reverse mapping permits each non-null transaction hash at exactly one
 block number/hash and transaction index. A null transaction hash is a truthful
-value, not permission to substitute identity.
+value, not permission to substitute identity. Ethereum `logIndex` is
+block-global: `(chainId, blockHash, logIndex)` cannot repeat across transactions,
+proposals, or Voting generations, even when transaction indices differ. One
+block hash maps to exactly one number and timestamp. Configuration `effectiveAt`
+is an observation boundary, not an emitted lifecycle log, and does not occupy
+this namespace.
 
 Every Veto has canonical event time, immutable branch
 `early_no_votes` or `post_participation`, and running totals computed from the
@@ -228,6 +263,12 @@ transaction, block, transaction index, composite proposal reference, proposer,
 epoch, digest, and exact script. Reverted, absent, duplicate, wrong-contract,
 and noncanonical Propose evidence is rejected.
 
+Chain creation time is a strict union. When the Propose log/block timestamp is
+known, `chainCreatedAt` is available, equals it, and binds the exact event
+position; the receipt timestamp agrees. When it is absent, both are explicitly
+unavailable/null with provenance failure. Never substitute content `createdAt`
+or another numeric timestamp.
+
 `Propose`, `Vote`, and Voting `Execute` take their actors from indexed event
 fields. `Retract` infers its actor from the proposal proposer. `Flag` and `Veto`
 require historical transaction-sender evidence joined to the operator or
@@ -235,13 +276,23 @@ guardian configuration effective at that log; use actor evidence `unavailable`
 when that proof is absent. Never use a current role as a historical guess.
 
 Vote classification is also historical. Record the Voter, delegated-staking,
-and YBC configuration ID, values, and exact observation position/hash effective
-at each Vote log. Historical observations cannot predate deployment or producer
-start, follow the canonical block, or disagree with their copied block hash.
-Human votes have binary direction. Delegated-staking and YBC aggregate votes
-always use `direction: null`, including 0 and 10,000 bps. Aggregate weights
-overwrite the actor's absolute contribution; they are not increments and do
-not increase human participation.
+YBC, and YBC-weight-aggregator configuration ID, values, and exact observation
+position/hash effective at each Vote log. A `verified_pinned` implementation
+must bind exact Voter source, compiler/settings, immutable genesis, reproducible
+runtime code, archive code length/hash, and build artifact at that configuration
+position. The source is
+`https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voter.vy`,
+with SHA-256
+`0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
+`vyper@0.4.2`, gas optimization, and Cancun. Human/delegated/YBC labels also
+require a transaction-bound trace with call depths, call ordinal, emitted
+account, membership, and aggregate-path evidence. This resolves address
+collisions and permits a zero delegated aggregate account. A custom/unverified
+Voter preserves raw account, weight, and Yea bps only as `unclassified`; it
+cannot claim binary-human or aggregate semantics. Human votes have binary
+direction. Aggregate and unclassified votes keep `direction: null` and do not
+increase human participation. Aggregate weights overwrite the actor's absolute
+contribution; they are not increments.
 
 ### Rules, content, scripts, and failures
 
@@ -249,20 +300,41 @@ Only the approval threshold is snapshotted. Preserve both accepted 5,000 and
 6,000 bps vectors, the positive-total requirement, and no minimum turnout.
 Keep one ordered `configurationHistory` per Voting generation. Vote-start
 offset/window, execution delay/guard, Voter, delegated-staking/YBC aggregates,
-Executor, hook, operator, and guardian are mutable observations with exact
-block/hash and transaction/log ordering. Proposal rules copy the configuration
-effective at Propose; Vote and role evidence bind their own event-effective
-configuration; Execute delay, guard, and operator bind the Execute position;
-simulation uses the proposal-effective Executor. Do not label any of these
-values snapshots.
+YBC weight aggregator, Executor, hook, weight measure, operator, and guardian
+are mutable observations with exact block/hash and transaction/log ordering.
+Proposal rules copy the configuration effective at Propose and remain
+historical disclosure; simulation uses that proposal-effective Executor. Vote
+admission and actor evidence bind the configuration effective at the exact
+event position. Execute delay, guard, and operator bind the Execute position.
+`statusConfiguration` is the last configuration effective at the end of the
+canonical block; top-level timing and raw `protocolStatus` are derived from
+that snapshot-effective configuration. Never relabel proposal-time values as
+snapshot-current truth.
 
 Generation genesis is immutable and `epochLengthSeconds` is exactly `1209600`.
-For voting epoch `E`, genesis `G`, and proposal-effective raw vote offset `O`,
-`voteStartsAt = G + E*1209600 + O`; the offset plus voting window equals one
-epoch, and the canonical Propose block time occurs in epoch `E-1`. Authenticated
-content `createdAt` is independent, may be older, and must not follow Propose.
-The executable window begins in epoch `E+1` after its effective delay and ends
-at `G + (E+2)*1209600`.
+For voting epoch `E`, genesis `G`, fixed epoch length `L = 1209600`, and the
+snapshot-effective raw vote offset `O`, top-level
+`voteStartsAt = G + E*L + O` and
+`voteEndsAt = voteStartsAt + votingPeriodSeconds`. Each Vote instead applies
+that formula to the configuration effective at its own event position and
+requires `voteStart(P) <= eventTimestamp < voteEnd(P)`. The offset plus voting
+window equals `L`; the contract-valid disabled state is
+`votingPeriodSeconds = 0`, `voteStartOffsetSeconds = L`, and admits no Vote.
+Known chain creation occurs in epoch `E-1`. Authenticated content `createdAt` is
+independent, may be older, and is never substituted for chain time. The
+snapshot-effective executable window begins in epoch `E+1` after its delay and
+ends at `G + (E+2)*L`; each Execute is rechecked with its event-effective delay.
+
+Use the schema's typed address-state discriminants. Voter may be
+`disabled_zero_address`; delegated staking, YBC, YBC weight aggregator, hook,
+weight measure, and operator may be `zero_address`; the constructor's zero
+Executor is `uninitialized_zero_address`. The guardian and every Voting/emitter
+identity remain nonzero. These values have distinct effects: zero Voter or
+weight measure disables Vote, zero hook rejects positive-weight Vote, and zero
+YBC atomically reverts pinned-Voter submission. A zero operator prevents Flag
+and guarded Execute but does not prevent permissionless Execute. Zero delegated
+staking can emit a canonical zero-account aggregate Vote. Reject every
+state/address contradiction and never replace a zero state with unavailable.
 
 Keep onchain Flag and Veto reasons byte-exact. Empty and whitespace-only reasons
 are valid through the 256-byte contract bound; the frontend authoring form's
@@ -272,11 +344,17 @@ trimmed, nonempty rule does not apply to history. A signal may report raw
 
 Content keeps separate expected onchain digest/CID and computed fetched-byte
 digest/CID fields plus `verified`, `mismatch`, or `unavailable` comparison.
-Fetched canonical JSON remains byte-exact in frozen field order with one final
-LF. Available content requires exact identity equality. Digest-invalid bytes
-remain representable only with `CONTENT_DIGEST_MISMATCH`; unavailable content
-does not guess computed values. Content `createdAt` is immutable content data
-and may precede and differ from the canonical Propose block time. Enforce
+Available content retains byte-exact canonical UTF-8 JSON in frozen field order
+with exactly one final LF and requires exact identity equality. Invalid fetched
+content instead retains the exact arbitrary bytes, including no-final-LF,
+malformed JSON, NUL, or invalid UTF-8, as canonical RFC 4648 Base64 plus exact
+byte length. Compute its digest and CID over the decoded bytes and retain
+truthful expected-versus-computed evidence. Canonical JSON and final-LF rules
+apply only to `available`; `invalid` must not pretend the bytes are text.
+Digest-invalid bytes use `CONTENT_DIGEST_MISMATCH`; unavailable content has no
+computed identity and guesses no bytes. Content `createdAt` is immutable
+content data and may precede and differ from known canonical Propose block time.
+Enforce
 16 assets, 512 UTF-8 path bytes, 127 UTF-8 media-type bytes, 2,097,152 bytes per
 asset, 33,554,432 aggregate bytes, 8,192 pixels per dimension, and 33,554,432
 pixels per image. Relative Markdown attachments resolve by exact normalized
@@ -284,20 +362,35 @@ manifest path. Direct attachments are exactly `ipfs://<assetCid>` without a
 path, slash, query, or fragment. Both gateway URLs are exactly
 `https://ipfs.io/ipfs/<assetCid>` with no suffix.
 
-Retain exact Propose script bytes, stored hash, computed Keccak-256 hash, hash
-comparison, frame parse result, and Propose event ID. Missing bytes, hash
-mismatch, malformed framing, and structurally valid zero targets are separate
-states. Decoding preserves frame order and raw calldata. Unknown calls have no
-invented source. Verified calls require the complete structured HTTPS source.
-Decode and simulation states are independent.
+Retain exact Propose script bytes when available, the stored hash, computed
+Keccak-256 hash, hash comparison, frame parse result, and Propose event ID. The
+stored hash determines proposal type even when bytes are unavailable: `signal`
+iff it is `keccak256(0x)`, otherwise `executable`. Missing bytes, hash mismatch,
+malformed framing, and structurally valid zero targets are separate states.
+Decoding preserves frame order and raw calldata. Unknown calls have no invented
+source. Verified records are GitHub-only and bind `kind`, repository, exact
+40-hex revision, normalized `sourcePath`, and the exact derived canonical blob
+URL; credentials, query, fragment, port, controls, backslashes, traversal,
+noncanonical paths, and any other host fail. Decode and simulation states are
+independent.
 
 The exact Voting source URL is
 `https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy`;
 queries, fragments, alternate repositories/revisions/paths, credentials,
-backslashes, controls, and noncanonical URL forms fail. Verified discussions
-use canonical `https://gov.yearn.fi/t/<slug>/<positiveId>` paths and fixture
-category ID/name/slug `42` / `Proposals` / `proposals`. The fixture does not
-claim that `42` is the live production category; WP9 must resolve that pin.
+backslashes, controls, and noncanonical URL forms fail. The exact Executor
+source is
+`https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Executor.vy`.
+Verified discussions use canonical
+`https://gov.yearn.fi/t/<slug>/<positiveId>` paths. Authoritative public
+metadata fetched from `https://gov.yearn.fi/categories.json` on 2026-08-26 and
+the canonical search route `https://gov.yearn.fi/c/proposals/5` fix root
+`5 / Proposals / proposals`, with `parent_category_id: null` and exact
+descendant IDs `[9, 18, 17, 21, 10, 29]`: `9 / Vaults / vaults`,
+`18 / Other Products (Labs) / labs`, `17 / Finance / finance`,
+`21 / Protocol and Governance / protocol-and-governance`,
+`10 / YIPs / yips`, and `29 / veYFI / veyfi`, each under root `5`.
+Authorization uses exact ID and ancestry, never labels; category `42`, an
+unrelated ID, or a valid label with wrong ancestry fails.
 
 Use only the schema's typed failure and evidence unions. Do not publish partial
 success shapes, inferred provenance, guessed timestamps, placeholder hashes, or
@@ -305,9 +398,10 @@ unbounded strings/arrays. The payload cap is 64 MiB, with at most 64 contract
 generations, 100,000 proposals, 100,000 events per proposal, and 64 decoded
 calls per proposal. A consumer admits fetched UTF-8 text through
 `parseDaoFeedJsonV1`, which checks the 64 MiB byte cap before JSON parsing or
-deep structural/semantic traversal. Protocol identities and provenance hashes
-are nonzero; contract-valid zero script targets, content/asset digests, raw
-storage words, and uint topics remain representable.
+deep structural/semantic traversal. Chain, contract, emitter, and non-Vote
+lifecycle identities plus provenance hashes are nonzero. Typed contract-valid
+zero configuration addresses, zero Vote accounts, zero script targets,
+content/asset digests, raw storage words, and uint topics remain representable.
 
 ## Cursor, retries, reorgs, and publication
 
@@ -322,9 +416,16 @@ last plus one. On a stored-hash mismatch, find the common ancestor and replay
 from exactly the following block. Report the replaced snapshot and recovered
 reorg evidence.
 
-Content and asset fetches permit at most eight attempts. Snapshot publication
-permits at most sixteen. Retry timestamps, last failures, retryability, and
-remaining attempts must satisfy the strict schema variants.
+Content and asset fetches use exactly `maxAttempts: 8` and policy
+`fixed_120_seconds`. Every `lastAttemptAt` is at or before feed generation and
+publication; a failure's `observedAt` equals that last attempt. A retryable
+failure with attempts left is `scheduled`, with
+`nextRetryAt = lastAttemptAt + 120 seconds`, and that instant must follow the
+snapshot. Non-retryable, exhausted, and succeeded records keep no next retry or
+backoff. Snapshot publication permits at most 16 attempts. A
+`succeeded_after_retry` publication retains a retryable preceding failure and
+succeeds exactly 120 seconds later at `publishedAt`; a first attempt binds its
+last attempt directly to `publishedAt`.
 
 Publication order is fixed:
 
@@ -338,8 +439,9 @@ Publication order is fixed:
    and report a typed retry on the next successful publication.
 
 V1 records indefinite retention for immutable audit snapshots, event scripts,
-canonical content JSON, and asset records. The established Teams producer flow
-is only an architectural precedent; it does not choose the DAO keys or paths.
+canonical content JSON, exact invalid raw content bytes, and asset records. The
+established Teams producer flow is only an architectural precedent; it does not
+choose the DAO keys or paths.
 
 - Stable R2 object key:
   `[UNRESOLVED — WP9 must name the exact staging and production key; do not
@@ -353,26 +455,33 @@ is only an architectural precedent; it does not choose the DAO keys or paths.
 - Raw content, asset blob, script-history, and metadata object keys:
   `[UNRESOLVED — WP9 must specify exact keys, collision behavior, and how
   indefinite v1 record retention is met.]`
-- RPC timeout, content/asset timeout, retry delay/backoff, and maximum fetched
-  raw bytes before schema validation:
-  `[UNRESOLVED — WP9 must choose bounded values within the v1 attempts and
-  payload/asset maxima and add deterministic tests.]`
-- Live forum category and provenance policy:
-  `[UNRESOLVED — WP9 must pin the live Proposals category ID/slug ancestry and
-  public-topic lookup method; fixture category ID 42 is not a deployment
-  claim.]`
+- RPC timeout, content/asset timeout, and maximum fetched raw bytes before
+  schema validation:
+  `[UNRESOLVED — WP9 must choose bounded values within the v1 payload/asset
+  maxima and add deterministic tests. Retry attempts and the fixed 120-second
+  backoff are already frozen and are not producer choices.]`
+- Forum category and provenance policy: resolved consumer pin. WP9 must obtain
+  public category metadata from `https://gov.yearn.fi/categories.json`, retain
+  root `5` and exact allowed descendant ancestry, and resolve topics through
+  canonical public routes. It must reject category `42` rather than treating
+  it as a fixture or deployment assumption.
 - Historical configuration and simulation proof acquisition:
   `[UNRESOLVED — WP9 must name the archive calls/log joins that recover genesis,
-  every configuration transition, deployed code bytes/hash, and proposal
-  storage pre-state without substituting current values. Any unproved complete
-  simulation remains unavailable.]`
+  every configuration transition, effective Voter source/build/archive-code
+  evidence, transaction call traces, deployed Voting/Executor code bytes/hash,
+  and proposal storage pre-state without substituting current values. It must
+  name the engine-injected frame method and reproduce the origin/gas/access/
+  warm-set input commitment. Any unproved complete simulation remains
+  unavailable.]`
 
 The inventoried producer has no DAO scanner, CID/blob module, complete nullable
-and reverse transaction-hash handling, event block-hash/transaction-index
-support, ordered mutable-configuration store, or typed Voting-transition
-simulation. Existing YBC/Teams cursor recovery, local temp-and-rename writes,
-immutable Teams audit object, and stable R2 PUT are useful precedents, not
-evidence that the DAO contract is already feasible.
+and reverse transaction-hash handling, block-global log-index enforcement,
+event block-hash/transaction-index support, ordered mutable-configuration
+store, verified Voter/build/trace proof, arbitrary-byte content record, or
+typed engine-injected conditional Voting-transition simulation with committed
+origin and gas context. Existing YBC/Teams cursor recovery, local
+temp-and-rename writes, immutable Teams audit object, and stable R2 PUT are
+useful precedents, not evidence that the DAO contract is already feasible.
 
 ## Consumer validation commands
 
@@ -387,9 +496,18 @@ npm run test
 git diff --check
 ```
 
-At schema commit `c7bb6eb7268264335bad06c9fd3549f065cbe425`, the focused
-suite passes 53 tests, the full suite passes 1,244 tests in 140 files, and
-typecheck, lint, deterministic generation, and `git diff --check` pass.
+At schema commit `5e64a1249732a14fcf90427352c0ef3c331ab876`, the focused
+suite passes 69 tests, the full suite passes 1,260 tests in 140 files, and
+typecheck, lint, deterministic generation, and `git diff --check` pass. The
+deterministic artifact SHA-256 values are
+`bf17f65fec3d374e63e88847a7f6fd726d05e1420358b4e83d7b906f54ec9436`
+for the JSON Schema,
+`3b889037ac4bd8a4e04aa5417da17f8dfdf9558db8c0d949a1512ff7ad478bd0`
+for the accepted feed,
+`915d3251319b1bfa391f74cbece280dd4ed62eabf611491f2a7b2392ca07e063`
+for the mock-state map, and
+`22257d4e9e59336cf54b82fe3d725228e92b6981fa4bdefb0074ca5b8030292a`
+for the creation-stage example.
 
 WP9 must port the accepted and rejected vectors to Rust and demonstrate that
 the produced JSON also passes the frozen consumer parser without normalization
@@ -419,12 +537,22 @@ or repair.
   returned evidence.]`
 
 The return package must include the producer package range and integration
-merge, contract/deployment/genesis/bytecode pins, Rust fixture locations, all
-validation output, archive-RPC method, event and full configuration-history
-evidence, expected/computed content vectors, exact Vyper layout and simulation
-evidence, cursor/reorg recovery evidence, exact object/state/history paths, a
-byte hash of the accepted staging or local payload, and every unresolved
-assumption with an owner. It must identify whether each simulation is complete,
-failed after a complete run, or unavailable; no fixture-only derivation may be
-reported as live evidence. The frontend remains mock-backed until that handoff
-is independently accepted.
+merge, contract/deployment/genesis/bytecode pins, Rust fixture locations for all
+27 proposals, 81 lifecycle events, 23 mock mappings, and 61 rejection vectors,
+and all validation output. It must return the archive-RPC method; event and full
+configuration-history evidence; block-global log-index checks; exact
+snapshot-effective status timing and event-effective Vote/Execute checks;
+typed zero-state vectors; and effective Voter source/build/archive-code and
+transaction-trace evidence for every classified Vote.
+
+It must also return the root-5 forum metadata lookup, exact arbitrary-byte
+content and expected/computed digest/CID vectors, fixed retry evidence, cursor/
+reorg recovery evidence, and exact object/state/history paths. For simulations,
+return the exact Vyper layout and Voting transition proof, real Voting/Executor
+code evidence, authenticated hypothetical origin, engine-injected caller chain,
+injector revision/artifact, gas/access/warm-set inputs, recomputed
+`contextInputsSha256`, and conditional result. Every unresolved simulation must
+use the fully null `unavailable` variant. Finally, return a byte hash of the
+accepted staging or local payload and every unresolved assumption with an
+owner. No fixture-only derivation may be reported as live evidence. The
+frontend remains mock-backed until that handoff is independently accepted.
