@@ -382,5 +382,114 @@
     ],
     "value": "0xabababababababababababababababababababababababababababababababab",
     "expectedMessage": "context input commitment"
+  },
+  {
+    "name": "incoherent terminal vote total",
+    "path": ["proposals", 6, "totalWeight"],
+    "value": "0",
+    "expectedMessage": "Proposal vote totals"
+  },
+  {
+    "name": "duplicate pinned Voter invocation ordinal",
+    "path": ["proposals", 1, "events", 2, "data", "classification", "trace", "votingCallOrdinal"],
+    "value": 2,
+    "expectedMessage": "surviving ordinal set"
+  },
+  {
+    "name": "trace-unavailable Vote guessed as human",
+    "path": ["proposals", 13, "events", 1, "data", "actorKind"],
+    "value": "human",
+    "expectedMessage": "Vote actor role"
+  },
+  {
+    "name": "configuration block hash conflicts with code evidence",
+    "path": ["contracts", 0, "configurationHistory", 0, "effectiveAt", "blockHash"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "one canonical hash"
+  },
+  {
+    "name": "same canonical hash assigned to confirmation head height",
+    "path": ["publication", "finality", "headBlock", "hash"],
+    "value": "0x39c219e27639654c0e593394e979a69bbd28433bd8609a522a46d6fb1432cf7d",
+    "expectedMessage": "exactly one chain height"
+  },
+  {
+    "name": "invalid-content failure-code substitution",
+    "path": ["proposals", 14, "content", "error", "code"],
+    "value": "CONTENT_JSON_INVALID",
+    "expectedMessage": "exact typed failure code"
+  },
+  {
+    "name": "Propose under zero weight-measure capability",
+    "path": ["contracts", 0, "configurationHistory", 0, "weightMeasureState"],
+    "value": "zero_address",
+    "expectedMessage": "canonical Propose log requires"
+  },
+  {
+    "name": "unavailable simulation timestamp without matching failure time",
+    "path": ["proposals", 0, "analysis", "proposalSimulation", "simulatedAt"],
+    "value": "2027-01-01T00:00:00Z",
+    "expectedMessage": "one exact shared simulation/failure observation time"
+  },
+  {
+    "name": "unpinned Executor source path",
+    "path": ["contracts", 0, "configurationHistory", 0, "executorImplementation", "source", "sourcePath"],
+    "value": "contracts/governance/Voting.vy",
+    "expectedMessage": "exact pinned Executor GitHub blob URL"
+  },
+  {
+    "name": "Voter immutable genesis disagrees with constructor evidence",
+    "path": ["contracts", 0, "configurationHistory", 0, "voterImplementation", "bytecode", "constructorGenesisTimestamp"],
+    "value": 1542736801,
+    "expectedMessage": "immutable genesis"
+  },
+  {
+    "name": "analysis generated before the known Propose time",
+    "path": ["proposals", 4, "analysis", "generatedAt"],
+    "value": "2020-01-01T00:00:00Z",
+    "expectedMessage": "cannot precede the known canonical Propose block time"
+  },
+  {
+    "name": "failed simulation observation differs from attempt",
+    "path": ["proposals", 17, "analysis", "proposalSimulation", "error", "observedAt"],
+    "value": "2026-08-18T12:00:00Z",
+    "expectedMessage": "bind its failure observation"
+  },
+  {
+    "name": "simulation block gas limit exceeds u64",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "blockHeader", "gasLimit"],
+    "value": "18446744073709551616",
+    "expectedMessage": "positive u64 block gas"
+  },
+  {
+    "name": "simulation GASPRICE differs from Propose receipt",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "effectiveGasPriceWei"],
+    "value": "2",
+    "expectedMessage": "authenticated Propose receipt effective gas price"
+  },
+  {
+    "name": "simulation Executor code evidence uses another block hash",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executorImplementation", "bytecode", "blockHash"],
+    "value": "0xefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+    "expectedMessage": "one canonical hash"
+  },
+  {
+    "name": "cross-transaction block log order regression",
+    "path": [
+      "proposals",
+      1,
+      "events",
+      4,
+      "log",
+      "transactionIndex"
+    ],
+    "value": 0,
+    "expectedMessage": "Block-global logIndex must strictly increase"
+  },
+  {
+    "name": "simulation block base fee exceeds u64",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "blockHeader", "baseFeePerGasWei"],
+    "value": "18446744073709551616",
+    "expectedMessage": "positive u64 block gas and base fee"
   }
 ]

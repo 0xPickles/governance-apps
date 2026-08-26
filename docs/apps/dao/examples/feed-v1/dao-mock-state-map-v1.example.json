@@ -461,8 +461,8 @@
         "vote",
         "vote",
         "vote",
-        "veto",
-        "vote"
+        "vote",
+        "veto"
       ],
       "flagReason": null,
       "vetoReason": "Guardian veto after participation began",
@@ -670,7 +670,7 @@
       "contentState": "available",
       "discussionState": "verified",
       "analysisState": "complete",
-      "simulationState": "succeeded",
+      "simulationState": "unavailable",
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "mismatch",

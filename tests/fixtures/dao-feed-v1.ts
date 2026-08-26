@@ -30,6 +30,7 @@ import {
   DAO_FEED_SCHEMA_VERSION,
   createDaoFeedEventId,
   deriveDaoSimulationContextInputsSha256,
+  deriveDaoVoterBuildEvidenceSha256,
   deriveDaoVotingExecutedStorageSlots,
   encodeDaoFeedLifecycleEventAbi,
   parseDaoCreationIdentityStageV1,
@@ -55,6 +56,24 @@ const PINNED_VOTER_SOURCE = {
   revision: DAO_PINNED_VOTING_REVISION,
   sourcePath: VOTER_SOURCE_PATH,
 } as const;
+const EXECUTOR_SOURCE_PATH = "contracts/governance/Executor.vy";
+const PINNED_EXECUTOR_SOURCE = {
+  kind: "github",
+  label: "Executor.vy at pinned stYFI revision",
+  url: `https://github.com/yearn/stYFI/blob/${DAO_PINNED_VOTING_REVISION}/${EXECUTOR_SOURCE_PATH}`,
+  repository: "yearn/stYFI",
+  revision: DAO_PINNED_VOTING_REVISION,
+  sourcePath: EXECUTOR_SOURCE_PATH,
+} as const;
+const PINNED_EXECUTOR_SOURCE_SHA256 =
+  "0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1" as const;
+const PINNED_EXECUTOR_COMPILER_INTEGRITY_SHA256 =
+  "0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b" as const;
+const PINNED_EXECUTOR_RUNTIME_BYTE_LENGTH = 1_157 as const;
+const PINNED_EXECUTOR_RUNTIME_KECCAK256 =
+  "0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151" as const;
+const PINNED_EXECUTOR_RUNTIME_SHA256 =
+  "0x6515450d29d132991c615f1679eea39f8c095b3f71cc0e7a3ba3c446c8312f4c" as const;
 const VOTING_HOOK_ADDRESS =
   "0x9999999999999999999999999999999999999999";
 const CHANGED_VOTER_ADDRESS =
@@ -79,7 +98,13 @@ const WEIGHT_MEASURE_ADDRESS =
   "0x1414141414141414141414141414141414141414";
 const CHANGED_WEIGHT_MEASURE_ADDRESS =
   "0x1515151515151515151515151515151515151515";
+const PROPOSAL_BLACKLIST_ADDRESS =
+  "0x1616161616161616161616161616161616161616";
+const CHANGED_PROPOSAL_BLACKLIST_ADDRESS =
+  "0x1717171717171717171717171717171717171717";
 const DAO_GENESIS_TIMESTAMP = 1_543_946_400;
+const VOTER_GENESIS_TIMESTAMP =
+  DAO_GENESIS_TIMESTAMP - DAO_FEED_EPOCH_LENGTH_SECONDS;
 const CONFIGURATION_CHANGE_BLOCK = 23_902_000n;
 const SNAPSHOT_ID = "dao-mainnet-24000000-39c219e2";
 const GENERATED_AT = "2026-08-18T12:02:00Z";
@@ -151,10 +176,13 @@ type FixtureConfiguration = {
   ybcWeightAggregatorState: "configured" | "zero_address";
   executorAddress: string;
   executorState: "configured" | "uninitialized_zero_address";
+  executorImplementation: ReturnType<typeof pinnedExecutorImplementation>;
   votingHookAddress: string;
   votingHookState: "configured" | "zero_address";
   weightMeasureAddress: string;
   weightMeasureState: "configured" | "zero_address";
+  proposalBlacklistAddress: string;
+  proposalBlacklistState: "configured" | "uninitialized_zero_address";
   operatorAddress: string;
   operatorState: "configured" | "zero_address";
   guardianAddress: string;
@@ -171,6 +199,7 @@ function pinnedVoterImplementation(
   effectiveAt: FixtureConfiguration["effectiveAt"]
 ) {
   const runtimeHash = fixedHex32(BigInt(address));
+  const buildArtifactSha256 = fixedHex32(BigInt(address) + 1n);
   return {
     state: "verified_pinned" as const,
     address,
@@ -180,7 +209,7 @@ function pinnedVoterImplementation(
     compiler: "vyper@0.4.2" as const,
     optimization: "gas" as const,
     evmVersion: "cancun" as const,
-    immutableGenesisTimestamp: DAO_GENESIS_TIMESTAMP,
+    immutableGenesisTimestamp: VOTER_GENESIS_TIMESTAMP,
     compiledRuntimeBytecodeHash: runtimeHash,
     bytecode: {
       evidenceKind: "archive_rpc_and_reproducible_build" as const,
@@ -191,10 +220,53 @@ function pinnedVoterImplementation(
       blockHash: effectiveAt.blockHash,
       codeByteLength: 3_072,
       deployedBytecodeHash: runtimeHash,
-      buildArtifactSha256: fixedHex32(BigInt(address) + 1n),
+      buildArtifactSha256,
+      buildEvidenceSha256: deriveDaoVoterBuildEvidenceSha256({
+        constructorGenesisTimestamp: VOTER_GENESIS_TIMESTAMP,
+        compiledRuntimeBytecodeHash: runtimeHash,
+        codeByteLength: 3_072,
+        deployedBytecodeHash: runtimeHash,
+        buildArtifactSha256,
+      }),
+      constructorGenesisTimestamp: VOTER_GENESIS_TIMESTAMP,
     },
     classificationSemantics:
       "pinned_voter_trace_required_for_human_and_aggregate_labels" as const,
+    error: null,
+  };
+}
+
+function pinnedExecutorImplementation(
+  address: string,
+  effectiveAt: FixtureConfiguration["effectiveAt"]
+) {
+  return {
+    state: "verified_pinned" as const,
+    address,
+    source: PINNED_EXECUTOR_SOURCE,
+    sourceSha256: PINNED_EXECUTOR_SOURCE_SHA256,
+    compiler: "vyper@0.4.2" as const,
+    compilerIntegritySha256: PINNED_EXECUTOR_COMPILER_INTEGRITY_SHA256,
+    optimization: "gas" as const,
+    evmVersion: "cancun" as const,
+    experimentalCodegen: false as const,
+    compiledRuntimeByteLength: PINNED_EXECUTOR_RUNTIME_BYTE_LENGTH,
+    compiledRuntimeBytecodeHash: PINNED_EXECUTOR_RUNTIME_KECCAK256,
+    compiledRuntimeArtifactSha256: PINNED_EXECUTOR_RUNTIME_SHA256,
+    bytecode: {
+      evidenceKind: "archive_rpc_and_reproducible_build" as const,
+      rpcMethod: "eth_getCode" as const,
+      hashMethod: "keccak256" as const,
+      address,
+      blockNumber: effectiveAt.blockNumber,
+      blockHash: effectiveAt.blockHash,
+      blockHashVerification: "canonical_hash_at_height" as const,
+      codeByteLength: PINNED_EXECUTOR_RUNTIME_BYTE_LENGTH,
+      deployedBytecodeHash: PINNED_EXECUTOR_RUNTIME_KECCAK256,
+      buildArtifactSha256: PINNED_EXECUTOR_RUNTIME_SHA256,
+    },
+    executionSemantics:
+      "pinned_executor_32_byte_header_96_bit_length_max_64_calls" as const,
     error: null,
   };
 }
@@ -227,10 +299,21 @@ const FIXTURE_CONFIGURATIONS: readonly FixtureConfiguration[] = [
     ybcWeightAggregatorState: "configured",
     executorAddress: DAO_MOCK_EXECUTOR_ADDRESS,
     executorState: "configured",
+    executorImplementation: pinnedExecutorImplementation(
+      DAO_MOCK_EXECUTOR_ADDRESS,
+      {
+        blockNumber: "23900000",
+        blockHash: fixedHex32(23_900_000n),
+        transactionIndex: 0,
+        logIndex: 0,
+      }
+    ),
     votingHookAddress: VOTING_HOOK_ADDRESS,
     votingHookState: "configured",
     weightMeasureAddress: WEIGHT_MEASURE_ADDRESS,
     weightMeasureState: "configured",
+    proposalBlacklistAddress: PROPOSAL_BLACKLIST_ADDRESS,
+    proposalBlacklistState: "configured",
     operatorAddress: DAO_MOCK_OPERATOR_ADDRESS,
     operatorState: "configured",
     guardianAddress: DAO_MOCK_GUARDIAN_ADDRESS,
@@ -265,10 +348,21 @@ const FIXTURE_CONFIGURATIONS: readonly FixtureConfiguration[] = [
     ybcWeightAggregatorState: "configured",
     executorAddress: CHANGED_EXECUTOR_ADDRESS,
     executorState: "configured",
+    executorImplementation: pinnedExecutorImplementation(
+      CHANGED_EXECUTOR_ADDRESS,
+      {
+        blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
+        blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
+        transactionIndex: 0,
+        logIndex: 0,
+      }
+    ),
     votingHookAddress: CHANGED_VOTING_HOOK_ADDRESS,
     votingHookState: "configured",
     weightMeasureAddress: CHANGED_WEIGHT_MEASURE_ADDRESS,
     weightMeasureState: "configured",
+    proposalBlacklistAddress: CHANGED_PROPOSAL_BLACKLIST_ADDRESS,
+    proposalBlacklistState: "configured",
     operatorAddress: CHANGED_OPERATOR_ADDRESS,
     operatorState: "configured",
     guardianAddress: CHANGED_GUARDIAN_ADDRESS,
@@ -506,7 +600,7 @@ function createProposal(
     })
   );
   if (source.ref.proposalId === 13n && variant === null) {
-    addPostVetoAggregateRewrite(events, source, ref);
+    repairPostVetoVoteInvocations(events, source, ref);
   }
   if (variant?.name === "signal-explicit-execute") {
     addSignalExecuteEvent(events, source, ref);
@@ -545,12 +639,15 @@ function createProposal(
     variant,
     propose.log,
     exactScript === null ? storedScriptHash : keccak256(exactScript),
+    exactScript === null
+      ? null
+      : keccak256(exactScript) === storedScriptHash,
     proposalId,
     configuration
   );
   const flagReason = getModerationReason(events, "flag");
   const vetoReason = getModerationReason(events, "veto");
-  const humanParticipationCount = new Set(
+  const classifiedHumanCount = new Set(
     events
       .filter(
         (event) => event.type === "vote" && event.data.actorKind === "human"
@@ -560,6 +657,10 @@ function createProposal(
       )
       .filter((address): address is string => address !== undefined)
   ).size;
+  const unclassifiedVoteEventCount = events.filter(
+    (event) =>
+      event.type === "vote" && event.data.actorKind === "unclassified"
+  ).length;
 
   return {
     ref,
@@ -606,7 +707,25 @@ function createProposal(
     type: source.type,
     voteAccounting: {
       aggregateSemantics: "last_event_per_actor",
-      humanParticipationCount,
+      humanParticipation:
+        unclassifiedVoteEventCount === 0
+          ? {
+              state: "complete",
+              classifiedHumanCount,
+              unclassifiedVoteEventCount: 0,
+              error: null,
+            }
+          : {
+              state: "lower_bound",
+              classifiedHumanCount,
+              unclassifiedVoteEventCount,
+              error: failure(
+                "VOTER_TRACE_UNAVAILABLE",
+                "At least one raw Vote event could not be classified without the pinned Voter call trace.",
+                true,
+                "provenance"
+              ),
+            },
     },
     rules: {
       approvalThresholdBps: source.thresholdBps,
@@ -651,6 +770,7 @@ function createProposal(
               status: "success",
               transactionHash: propose.log.transactionHash,
               transactionSender: source.proposer,
+              effectiveGasPriceWei: "1",
               blockNumber: propose.log.blockNumber,
               blockHash: propose.log.blockHash,
               blockTimestamp: propose.log.timestamp,
@@ -893,6 +1013,7 @@ function createAnalysis(
   variant: Variant | null,
   proposeLog: WireLog,
   scriptHash: Hex,
+  scriptHashVerified: boolean | null,
   proposalId: bigint,
   configuration: FixtureConfiguration
 ): unknown {
@@ -924,8 +1045,8 @@ function createAnalysis(
   if (sourceProposal.type === "signal") {
     return {
       state: "unavailable",
-      generatedAt: null,
-      registryVersion: null,
+      generatedAt: GENERATED_AT,
+      registryVersion: "yearn-dao-registry/v1",
       calls: [],
       proposalSimulation: unavailableSimulation(
         "NO_EXECUTABLE_CALLS",
@@ -939,15 +1060,59 @@ function createAnalysis(
       ),
     };
   }
-  const calls = sourceAnalysis.calls.map(createCall);
+  const calls = sourceAnalysis.calls.map((call) =>
+    createCall(call, sourceAnalysis.generatedAt ?? GENERATED_AT)
+  );
+  if (scriptHashVerified === false) {
+    return {
+      state: "complete",
+      generatedAt: GENERATED_AT,
+      registryVersion:
+        sourceAnalysis.registryVersion ?? "yearn-dao-registry/v1",
+      calls,
+      proposalSimulation: unavailableSimulation(
+        "SCRIPT_HASH_MISMATCH",
+        "The exact retained script bytes do not match the stored proposal script hash."
+      ),
+      error: null,
+    };
+  }
   const failed = sourceAnalysis.proposalSimulation.state === "failed";
   const storageSlots = deriveDaoVotingExecutedStorageSlots(proposalId);
   const harnessRevision = "dao-feed-v1-fixture";
   const harnessArtifactSha256 = fixedHex32(77_777n);
+  const blockGasLimit = "36000000";
+  const blockBaseFeePerGasWei = "1";
   const executorFrameInitialGas = "30000000";
-  const effectiveGasPriceWei = "0";
+  const effectiveGasPriceWei = "1";
+  if (proposeLog.transactionHash === null) {
+    throw new Error(
+      "Completed proposal simulation requires the authenticated Propose transaction hash."
+    );
+  }
+  if (proposeLog.timestamp === null) {
+    throw new Error(
+      "Completed proposal simulation requires the authenticated Propose block timestamp."
+    );
+  }
+  const executorImplementation = {
+    ...configuration.executorImplementation,
+    bytecode: {
+      ...configuration.executorImplementation.bytecode,
+      blockNumber: proposeLog.blockNumber,
+      blockHash: proposeLog.blockHash,
+    },
+  };
   const contextInputsSha256 = deriveDaoSimulationContextInputsSha256({
+    blockNumber: proposeLog.blockNumber,
     blockHash: proposeLog.blockHash,
+    blockGasLimit,
+    blockBaseFeePerGasWei,
+    proposeTransactionHash: proposeLog.transactionHash,
+    proposeTransactionSender: sourceProposal.proposer,
+    proposeReceiptBlockNumber: proposeLog.blockNumber,
+    proposeReceiptBlockHash: proposeLog.blockHash,
+    proposeReceiptEffectiveGasPriceWei: effectiveGasPriceWei,
     transactionOrigin: sourceProposal.proposer,
     votingCaller: DAO_MOCK_VOTING_ADDRESS,
     executorAddress: configuration.executorAddress as Address,
@@ -956,6 +1121,27 @@ function createAnalysis(
     targetCaller: configuration.executorAddress as Address,
     harnessRevision,
     harnessArtifactSha256,
+    scriptHash,
+    executorSourceRevision: executorImplementation.source.revision,
+    executorSourcePath: executorImplementation.source.sourcePath,
+    executorSourceSha256: executorImplementation.sourceSha256,
+    executorCompilerIntegritySha256:
+      executorImplementation.compilerIntegritySha256,
+    executorRuntimeByteLength:
+      executorImplementation.compiledRuntimeByteLength,
+    executorRuntimeBytecodeHash:
+      executorImplementation.compiledRuntimeBytecodeHash,
+    executorRuntimeArtifactSha256:
+      executorImplementation.compiledRuntimeArtifactSha256,
+    executorEvidenceAddress:
+      executorImplementation.bytecode.address as Address,
+    executorEvidenceBlockNumber:
+      executorImplementation.bytecode.blockNumber,
+    executorEvidenceBlockHash: executorImplementation.bytecode.blockHash,
+    executorEvidenceCodeByteLength:
+      executorImplementation.bytecode.codeByteLength,
+    executorEvidenceDeployedBytecodeHash:
+      executorImplementation.bytecode.deployedBytecodeHash,
     executorFrameInitialGas,
     effectiveGasPriceWei,
   });
@@ -994,14 +1180,37 @@ function createAnalysis(
         callValue: "0",
         noCodeOverrides: true,
         operatorCheckExecuted: true,
+        executorImplementation,
         harness: {
           name: "gov-apps-stats-revm-frame-injector",
           revision: harnessRevision,
           artifactSha256: harnessArtifactSha256,
         },
         gasContext: {
+          derivationPolicy:
+            "min_propose_block_gas_limit_and_30000000",
+          gasPricePolicy: "propose_receipt_effective_gas_price",
+          executorFrameGasCap: "30000000",
           executorFrameInitialGas,
           effectiveGasPriceWei,
+          blockHeader: {
+            evidenceKind: "archive_rpc",
+            rpcMethod: "eth_getBlockByHash",
+            blockNumber: proposeLog.blockNumber,
+            blockHash: proposeLog.blockHash,
+            gasLimit: blockGasLimit,
+            baseFeePerGasWei: blockBaseFeePerGasWei,
+          },
+          proposeReceipt: {
+            evidenceKind: "archive_rpc",
+            rpcMethod: "eth_getTransactionReceipt",
+            transactionHash: proposeLog.transactionHash,
+            transactionSender: sourceProposal.proposer,
+            blockNumber: proposeLog.blockNumber,
+            blockHash: proposeLog.blockHash,
+            status: "success",
+            effectiveGasPriceWei,
+          },
           transactionEnvelope: "synthetic_legacy_no_blobs",
           accessList: [],
           initialWarmSetPolicy:
@@ -1055,26 +1264,28 @@ function createAnalysis(
       atomic: true,
       result: failed ? "revert" : "success",
       error: failed
-        ? failure(
+        ? failureAt(
             "TARGET_CALL_REVERTED",
             "The complete ordered script reverted atomically.",
             false,
-            "simulation"
+            "simulation",
+            sourceAnalysis.proposalSimulation.simulatedAt ?? GENERATED_AT
           )
         : null,
     },
     error: failed
-      ? failure(
+      ? failureAt(
           "SIMULATION_REVERTED",
           "Proposal-time simulation reverted.",
           false,
-          "simulation"
+          "simulation",
+          sourceAnalysis.generatedAt ?? GENERATED_AT
         )
       : null,
   };
 }
 
-function createCall(call: DaoDecodedCall): unknown {
+function createCall(call: DaoDecodedCall, observedAt: string): unknown {
   const base = {
     index: call.index,
     offset: call.offset,
@@ -1118,11 +1329,12 @@ function createCall(call: DaoDecodedCall): unknown {
       call.verifiedSource === null
         ? null
         : sourceWithPath(call.verifiedSource, call.sourcePath),
-    error: failure(
+    error: failureAt(
       "CALL_DECODE_FAILED",
       "The call could not be decoded with its candidate source.",
       false,
-      "decoder"
+      "decoder",
+      observedAt
     ),
   };
 }
@@ -1221,6 +1433,8 @@ function createEvent({
         : actorKind === "ybc_aggregate"
           ? configuration.ybcAddress
           : event.actor;
+    const traceUnavailable =
+      source.ref.proposalId === 14n && event.log.logIndex === 1;
     const raw = encodeDaoFeedLifecycleEventAbi({
       type: "vote",
       votingAddress: source.ref.votingAddress,
@@ -1231,41 +1445,30 @@ function createEvent({
     });
     return {
       ...common,
-      actor: eventArgumentActor(emittedActor, role),
+      actor: eventArgumentActor(
+        emittedActor,
+        traceUnavailable ? "unknown" : role
+      ),
       type: event.type,
       data: {
-        actorKind,
+        actorKind: traceUnavailable ? "unclassified" : actorKind,
         yeaBps: event.yeaBps,
-        direction: event.direction,
+        direction: traceUnavailable ? null : event.direction,
         weight: event.weight?.toString(),
         weightSemantics: "absolute_actor_contribution",
-        countsAsHumanParticipation: actorKind === "human",
-        classification: {
-          method: "pinned_voter_call_trace",
-          configurationId: configuration.configurationId,
-          voterAddress: configuration.voterAddress,
-          delegatedStakingAddress: configuration.delegatedStakingAddress,
-          ybcAddress: configuration.ybcAddress,
-          ybcWeightAggregatorAddress:
-            configuration.ybcWeightAggregatorAddress,
-          voterImplementationState: "verified_pinned",
-          observedAt: configuration.effectiveAt,
-          observationSemantics: "effective_at_event",
-          trace: {
-            transactionHash: log.transactionHash,
-            voterCallDepth: 1,
-            votingCallDepth: 2,
-            votingCallOrdinal:
-              actorKind === "human"
-                ? 0
-                : actorKind === "delegated_staking_aggregate"
-                  ? 1
-                  : 2,
-            emittedAccount: emittedActor,
-            ybcMembership: actorKind !== "human",
-            aggregatePathExecuted: actorKind !== "human",
-          },
-        },
+        countsAsHumanParticipation:
+          !traceUnavailable && actorKind === "human",
+        classification: traceUnavailable
+          ? pinnedVoterTraceUnavailable(configuration)
+          : pinnedVoterCallTraceClassification({
+              configuration,
+              source,
+              ref,
+              log,
+              emittedAccount: emittedActor,
+              actorKind,
+              sourceEvent: event,
+            }),
         abi: availableAbi(raw),
       },
     };
@@ -1374,68 +1577,300 @@ function createEvent({
   };
 }
 
-function addPostVetoAggregateRewrite(
+function pinnedVoterCallTraceClassification({
+  configuration,
+  source,
+  ref,
+  log,
+  emittedAccount,
+  actorKind,
+  sourceEvent,
+}: {
+  configuration: FixtureConfiguration;
+  source: DaoProposal;
+  ref: WireEventDraft["proposalRef"];
+  log: WireLog;
+  emittedAccount: string;
+  actorKind:
+    | "human"
+    | "delegated_staking_aggregate"
+    | "ybc_aggregate"
+    | null;
+  sourceEvent: DaoProposalEvent;
+}): unknown {
+  if (actorKind === null || log.transactionHash === null) {
+    throw new Error(
+      "Pinned Voter fixture classification requires an actor kind and transaction hash."
+    );
+  }
+  const invocationHuman = source.events.find(
+    (candidate) =>
+      candidate.type === "vote" &&
+      candidate.voteActorKind === "human" &&
+      candidate.log.transactionHash === sourceEvent.log.transactionHash
+  );
+  if (
+    !invocationHuman ||
+    invocationHuman.direction === null ||
+    invocationHuman.log.transactionHash === null
+  ) {
+    throw new Error(
+      "Pinned Voter fixture invocation requires one directional human Vote."
+    );
+  }
+  const ordinal =
+    actorKind === "human"
+      ? 0
+      : actorKind === "delegated_staking_aggregate"
+        ? 1
+        : 2;
+  const hasAggregateTriplet = source.ref.proposalId === 2n;
+  return pinnedVoterClassification({
+    configuration,
+    ref,
+    log,
+    emittedAccount,
+    voterCaller: invocationHuman.actor,
+    voterDirection: invocationHuman.direction,
+    ordinal,
+    ybcMembership: hasAggregateTriplet,
+    aggregatePathExecuted: hasAggregateTriplet,
+    aggregatorResult: hasAggregateTriplet
+      ? { state: "returned_positive", weight: "1" }
+      : { state: "skipped_non_member", weight: null },
+  });
+}
+
+function pinnedVoterClassification({
+  configuration,
+  ref,
+  log,
+  emittedAccount,
+  voterCaller,
+  voterDirection,
+  ordinal,
+  ybcMembership,
+  aggregatePathExecuted,
+  aggregatorResult,
+}: {
+  configuration: FixtureConfiguration;
+  ref: WireEventDraft["proposalRef"];
+  log: WireLog;
+  emittedAccount: string;
+  voterCaller: string;
+  voterDirection: "yea" | "nay";
+  ordinal: 0 | 1 | 2;
+  ybcMembership: boolean;
+  aggregatePathExecuted: boolean;
+  aggregatorResult:
+    | { state: "skipped_non_member"; weight: null }
+    | { state: "returned_zero"; weight: "0" }
+    | { state: "returned_positive"; weight: string };
+}): unknown {
+  if (log.transactionHash === null) {
+    throw new Error("Pinned Voter fixture trace requires a transaction hash.");
+  }
+  const voterCallTraceAddress = [0];
+  return {
+    method: "pinned_voter_call_trace",
+    configurationId: configuration.configurationId,
+    voterAddress: configuration.voterAddress,
+    delegatedStakingAddress: configuration.delegatedStakingAddress,
+    ybcAddress: configuration.ybcAddress,
+    ybcWeightAggregatorAddress: configuration.ybcWeightAggregatorAddress,
+    voterImplementationState: "verified_pinned",
+    observedAt: configuration.effectiveAt,
+    observationSemantics: "effective_at_event",
+    trace: {
+      invocationId: `${ref.chainId}:${ref.votingAddress.toLowerCase()}:${log.transactionHash}:0`,
+      transactionHash: log.transactionHash,
+      voterCallTraceAddress,
+      votingCallTraceAddress: [...voterCallTraceAddress, ordinal],
+      voterCallDepth: voterCallTraceAddress.length,
+      votingCallDepth: voterCallTraceAddress.length + 1,
+      voterSelector:
+        voterDirection === "yea" ? "0x69586e2e" : "0xff855dde",
+      voterCaller,
+      votingTarget: ref.votingAddress,
+      proposalId: ref.proposalId,
+      votingCallOrdinal: ordinal,
+      emittedAccount,
+      ybcMembership,
+      aggregatePathExecuted,
+      aggregatorResult,
+    },
+    error: null,
+  };
+}
+
+function pinnedVoterTraceUnavailable(
+  configuration: FixtureConfiguration
+): unknown {
+  return {
+    method: "pinned_voter_trace_unavailable",
+    configurationId: configuration.configurationId,
+    voterAddress: configuration.voterAddress,
+    delegatedStakingAddress: configuration.delegatedStakingAddress,
+    ybcAddress: configuration.ybcAddress,
+    ybcWeightAggregatorAddress: configuration.ybcWeightAggregatorAddress,
+    voterImplementationState: "verified_pinned",
+    observedAt: configuration.effectiveAt,
+    observationSemantics: "effective_at_event",
+    trace: null,
+    error: failure(
+      "VOTER_TRACE_UNAVAILABLE",
+      "The authenticated raw Vote log is retained, but its pinned Voter call trace is unavailable.",
+      true,
+      "provenance"
+    ),
+  };
+}
+
+function repairPostVetoVoteInvocations(
   events: WireEventDraft[],
   source: DaoProposal,
   ref: WireEventDraft["proposalRef"]
 ): void {
+  const propose = events.find((event) => event.type === "propose");
+  const sourceVotes = source.events.filter((event) => event.type === "vote");
+  const wireVotes = events.filter((event) => event.type === "vote");
+  const firstSourceVote = sourceVotes[0];
+  const secondSourceVote = sourceVotes[1];
+  const firstWireVote = wireVotes[0];
+  const secondWireVote = wireVotes[1];
   const vetoIndex = events.findIndex((event) => event.type === "veto");
-  if (vetoIndex < 1) throw new Error("The post-veto fixture needs its Veto event.");
+  if (
+    !propose ||
+    !firstSourceVote ||
+    !secondSourceVote ||
+    !firstWireVote ||
+    !secondWireVote ||
+    firstSourceVote.direction === null ||
+    secondSourceVote.direction === null ||
+    firstSourceVote.weight === null ||
+    secondSourceVote.weight === null ||
+    vetoIndex < 1
+  ) {
+    throw new Error(
+      "The proposal-13 fixture needs Propose, two human Votes, and Veto."
+    );
+  }
   const veto = events[vetoIndex]!;
-  const priorLog = events[vetoIndex - 1]!.log;
-  const positiveLog: WireLog = {
-    blockNumber: priorLog.blockNumber,
-    blockHash: priorLog.blockHash,
-    timestamp: priorLog.timestamp,
-    transactionHash: fixedHex32(BigInt(priorLog.blockNumber) * 100n + 91n),
-    transactionIndex: priorLog.transactionIndex + 1,
-    logIndex: priorLog.logIndex + 1,
+  const configuration = configurationForPosition(firstWireVote.log);
+  const positiveAggregatorResult = {
+    state: "returned_positive" as const,
+    weight: "50000000000000000000",
   };
-  const zeroBlock = BigInt(veto.log.blockNumber) + 1n;
-  const zeroLog: WireLog = {
-    blockNumber: zeroBlock.toString(),
-    blockHash: fixedHex32(zeroBlock),
-    timestamp:
-      veto.log.timestamp === null ? null : Math.min(veto.log.timestamp + 60, source.voteEndsAt - 1),
-    transactionHash: fixedHex32(zeroBlock * 100n + 92n),
-    transactionIndex: 1,
-    logIndex: 0,
-  };
-  events.splice(
-    vetoIndex,
-    0,
-    createSyntheticVoteEvent(
-      source,
-      ref,
-      positiveLog,
-      DAO_MOCK_YBC_AGGREGATE_ADDRESS,
-      "50000000000000000000",
-      5_000,
-      "ybc_aggregate"
-    )
-  );
-  events.push(
-    createSyntheticVoteEvent(
-      source,
-      ref,
-      zeroLog,
-      DAO_MOCK_YBC_AGGREGATE_ADDRESS,
-      "0",
-      5_000,
-      "ybc_aggregate"
-    )
-  );
+  const firstHumanLog = { ...firstWireVote.log, logIndex: 1 };
+  const delegatedLog = { ...firstHumanLog, logIndex: 2 };
+  const ybcLog = { ...firstHumanLog, logIndex: 3 };
+  const returnedZeroLog = { ...secondWireVote.log, logIndex: 4 };
+  const vetoLog = { ...veto.log, logIndex: 5 };
+  const firstHuman = createPinnedSyntheticVoteEvent({
+    source,
+    ref,
+    log: firstHumanLog,
+    actorAddress: firstSourceVote.actor,
+    weight: firstSourceVote.weight.toString(),
+    yeaBps: firstSourceVote.yeaBps ?? 10_000,
+    direction: firstSourceVote.direction,
+    actorKind: "human",
+    voterCaller: firstSourceVote.actor,
+    voterDirection: firstSourceVote.direction,
+    ordinal: 0,
+    ybcMembership: true,
+    aggregatePathExecuted: true,
+    aggregatorResult: positiveAggregatorResult,
+  });
+  const delegated = createPinnedSyntheticVoteEvent({
+    source,
+    ref,
+    log: delegatedLog,
+    actorAddress: configuration.delegatedStakingAddress,
+    weight: "0",
+    yeaBps: 5_000,
+    direction: null,
+    actorKind: "delegated_staking_aggregate",
+    voterCaller: firstSourceVote.actor,
+    voterDirection: firstSourceVote.direction,
+    ordinal: 1,
+    ybcMembership: true,
+    aggregatePathExecuted: true,
+    aggregatorResult: positiveAggregatorResult,
+  });
+  const ybc = createPinnedSyntheticVoteEvent({
+    source,
+    ref,
+    log: ybcLog,
+    actorAddress: configuration.ybcAddress,
+    weight: "0",
+    yeaBps: 5_000,
+    direction: null,
+    actorKind: "ybc_aggregate",
+    voterCaller: firstSourceVote.actor,
+    voterDirection: firstSourceVote.direction,
+    ordinal: 2,
+    ybcMembership: true,
+    aggregatePathExecuted: true,
+    aggregatorResult: positiveAggregatorResult,
+  });
+  const returnedZeroHuman = createPinnedSyntheticVoteEvent({
+    source,
+    ref,
+    log: returnedZeroLog,
+    actorAddress: secondSourceVote.actor,
+    weight: secondSourceVote.weight.toString(),
+    yeaBps: secondSourceVote.yeaBps ?? 0,
+    direction: secondSourceVote.direction,
+    actorKind: "human",
+    voterCaller: secondSourceVote.actor,
+    voterDirection: secondSourceVote.direction,
+    ordinal: 0,
+    ybcMembership: true,
+    aggregatePathExecuted: true,
+    aggregatorResult: { state: "returned_zero", weight: "0" },
+  });
+  events.splice(0, events.length, propose, firstHuman, delegated, ybc, returnedZeroHuman, {
+    ...veto,
+    eventId: createDaoFeedEventId(ref.chainId, ref.votingAddress, vetoLog),
+    log: vetoLog,
+  });
 }
 
-function createSyntheticVoteEvent(
+function createPinnedSyntheticVoteEvent({
+  source,
+  ref,
+  log,
+  actorAddress,
+  weight,
+  yeaBps,
+  direction,
+  actorKind,
+  voterCaller,
+  voterDirection,
+  ordinal,
+  ybcMembership,
+  aggregatePathExecuted,
+  aggregatorResult,
+}: {
   source: DaoProposal,
   ref: WireEventDraft["proposalRef"],
   log: WireLog,
   actorAddress: string,
   weight: string,
   yeaBps: number,
-  actorKind: "delegated_staking_aggregate" | "ybc_aggregate"
-): WireEventDraft {
+  direction: "yea" | "nay" | null,
+  actorKind: "human" | "delegated_staking_aggregate" | "ybc_aggregate",
+  voterCaller: string,
+  voterDirection: "yea" | "nay",
+  ordinal: 0 | 1 | 2,
+  ybcMembership: boolean,
+  aggregatePathExecuted: boolean,
+  aggregatorResult:
+    | { state: "skipped_non_member"; weight: null }
+    | { state: "returned_zero"; weight: "0" }
+    | { state: "returned_positive"; weight: string },
+}): WireEventDraft {
   const configuration = configurationForPosition(log);
   const raw = encodeDaoFeedLifecycleEventAbi({
     type: "vote",
@@ -1450,37 +1885,30 @@ function createSyntheticVoteEvent(
     proposalRef: ref,
     contractGeneration: "1",
     log,
-    actor: eventArgumentActor(actorAddress, actorKind),
+    actor: eventArgumentActor(
+      actorAddress,
+      actorKind === "human" ? "voter" : actorKind
+    ),
     type: "vote",
     data: {
       actorKind,
       yeaBps,
-      direction: null,
+      direction,
       weight,
       weightSemantics: "absolute_actor_contribution",
-      countsAsHumanParticipation: false,
-      classification: {
-        method: "pinned_voter_call_trace",
-        configurationId: configuration.configurationId,
-        voterAddress: configuration.voterAddress,
-        delegatedStakingAddress: configuration.delegatedStakingAddress,
-        ybcAddress: configuration.ybcAddress,
-        ybcWeightAggregatorAddress:
-          configuration.ybcWeightAggregatorAddress,
-        voterImplementationState: "verified_pinned",
-        observedAt: configuration.effectiveAt,
-        observationSemantics: "effective_at_event",
-        trace: {
-          transactionHash: log.transactionHash,
-          voterCallDepth: 1,
-          votingCallDepth: 2,
-          votingCallOrdinal:
-            actorKind === "delegated_staking_aggregate" ? 1 : 2,
-          emittedAccount: actorAddress,
-          ybcMembership: true,
-          aggregatePathExecuted: true,
-        },
-      },
+      countsAsHumanParticipation: actorKind === "human",
+      classification: pinnedVoterClassification({
+        configuration,
+        ref,
+        log,
+        emittedAccount: actorAddress,
+        voterCaller,
+        voterDirection,
+        ordinal,
+        ybcMembership,
+        aggregatePathExecuted,
+        aggregatorResult,
+      }),
       abi: availableAbi(raw),
     },
   };
@@ -1599,10 +2027,13 @@ function configurationValues(configuration: FixtureConfiguration) {
     ybcWeightAggregatorState: configuration.ybcWeightAggregatorState,
     executorAddress: configuration.executorAddress,
     executorState: configuration.executorState,
+    executorImplementation: configuration.executorImplementation,
     votingHookAddress: configuration.votingHookAddress,
     votingHookState: configuration.votingHookState,
     weightMeasureAddress: configuration.weightMeasureAddress,
     weightMeasureState: configuration.weightMeasureState,
+    proposalBlacklistAddress: configuration.proposalBlacklistAddress,
+    proposalBlacklistState: configuration.proposalBlacklistState,
     operatorAddress: configuration.operatorAddress,
     operatorState: configuration.operatorState,
     guardianAddress: configuration.guardianAddress,
@@ -1747,17 +2178,29 @@ function failure(
   code: string,
   message: string,
   retryable: boolean,
-  source:
-    | "chain"
-    | "rpc"
-    | "content"
-    | "asset"
-    | "decoder"
-    | "simulation"
-    | "publication"
-    | "provenance"
+  source: FailureSource
 ): unknown {
-  return { code, message, retryable, observedAt: GENERATED_AT, source };
+  return failureAt(code, message, retryable, source, GENERATED_AT);
+}
+
+type FailureSource =
+  | "chain"
+  | "rpc"
+  | "content"
+  | "asset"
+  | "decoder"
+  | "simulation"
+  | "publication"
+  | "provenance";
+
+function failureAt(
+  code: string,
+  message: string,
+  retryable: boolean,
+  source: FailureSource,
+  observedAt: string
+): unknown {
+  return { code, message, retryable, observedAt, source };
 }
 
 function fixedHex32(value: bigint): Hex {

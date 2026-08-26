@@ -152,6 +152,24 @@ a mock deployment. Unknown calls remain visible as target, selector, calldata,
 and size. A proposal-time simulation shows its reference block and never claims
 to guarantee execution.
 
+The feed records Voter and Executor implementation evidence for every
+historical configuration. Human and aggregate Vote labels require pinned Voter
+source, reproducible bytecode, and one transaction-and-trace-path invocation.
+Pinned code without a usable trace and custom Voter code preserve the raw Vote
+as unclassified, with a provenance failure and lower-bound human participation.
+A Voter constructor genesis is proved from that Voter build and may differ from
+the Voting contract genesis. A fixed build-evidence commitment binds that
+constructor input to source/compiler inputs and runtime, deployed-code, and
+artifact hashes. Complete invocation identities are feed-wide, ordinals follow
+canonical log order, and one pinned caller submits at most once per proposal.
+
+Only a verified pinned Executor permits pinned script framing, decoded calls,
+or a completed proposal-time simulation. Exact bytes and hash comparison remain
+visible for a custom or uninitialized Executor, but executable framing and
+analysis/simulation stay explicitly unavailable with implementation-specific
+provenance rather than borrowing pinned semantics.
+The empty signal identity remains independently knowable.
+
 ### DAO-FR-015: event provenance
 
 Each retained event exposes the producer-owned canonical block time, actor and
@@ -159,6 +177,12 @@ role, block number and hash, transaction hash when available, transaction
 index, and log index. User-facing time never substitutes the browser clock.
 Missing time or transaction data has an explicit fallback; Technical details
 still retains every available raw identity field.
+
+The feed uses one canonical block registry across deployment, configuration,
+event, receipt, bytecode, simulation, cursor, and finality evidence. One chain
+height has one hash and one value for every known timestamp; one hash maps to
+one height. Within a block, `logIndex` is unique and rises strictly as
+transaction order advances across proposals and Voting generations.
 
 ### DAO-FR-016: execution integrity readiness
 
@@ -200,19 +224,38 @@ authoritative for blocking a duplicate submission.
 
 ### DAO-FR-024: post-veto participation
 
-If the proposal was vetoed after votes existed and the voting window remains
-open, the page keeps Yea and Nay available and says:
+If the proposal was vetoed with a positive last-write-per-account running total
+and the voting window remains open, the page keeps Yea and Nay available and
+says:
 
 > This proposal has been vetoed and cannot be approved or executed. You may
 > still vote to record your participation.
 
-If it was vetoed before the first vote, voting is unavailable.
+If it was vetoed at a zero running total, voting is unavailable. Zero-weight
+Vote history alone does not change that early branch.
 
 ### DAO-FR-025: content failure
 
 Voting remains available when the protocol permits it even if content or
 analysis is unavailable. The app requires an explicit confirmation that the
 full proposal could not be reviewed.
+
+### DAO-FR-026: historical vote classification
+
+A complete pinned-Voter invocation has one nonzero, positive-weight binary
+human Vote at ordinal `0`. A nonmember or a member whose configured aggregator
+returns zero emits that human-only outcome. A positive aggregate result emits
+the exact ordered `{human, delegated staking, YBC}` triplet at ordinals
+`{0,1,2}` in one transaction and trace invocation. Aggregate weights remain
+absolute `Voting.vote` contributions and are not inferred from the aggregator
+return value.
+
+The consumer rejects standalone aggregate labels, mixed invocation identities,
+missing ordinals, wrong configured accounts, selector/direction conflicts, and
+trace/account substitutions. If a pinned trace is unavailable, or the Voter is
+custom and unverified, the raw event remains visible as unclassified. It cannot
+claim direction, aggregate role, or human participation. A zero-address Voter
+cannot produce an accepted Vote.
 
 ## 7. Proposal creation
 
@@ -270,6 +313,12 @@ one sole image in a top-level body paragraph after the summary.
 The canonical content JSON uses the fixed field order and one final LF. Its
 SHA-256 digest is the onchain `bytes32`; its CID is CIDv1/raw/SHA-256/Base32.
 The linked forum may continue changing.
+
+When retrieval yields invalid content, the feed retains the exact bytes and the
+consumer reproduces one non-retryable failure in this order: digest, UTF-8,
+JSON, proposal schema/domain parse, final LF, then canonical field order. A
+producer cannot substitute the failure code or label fully valid canonical
+bytes as invalid.
 
 An image token renders an informative attachment card, never an image-producing
 element. A relative `./assets/...` target matches one exact authenticated
@@ -344,36 +393,50 @@ conditional proposal-time Executor-frame scenario. It does not treat a
 time-gated `Voting.execute` call at the proposal block or a bare top-level
 Executor call with caller set to Voting as useful evidence: the latter changes
 `tx.origin`. A completed record must prove the authenticated hypothetical
-origin, an engine-injected nested frame with real Executor code and
-`CALLER = Voting`, target `CALLER = Executor`, the operator check, no code
-overrides, exact initial frame gas/effective gas price/envelope/access/warm-set
-inputs with their commitment, the exact block/time/script, and the typed Voting
-`executed` false-to-true transition. Its success or revert applies only to that
+origin, an engine-injected nested frame with proposal-effective verified-pinned
+Executor code and `CALLER = Voting`, target `CALLER = Executor`, the operator
+check, no code overrides, the exact block/time/script, and the typed Voting
+`executed` false-to-true transition. It authenticates the Propose block header
+and successful receipt. Initial frame gas is
+`min(Propose block gasLimit, 30,000,000)` and `GASPRICE` is the receipt's
+effective gas price. The recorded header base fee is not a substitute, and the
+receipt effective price cannot be below it. The versioned commitment also binds
+source/build/code evidence, envelope, empty access list, and warm-set inputs.
+Its success or revert applies only to that
 recorded scenario, not an unknown future execution transaction.
 
 Unknown call decoding does not force simulation failure. If an
-origin and frame-equivalent context cannot be established, analysis is
-`Unavailable` rather than successful.
+origin, pinned Executor implementation, authenticated header/receipt, or
+frame-equivalent context cannot be established, analysis is `Unavailable`
+rather than successful. Signals, missing or malformed bytes, and hash
+mismatches also cannot produce a completed proposal-time simulation. Analysis
+and simulation observations cannot precede a known Propose time or follow
+analysis generation or feed publication. Failed or
+unavailable simulation attempts bind their failure time to the same retained
+attempt time; both may be `null` only when that time is unproved. An
+analysis-level failure derived from simulation cannot predate it.
 
 ## 8. Lifecycle actions
 
 ### DAO-FR-040: retract
 
 Show retraction only to the proposer when the client reports it is permitted.
-Explain that a proposal with votes cannot be retracted and that retraction does
-not reset the proposal cooldown.
+Explain that a proposal with a positive last-write-per-account running vote
+total cannot be retracted, that zero-weight Vote history does not block it, and
+that retraction does not reset the proposal cooldown.
 
 ### DAO-FR-041: flag
 
 The operator may flag only when the client reports it is permitted. The form
-requires a reason within the contract limit. Flagging is presented as invalid or
-spam moderation, not an ordinary vote outcome.
+requires a reason within the contract limit. The same zero running-total rule
+applies, including accepted zero-weight Vote history. Flagging is presented as
+invalid or spam moderation, not an ordinary vote outcome.
 
 ### DAO-FR-042: veto
 
 The guardian may veto only when the client reports it is permitted. The form
-requires a reason. The confirmation explains whether the proposal has votes and
-whether participation voting will remain open.
+requires a reason. The confirmation explains whether the proposal has a
+positive running vote total and whether participation voting will remain open.
 
 ### DAO-FR-043: execute
 
@@ -388,6 +451,25 @@ An executable proposal enables execution only when:
 
 The transaction uses the shared `useTx` pipeline. One call failure reverts the
 whole script.
+
+### DAO-FR-044: historical capability evidence
+
+Feed admission uses the configuration effective at each emitted event.
+`Propose` requires nonzero blacklist, weight measure, and hook. Vote requires
+nonzero Voter and weight measure; positive weight also requires the hook, and a
+pinned-Voter path requires YBC. Retract and Flag require the hook, and Flag also
+requires the operator. Early-no-votes Veto requires guardian and hook;
+post-participation Veto requires the guardian but does not call the hook. A
+nonempty executable Execute requires Executor. An empty signal Execute skips
+that call. Guarded Execute requires the operator; permissionless Execute does
+not.
+
+Retract and Flag require a zero last-write-per-account running vote total at
+their event position. A prior zero-weight Vote is allowed, so the consumer does
+not replace this rule with “no Vote logs.” Once Executor or the proposal
+blacklist becomes nonzero, its nonzero-only setter cannot return it to zero.
+Every Vote multiplication and updated running total must fit checked uint256
+arithmetic at the event, even when the final proposal total fits.
 
 ## 9. Content and execution failure policy
 
@@ -416,6 +498,11 @@ a voting veto.
 - Backend decoding uses a maintained address/source registry. Structured source
   provenance can establish the pinned decoder input; proposer metadata and mock
   fixtures cannot establish a deployed contract identity.
+- Safe feed admission is total. The raw path handles malformed or oversized
+  JSON; the in-memory wrapper rejects non-serializable or oversized values
+  before traversal; direct schema safe parse returns typed failure for semantic
+  mutations without escaping an exception. Throwing parse helpers only rethrow
+  the same typed validation error.
 
 ## 11. Runtime and rollout
 

@@ -1,11 +1,16 @@
 # DAO Feed Schema v1
 
 This document freezes the consumer-owned `yearn.dao.feed.v1` contract. The
-producer must emit this contract as one atomic JSON document. The browser must
-admit the fetched text through the 64 MiB check in `parseDaoFeedJsonV1` before
-JSON parsing or deep schema traversal. In-memory fixtures use
-`parseDaoFeedV1`. Consumers must not trust a TypeScript cast or JSON Schema
-validation alone.
+producer must emit this contract as one atomic JSON document. The browser first
+admits fetched text through `safeParseDaoFeedJsonV1`, which applies the 64 MiB
+bound before JSON parsing or deep schema traversal. In-memory callers use
+`safeParseDaoFeedV1`, which rejects non-serializable or oversized values before
+schema traversal. Direct `DaoFeedV1Schema.safeParse` is total for structurally
+parsed semantic failures, including inconsistent totals, timelines, published
+rejection vectors, and property mutations. Each safe entry point returns a typed
+unsuccessful result instead of escaping an exception. The `parse*` helpers are
+the throwing convenience APIs and throw the returned Zod error. Consumers must
+not trust a TypeScript cast or JSON Schema validation alone.
 
 ## Artifacts
 
@@ -82,9 +87,15 @@ Voting generation. Configuration evidence cannot predate deployment or start,
 follow the canonical snapshot, or move backward in block/transaction/log order.
 Events cannot predate that generation's start block.
 
-The root canonical block owns the snapshot time and hash. Events at one height
-share one hash and producer-owned timestamp. Transaction hashes remain nullable;
-event identity does not use them. The event ID is:
+The root canonical block owns the snapshot time and hash. All block-bearing
+evidence enters one feed-wide canonical registry. At one chain height,
+deployment records, configuration observations, lifecycle logs, creation
+receipts, archive-code proofs, simulation headers and receipts,
+state-transition proofs, cursors, and finality records use one block hash and
+one value for every known timestamp. A block hash maps back to one height.
+Unknown timestamps remain `null`; they do not license a conflicting known
+timestamp. Transaction hashes remain nullable; event identity does not use
+them. The event ID is:
 
 ```text
 chainId:votingAddress:blockHash:transactionIndex:logIndex
@@ -96,10 +107,11 @@ transaction group share block, timestamp, and nullable transaction-hash
 provenance. The reverse relation is also unique: one non-null transaction hash
 maps to one canonical block hash and transaction position. Ethereum `logIndex`
 is block-global: `(chainId, blockHash, logIndex)` cannot repeat across
-transactions, proposals, or Voting generations, and one block hash maps to one
-block number and producer-owned timestamp. A configuration `effectiveAt`
-position is an ordered observation boundary, not a claim that a lifecycle log
-was emitted there, so it is not enrolled in the lifecycle-log namespace.
+transactions, proposals, or Voting generations. After events in one block are
+ordered by nondecreasing `transactionIndex`, `logIndex` must rise strictly;
+uniqueness alone is not enough. A configuration `effectiveAt` position is an
+ordered observation boundary, not a claim that a lifecycle log was emitted
+there, so it is not enrolled in the lifecycle-log namespace.
 
 ## Lifecycle ABI
 
@@ -129,11 +141,12 @@ An indexed creation cannot use that state.
 Every Veto retains an immutable `early_no_votes` or `post_participation` branch
 and the Yea/Nay/total state immediately before that log. The producer derives
 those totals from the last absolute contribution per actor at that event
-position, not from the final proposal totals. A later aggregate overwrite to
-zero cannot rewrite a post-participation branch. A Vote after an early veto is
-invalid; a Vote after a post-participation veto remains valid while the voting
-window is open. Veto is bounded by the end of the epoch following the voting
-epoch.
+position, not from the final proposal totals or Vote-log count. A zero total
+selects `early_no_votes` even when zero-weight Vote history exists; a positive
+total selects `post_participation`. The recorded branch is immutable. A Vote
+after an early veto is invalid; a Vote after a post-participation veto remains
+valid while the voting window is open. Veto is bounded by the end of the epoch
+following the voting epoch.
 
 Voting `Execute` may be retained for executable or empty-script signal
 proposals. Each Execute must have canonical time proving its correct following
@@ -169,10 +182,11 @@ has no minimum turnout.
 
 Vote-start offset, vote duration, execution delay and guard, Voter,
 delegated-staking, YBC and YBC-weight-aggregator addresses, Executor, hook,
-weight measure, operator, and guardian are ordered historical observations.
-Each configuration has a stable ID and exact block/hash/transaction/log
-position. Proposal rules copy and bind the configuration effective at Propose;
-that record is historical disclosure and remains the simulation Executor pin.
+weight measure, proposal blacklist, operator, and guardian are ordered
+historical observations. Each configuration has a stable ID and exact
+block/hash/transaction/log position. Proposal rules copy and bind the
+configuration effective at Propose; that record is historical disclosure and
+remains the simulation Executor pin.
 Each Vote is admitted against the timing and configuration effective at its own
 event position. Execute delay, guard, and operator checks bind the configuration
 effective at Execute. `statusConfiguration` binds the last configuration
@@ -194,15 +208,30 @@ Execute is rechecked with its event-effective delay. A passed signal remains raw
 `passed` for that entire following fixed epoch and auto-reports raw `executed`
 only afterward.
 
-Typed address states preserve every pinned contract-valid disabling value.
-Voter may be `disabled_zero_address`; delegated staking, YBC, YBC weight
-aggregator, hook, weight measure, and operator may be `zero_address`; the
-constructor's zero Executor is `uninitialized_zero_address`. The effective
-guardian and all Voting/emitter identities stay nonzero. These states are not
-capability guesses: zero Voter or weight measure disables Vote, a zero hook
-rejects positive-weight Vote, and a zero YBC atomically reverts a pinned-Voter
-submission. A zero operator blocks Flag and guarded Execute but does not block
-permissionless Execute.
+Typed address states preserve every pinned contract-valid zero value. Voter may
+be `disabled_zero_address`; delegated staking, YBC, YBC weight aggregator,
+hook, weight measure, and operator may be `zero_address`; constructor-prefix
+Executor and proposal-blacklist values are `uninitialized_zero_address`. The
+effective guardian and all Voting/emitter identities stay nonzero. After an
+Executor or proposal blacklist becomes nonzero, its nonzero-only setter cannot
+return it to zero.
+
+Admission checks the capability state effective at each event, not the current
+configuration. `Propose` requires nonzero blacklist, weight measure, and hook
+because all three calls precede its log. Vote requires nonzero Voter and weight
+measure; positive Vote weight also requires a nonzero hook. Every verified
+pinned-Voter submission requires nonzero YBC, including when its call trace is
+unavailable; a member aggregate path also requires a configured weight
+aggregator. Retract and Flag require a nonzero hook. Flag also requires a
+nonzero operator. An `early_no_votes` Veto requires guardian and hook; a
+`post_participation` Veto requires the guardian but does not call the hook. A
+nonempty executable Execute requires nonzero Executor; an empty signal Execute
+skips it. Guarded Execute requires the event-effective operator, while
+permissionless Execute does not.
+
+Retract and Flag use last-write-per-account running totals immediately before
+their event. They require a zero total, not an empty Vote-log history. A prior
+raw Vote with zero weight is valid; a positive current contribution is not.
 
 Signal proposals keep the fixed empty-script hash and, when bytes are available,
 the exact empty script. A passed signal may have raw protocol status `executed`
@@ -214,24 +243,57 @@ Human votes carry binary Yea or Nay direction. Delegated-staking and YBC events
 always keep `direction: null`, including 0 and 10,000 bps. Their weight is an
 absolute actor contribution, not an increment. Totals use the last event for
 each human or aggregate actor. Aggregate rewrites do not increase the human
-participation count.
+participation count. At every Vote, `weight * yeaBps`, the derived Yea
+contribution, and the updated last-write total and Yea total must fit checked
+uint256 arithmetic. A terminal total cannot hide an intermediate overflow.
 
 Each configuration records the effective Voter implementation as one of
 `verified_pinned`, `disabled_zero_address`, or `unverified`. A pinned proof binds
 `contracts/governance/Voter.vy` at revision
 `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
 `0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
-`vyper@0.4.2` with gas optimization and Cancun, its immutable genesis, a
-reproducible build artifact, and archive `eth_getCode` length/hash at the
-configuration position.
+`vyper@0.4.2` with gas optimization and Cancun, its immutable constructor
+genesis, a reproducible build artifact, and archive `eth_getCode` length/hash at
+the configuration position. The Voter constructor genesis must match its own
+build evidence. It is independent of the Voting generation genesis and may
+differ from it. `yearn.dao.voter-build-evidence.v1` is a fixed-order SHA-256
+commitment over the pinned source and compiler settings, constructor genesis,
+runtime length/hash, deployed-code hash, and build-artifact hash. Changing the
+constructor input without coherently changing and recommitting its dependent
+build evidence is invalid.
 
-Each classified Vote records that effective Voter proof, delegated-staking,
-YBC, and YBC-weight-aggregator configuration, plus a transaction-bound call
-trace, call depths, call ordinal, emitted account, membership, and aggregate
-path. The trace resolves address collisions and permits the pinned Voter's
-contract-valid zero delegated aggregate account. An arbitrary or unverified
-Voter remains `unclassified`; it preserves raw account, weight, and Yea bps but
-cannot claim binary-human or aggregate semantics. Flag and veto actor evidence
+A complete pinned classification groups events by this invocation identity:
+
+```text
+chainId:votingAddress:transactionHash:voterCallTraceAddress
+```
+
+The group binds the outer Voter caller, `Yea(address,uint256)` selector
+`0x69586e2e` or `Nay(address,uint256)` selector `0xff855dde`, proposal ID,
+Voting target, parent and child trace paths, depths, emitted account, membership,
+and aggregator result. The invocation identity is feed-wide and may bind only
+one proposal/caller/selector invocation; it cannot be split across proposal
+records. Ordinal `0` is one nonzero, positive-weight, binary human
+Vote. A nonmember skips aggregation and produces exactly `{0}`. A member whose
+configured aggregator returns zero also produces exactly `{0}`. A positive
+aggregator result produces exactly one log-ordered triplet `{0,1,2}`: human,
+configured delegated-staking aggregate, then configured YBC aggregate. The two
+aggregate events use the same aggregate Yea basis points; their emitted weights
+remain the absolute `Voting.vote` contributions and need not equal the
+aggregator return value. One complete pinned caller may submit only once per
+proposal. Standalone aggregate labels are invalid.
+
+When pinned Voter code is proved but the transaction trace is unavailable,
+`pinned_voter_trace_unavailable` retains the effective aggregate addresses and
+raw Vote but labels it `unclassified` with provenance failure. A custom nonzero
+Voter uses `unverified_voter_unclassified`; a disabled zero Voter cannot produce
+a Vote. Neither unclassified state may claim human direction, aggregate role, or
+human participation. Human participation is `complete` only when every raw Vote
+is classified. Otherwise it is `lower_bound`, with the exact classified-human
+count, unclassified-event count, and provenance failure.
+
+The trace resolves address collisions and permits the pinned Voter's
+contract-valid zero delegated aggregate account. Flag and veto actor evidence
 must join the historical transaction sender to the role configuration effective
 at that log. If the producer cannot prove both, it emits strict unavailable
 evidence and never uses current roles as a guess.
@@ -257,6 +319,15 @@ apply only to `available`. Immutable content `createdAt` is independently
 authenticated content data. It may precede chain creation and, when chain time
 is known, cannot follow it; it is never a substitute for missing block time.
 
+The invalid record's non-retryable error code must reproduce from those exact
+bytes in fixed precedence: digest mismatch, fatal UTF-8 decode, JSON parse,
+proposal-content schema or domain parse, final-LF check, then canonical field
+order. The accepted codes are `CONTENT_DIGEST_MISMATCH`,
+`CONTENT_UTF8_INVALID`, `CONTENT_JSON_INVALID`, `CONTENT_SCHEMA_INVALID`,
+`CONTENT_FINAL_LF_INVALID`, and `CONTENT_CANONICAL_INVALID`. A substituted code
+is invalid. Bytes that pass every check are canonical available content and
+cannot be relabeled `invalid`.
+
 The content parser enforces the WP7B limits: 32,768 Markdown UTF-8 bytes, 16
 assets, 512 UTF-8 path bytes, 127 UTF-8 media-type bytes, 2,097,152 bytes per
 asset, 33,554,432 aggregate bytes, 8,192 pixels per image dimension, and
@@ -276,13 +347,38 @@ exists only for a retryable failure with attempts left.
 ## Scripts, decoding, and simulation
 
 The feed retains the exact Propose script for the life of the event when it is
-available, its stored hash, computed Keccak-256 hash, comparison state, bounded
-frame-parser result, and Propose event ID. The stored hash always determines
-type: `signal` iff it equals `keccak256(0x)`; every other stored hash is
-`executable`, even when the exact Propose bytes are unavailable. Missing bytes,
-a stored-hash mismatch, malformed framing, and a structurally valid zero target
-remain distinct. Malformed history remains representable; it does not become an
-executable script.
+available, its stored hash, computed Keccak-256 hash, comparison state,
+implementation-aware structure result, and Propose event ID. The stored hash
+always determines type: `signal` iff it equals `keccak256(0x)`; every other
+stored hash is `executable`, even when the exact Propose bytes are unavailable.
+Missing bytes, a stored-hash mismatch, malformed framing, and a structurally
+valid zero target remain distinct. Malformed history remains representable; it
+does not become an executable script.
+
+Every historical configuration discriminates its Executor as
+`verified_pinned`, `uninitialized_zero_address`, or `unverified`. The pinned
+proof binds `contracts/governance/Executor.vy` at revision
+`9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
+`0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`,
+`vyper@0.4.2`, compiler integrity SHA-256
+`0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b`,
+gas optimization, Cancun, and experimental code generation disabled. The
+reproducible runtime is 1,157 bytes, with Keccak-256
+`0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
+and artifact SHA-256
+`0x6515450d29d132991c615f1679eea39f8c095b3f71cc0e7a3ba3c446c8312f4c`.
+Archive `eth_getCode` evidence binds that exact runtime to the configured
+address and configuration block/hash.
+
+Only `verified_pinned` authorizes the pinned 32-byte-header, 96-bit-length,
+64-call frame parser. Exact bytes and hash comparison remain required for a
+custom or zero Executor, but an executable script uses
+`implementation_unverified` with `EXECUTOR_IMPLEMENTATION_UNVERIFIED`; the
+producer must not guess pinned framing, decoded calls, or a completed
+simulation. Its analysis and simulation are both explicitly `unavailable` with
+`EXECUTOR_IMPLEMENTATION_UNVERIFIED`; constructor-zero uses
+`EXECUTOR_UNINITIALIZED_ZERO_ADDRESS`. Signal empty-script framing remains
+independently knowable.
 
 Decoded records keep every raw frame in order. Version 1 retains only verified
 GitHub sources. Every record binds `kind: github`, repository, exact 40-hex
@@ -304,21 +400,43 @@ state does not imply a simulation result.
 A completed proposal-time simulation uses `revm@34` and method
 `revm_engine_injected_executor_frame_conditional_origin`. It is a disclosed,
 conditional proposal-time scenario, not a claim that an unknown future
-`Voting.execute` transaction will succeed. It uses the Propose block number,
+`Voting.execute` transaction will succeed. Only an executable proposal with
+exact retained, hash-verified bytes and valid pinned-Executor framing may use a
+completed state; signals, missing or malformed scripts, hash mismatches, and
+custom Executors are unavailable. The method uses the Propose block number,
 hash, and timestamp, freezes the authenticated Propose transaction sender as the
 hypothetical `tx.origin`, and injects a nested Executor frame at engine level.
-That frame uses real Executor code with `CALLER = Voting`, runs the
+That frame uses the proposal-effective verified-pinned Executor proof and exact
+archive code at the Propose block. It sets `CALLER = Voting`, runs the
 `operators[Voting]` check, uses zero value and the exact retained script, and
 ensures each target sees `CALLER = Executor`. There is no ordinary deployed
-harness, top-level caller substitution, or code override. The method records
-the frame-injector revision and artifact hash. Its strict gas context records
-positive initial Executor-frame gas, canonical effective `GASPRICE`, a synthetic
+harness, top-level caller substitution, or code override. A zero, custom, or
+unproved Executor cannot produce a completed record.
+
+The method records the frame-injector revision and artifact hash. Its gas
+context authenticates the Propose header with `eth_getBlockByHash`, including
+positive u64 `gasLimit` and `baseFeePerGas`, and the successful Propose receipt
+with `eth_getTransactionReceipt`, including transaction hash, sender, block,
+and `effectiveGasPrice`. It derives:
+
+```text
+executorFrameInitialGas = min(proposeBlock.gasLimit, 30_000_000)
+effectiveGasPriceWei = proposeReceipt.effectiveGasPrice
+```
+
+The frame gas is positive and u64-bounded. The header base fee is recorded but
+is never substituted for `GASPRICE`; the authenticated receipt effective price
+cannot be lower than that base fee. The remaining inputs are a synthetic
 legacy no-blobs envelope, an exact empty access list, and the Cancun frame-entry
 warm set containing origin, Voting, Executor, and precompiles with no prewarmed
-storage. The exact block hash binds block gas limit and base fee. A fixed-order
-SHA-256 commitment binds those inputs to the block, origin, caller chain, and
-injector artifact. If the origin or any frame/gas provenance is missing or
-substituted, the simulation is `unavailable`.
+storage.
+
+`yearn.dao.simulation-context-inputs.v2` is a fixed-order SHA-256 commitment to
+the block/header and receipt facts, origin and caller chain, script hash,
+injector artifact, exact Executor source/build/runtime/archive-code proof, gas
+formula and values, envelope, access list, and warm-set policy. If the producer
+lacks or cannot reproduce any required fact, it emits a fully `unavailable`
+simulation instead of partial frame claims.
 
 Before entering the Executor frame, the method applies one typed
 proposal-specific override proving `executed: false -> true`. That proof
@@ -343,14 +461,25 @@ A bare top-level `Executor.execute` call with caller set to Voting is invalid
 because it changes `tx.origin`. An ordinary harness is also invalid because it
 changes the Executor caller or observable Voting code. If the producer cannot
 establish the Propose state, timestamp, hypothetical origin, nested frame,
-caller chain, exact script, real code, and typed Voting transition, it emits
+caller chain, exact script, verified Executor code, authenticated header and
+receipt, deterministic gas inputs, and typed Voting transition, it emits
 `unavailable`, with no partial method or context claims.
+
+Analysis and simulation times are ordered evidence. Non-pending analysis cannot
+precede a known Propose block or follow feed generation. A completed simulation
+cannot precede its Propose state timestamp or follow analysis generation or feed
+generation. A failed completed simulation records the same instant in
+`simulatedAt` and `error.observedAt`. An unavailable simulation either uses
+`null` for both instants or one exact shared attempt/failure instant within the
+same bounds. It cannot report a future or pre-Propose observation.
+An analysis-level failure derived from a simulation failure cannot predate that
+simulation observation.
 
 ## Mock mapping and consumer overlays
 
 The mock-state map names exact status, content, discussion, script, analysis,
-simulation, rule, event, moderation, and missing-provenance predicates for all 23
-accepted M2 states. `late-voting` and `proposal-capacity-full` are the only
+simulation, rule, event, moderation, and missing-provenance predicates for every
+accepted M2 state. `late-voting` and `proposal-capacity-full` are the only
 consumer-wallet overlays. They add no wallet eligibility fields to the feed.
 Missing scripts and unavailable simulations use explicit states, not absent
 optional fields.
@@ -368,8 +497,13 @@ npm run test
 ```
 
 The focused suite parses the accepted examples, checks JSON Schema/Zod parity,
-runs every rejection vector, and tests cross-record, cryptographic, ABI,
-timestamp, source, bound, retry, reorg, cursor, and publication invariants.
+and runs every rejection vector through the direct schema safe parse, the
+consumer wrapper, and the raw-JSON safe path. Property-style structural and
+semantic mutations must return typed failures without throwing. The suite also
+tests cross-record block identity, Voter invocation grouping, Executor
+provenance, content-failure reproduction, event-effective capabilities,
+running vote totals, chronology, cryptographic and ABI bindings, block-global
+log order, bounds, retry, reorg, cursor, and publication invariants.
 
 ## Producer assumptions still open
 
@@ -379,16 +513,18 @@ WP8 does not claim that live production is ready. WP9 must resolve and report:
 - exact live Voting generation addresses, deployment blocks, and producer start
   blocks, genesis timestamp, deployed bytecode hashes, and configuration
   histories;
-- historical Voter, delegated-staking, YBC, YBC aggregator, Executor, vote
-  timing, execution delay/guard, hook, weight measure, operator, and guardian
-  configuration at each relevant log;
+- historical Voter, delegated-staking, YBC, YBC aggregator, Executor, proposal
+  blacklist, vote timing, execution delay/guard, hook, weight measure, operator,
+  and guardian configuration at each relevant log;
 - the stable and immutable R2 object keys, cursor-state key, and local state-file
   paths, while keeping the publication order fixed above;
 - bounded raw content and asset fetch policy details within the v1 maxima; and
 - producer support for DAO event ABIs, nullable transaction hashes, reverse
-  transaction identity, block hashes, transaction indices, CID and blob
-  handling, pinned Voter reproducible-code and call-trace evidence, and the
-  pinned layout/bytecode/frame proof for the conditional REVM transition.
+  transaction identity, a feed-wide canonical block registry, block-global log
+  order, CID and blob handling, pinned Voter reproducible-code and invocation
+  traces, pinned Executor reproducible-build/archive evidence, authenticated
+  Propose headers and receipts, and the pinned layout/bytecode/frame proof for
+  the conditional REVM transition.
 
 Those are producer tasks and assumptions. WP8 adds no producer code and no
 frontend feed-backed reads.
