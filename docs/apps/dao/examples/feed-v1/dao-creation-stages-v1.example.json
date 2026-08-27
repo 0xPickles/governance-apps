@@ -1,0 +1,158 @@
+[
+  {
+    "schemaVersion": 1,
+    "stage": "receipt_confirmed",
+    "ref": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "1"
+    },
+    "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+    "receipt": {
+      "status": "success",
+      "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+      "transactionSender": "0x4444444444444444444444444444444444444444",
+      "blockNumber": "23901150",
+      "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+      "transactionIndex": 1,
+      "matchingProposeLogCount": 1,
+      "evidenceKind": "committed_synthetic_fixture",
+      "rpcMethod": null,
+      "fixturePath": "tests/fixtures/dao-feed-v1.ts",
+      "fixtureProjectionSha256": "0x5868dd541d61e4ff17005ef5d7e70950d7db8507366388b61b7b36ad177d91c5",
+      "rawResultSha256": null,
+      "rawResultObjectKey": null
+    },
+    "identity": {
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "201",
+      "contentDigest": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c668",
+      "script": "0x",
+      "log": {
+        "blockNumber": "23901150",
+        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+        "transactionIndex": 1,
+        "logIndex": 0,
+        "timestamp": null,
+        "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2"
+      },
+      "abi": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "topics": [
+          "0x385a5c21b60cb605d8ba2e06eaecca5148598b1c9401ea0e2a5f181d50a53ffd",
+          "0x0000000000000000000000000000000000000000000000000000000000000001",
+          "0x0000000000000000000000004444444444444444444444444444444444444444",
+          "0x00000000000000000000000000000000000000000000000000000000000000c9"
+        ],
+        "data": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c66800000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000",
+        "matchingLogCount": 1,
+        "canonicalReencodingMatched": true
+      }
+    },
+    "indexedSnapshotId": null
+  },
+  {
+    "schemaVersion": 1,
+    "stage": "awaiting_index",
+    "ref": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "1"
+    },
+    "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+    "receipt": {
+      "status": "success",
+      "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+      "transactionSender": "0x4444444444444444444444444444444444444444",
+      "blockNumber": "23901150",
+      "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+      "transactionIndex": 1,
+      "matchingProposeLogCount": 1,
+      "evidenceKind": "committed_synthetic_fixture",
+      "rpcMethod": null,
+      "fixturePath": "tests/fixtures/dao-feed-v1.ts",
+      "fixtureProjectionSha256": "0x5868dd541d61e4ff17005ef5d7e70950d7db8507366388b61b7b36ad177d91c5",
+      "rawResultSha256": null,
+      "rawResultObjectKey": null
+    },
+    "identity": {
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "201",
+      "contentDigest": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c668",
+      "script": "0x",
+      "log": {
+        "blockNumber": "23901150",
+        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+        "transactionIndex": 1,
+        "logIndex": 0,
+        "timestamp": null,
+        "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2"
+      },
+      "abi": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "topics": [
+          "0x385a5c21b60cb605d8ba2e06eaecca5148598b1c9401ea0e2a5f181d50a53ffd",
+          "0x0000000000000000000000000000000000000000000000000000000000000001",
+          "0x0000000000000000000000004444444444444444444444444444444444444444",
+          "0x00000000000000000000000000000000000000000000000000000000000000c9"
+        ],
+        "data": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c66800000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000",
+        "matchingLogCount": 1,
+        "canonicalReencodingMatched": true
+      }
+    },
+    "indexedSnapshotId": null
+  },
+  {
+    "schemaVersion": 1,
+    "stage": "indexed",
+    "ref": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "1"
+    },
+    "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+    "receipt": {
+      "status": "success",
+      "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+      "transactionSender": "0x4444444444444444444444444444444444444444",
+      "blockNumber": "23901150",
+      "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+      "transactionIndex": 1,
+      "matchingProposeLogCount": 1,
+      "evidenceKind": "committed_synthetic_fixture",
+      "rpcMethod": null,
+      "fixturePath": "tests/fixtures/dao-feed-v1.ts",
+      "fixtureProjectionSha256": "0x5868dd541d61e4ff17005ef5d7e70950d7db8507366388b61b7b36ad177d91c5",
+      "rawResultSha256": null,
+      "rawResultObjectKey": null
+    },
+    "identity": {
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "201",
+      "contentDigest": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c668",
+      "script": "0x",
+      "log": {
+        "blockNumber": "23901150",
+        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+        "transactionIndex": 1,
+        "logIndex": 0,
+        "timestamp": null,
+        "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2"
+      },
+      "abi": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "topics": [
+          "0x385a5c21b60cb605d8ba2e06eaecca5148598b1c9401ea0e2a5f181d50a53ffd",
+          "0x0000000000000000000000000000000000000000000000000000000000000001",
+          "0x0000000000000000000000004444444444444444444444444444444444444444",
+          "0x00000000000000000000000000000000000000000000000000000000000000c9"
+        ],
+        "data": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c66800000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000",
+        "matchingLogCount": 1,
+        "canonicalReencodingMatched": true
+      }
+    },
+    "indexedSnapshotId": "dao-mainnet-24000000-39c219e2"
+  }
+]

@@ -1,8 +1,11 @@
 # DAO Governance Mock Data Schema v1
 
-This schema defines the production-shaped data boundary for the deterministic
-mock client. Names may change during implementation, but the trust boundaries and
-state distinctions are required.
+This schema defines the deterministic mock-client boundary accepted in M2. It
+is not the producer wire contract. The frozen consumer-owned feed contract is
+[`feed-schema-v1.md`](feed-schema-v1.md), with strict failure and provenance
+states, exact lifecycle ABI records, and publication metadata. The
+[`dao-mock-state-map-v1.example.json`](examples/feed-v1/dao-mock-state-map-v1.example.json)
+file maps every accepted mock state to that feed without optional-field guesses.
 
 ## 1. Proposal identity
 
@@ -97,6 +100,12 @@ CIDv1/raw/SHA-256/Base32 form is the content CID. Consumers verify those bytes
 and parse the declared version; they do not reserialize a parsed object to
 choose its digest.
 
+The frozen feed keeps exact fetched bytes for `invalid` content and reproduces
+the first failure in this order: digest, fatal UTF-8, JSON, proposal
+schema/domain parse, final LF, then canonical field order. The producer cannot
+substitute another typed error, and bytes that pass all checks cannot be
+relabeled invalid.
+
 Each manifest digest authenticates one independent raw asset block. A relative
 manifest attachment is an exact `./assets/...` path lookup, never a descendant
 of the content CID; derive its canonical raw CID from the matching digest. A
@@ -173,6 +182,11 @@ type DaoAnalysis = {
 };
 ```
 
+The `atomic_script_at_state` literal above belongs only to the accepted M2 mock
+view. It is not a producer method. The frozen feed's completed method is
+`revm_engine_injected_executor_frame_conditional_origin` with engine
+`revm@34.0.0` and explicit historical `SpecId::OSAKA`.
+
 Raw author input remains a string until syntax validation succeeds. Invalid
 characters and odd nibble counts do not describe a byte sequence, so
 `scriptBytes` and `scriptHash` are `null` for those errors. Once the input is
@@ -182,11 +196,75 @@ size, call-count, or proposal-type check fails.
 The frontend parser produces `DaoScriptCheck`. Backend decoding and proposal-time
 simulation produce the decoded calls and stored simulation. A structured source
 must be complete, use HTTPS without credentials, and retain its revision and
-path separately. It can prove the exact decoder source but cannot prove that a
-mock address is deployed. Unknown decoding has no verified source and remains
+path separately. The frozen feed narrows accepted verified records to exact
+canonical GitHub blob URLs that bind repository, 40-hex revision, and normalized
+path. A source can prove the exact decoder input but cannot prove that a mock
+address is deployed. Unknown decoding has no verified source and remains
 independent from simulation success. `unavailable` means the producer could not
-establish an execution-equivalent context; `failed` means the atomic script ran
-in that context and reverted.
+establish the required origin and nested-frame provenance; `failed` means the
+atomic script reverted only in the exact disclosed conditional scenario. The
+frozen feed permits a completed result only for the proposal-effective verified
+pinned Executor and exact archive-RPC or committed-synthetic code evidence at
+the Propose block. It authenticates
+the Propose header and successful receipt, derives initial frame gas as
+`min(block gasLimit, 30,000,000)`, and uses the receipt effective gas price for
+`GASPRICE`. The header base fee is recorded but is not a substitute, and the
+receipt effective price cannot be lower than it. A no-blobs envelope, empty
+access list, Osaka coinbase/precompile warm set, BPO2 blob context, exact
+`execute(bytes)` calldata, and the
+`yearn.dao.simulation-context-inputs.v4` commitment bind those facts, the script,
+chain-spec/engine evidence, Executor source/build/code proof, caller chain,
+injector artifact, and exact-position Executor-authorization storage/replay
+evidence. The 30,000,000 injected-frame cap is explicitly a
+non-transactional overapproximation with outer validation bypassed and parent
+EIP-150 forwarding unmodeled; it does not prove future execution feasibility.
+Exact Osaka/BPO2 activation and blob-initialization literals, the REVM crate
+identity, the rejected Prague comparison, and all six gas-disclosure fields are
+normative in `feed-schema-v1.md` and the generated JSON Schema.
+Missing evidence produces a fully unavailable simulation.
+Completed v1 simulation is mainnet-only and requires `chainId = 1` in the feed
+and frame. V4 binds the evidence kind plus raw digest/object-key pair for the
+header, Propose receipt, Executor code, authorization storage, authorization
+log replay, and Voting override code. Synthetic branches instead bind their
+fixture projection and keep both live fields null.
+
+That Executor proof is per configuration. `verified_pinned` binds
+`contracts/governance/Executor.vy` at revision
+`9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, source SHA-256
+`0xfd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`,
+`vyper@0.4.2`, Vyper source-integrity SHA-256
+`0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b`,
+whose preimage is the exact lowercase ASCII string
+`fd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`
+without `0x` or LF, plus the
+official Linux x86-64 compiler release asset SHA-256
+`0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
+Compilation uses gas optimization, Cancun, and no experimental codegen. Its exact
+1,157-byte runtime has Keccak-256
+`0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
+and decoded raw-runtime SHA-256
+`0x6515450d29d132991c615f1679eea39f8c095b3f71cc0e7a3ba3c446c8312f4c`.
+The compiler asset is
+`vyper.0.4.2+commit.c216787f.linux` from the percent-encoded `v0.4.2`
+release URI, 23,495,192 unchanged bytes, long version
+`0.4.2+commit.c216787f`, platform `linux-x86_64-gnu`, and official Ubuntu 22.04
+workflow. Exact `-Werror -O gas --evm-version cancun` creation/runtime stdout is
+2,483/2,317 bytes with SHA-256 `0x48dbf2…9f23` / `0x9c50f7…021b`; decoded
+creation is 1,240 bytes with SHA-256 `0xccb991…2a60`, and Executor has no
+immutables. Full hashes, source-integrity preimages, output decoding, and the
+Voter v2 template/immutable/final-runtime facts are normative in
+`feed-schema-v1.md`, `contract-reference.md`, and the generated JSON Schema.
+Custom and zero Executors keep exact script bytes and hash evidence, but their
+executable scripts use `implementation_unverified`; they do not inherit this
+framing. The empty signal identity remains independently knowable.
+
+Feed analysis times cannot predate a known Propose block or follow feed
+generation. Completed simulation follows its Propose state time and cannot
+follow analysis generation. It also requires an executable, exact retained,
+hash-verified script with valid pinned-Executor framing. Failed and unavailable
+attempts use one exact shared attempt/failure instant; an unavailable record may
+use `null` for both only when that instant is unproved. An analysis failure
+derived from simulation evidence cannot predate the simulation failure.
 
 A fresh execution preflight is wallet-specific and never belongs in the global
 feed:
@@ -234,6 +312,59 @@ remaining block, transaction-index, or log-index provenance.
 blended YBC and stYFIx aggregate rewrites. `direction` is an optional derived
 label for binary human votes only: 10,000 is Yea and 0 is Nay. Aggregate vote
 actors are never counted as additional human participation.
+
+The frozen feed expands this small mock event view without changing it. Every
+block-bearing record joins one canonical registry: one chain height has one
+hash and one value for every known timestamp, and one hash maps to one height.
+Known timestamps also increase strictly with height; equality or reversal at a
+higher retained block is invalid. A record whose timestamp is `null` remains
+`null` even if another record authenticates that block time.
+Within a block, `logIndex` is unique and rises strictly with transaction order
+across proposals and Voting generations.
+
+A complete pinned-Voter classification groups one transaction by its unfiltered
+geth `callTracer` outer Voter path `P`. Human, delegated, and YBC
+`Voting.vote` child paths are `P+[1]`, `P+[4]`, and `P+[5]`; only the
+direct-root fixture has `P=[]`, hence `[1]`, `[4]`, and `[5]`. Child indices are
+from the complete, unfiltered call tree. Ordinal `0` is one
+nonzero, positive-weight binary human Vote. A
+nonmember or member with a zero aggregator result produces only `{0}`. A
+positive result produces the exact ordered `{0,1,2}` human, delegated-staking,
+and YBC triplet. Missing traces under pinned code and custom Voter code preserve
+raw events as unclassified provenance failures. Human participation is then an
+explicit lower bound rather than a guessed complete count. Disabled zero Voter
+state cannot produce a Vote. The Voter's proved constructor genesis is
+independent of the Voting generation genesis and is committed with its exact
+source integrity, official compiler distribution, command/stdout, runtime
+template/immutable, final deployed runtime, and code evidence through
+`yearn.dao.voter-build-evidence.v2`. It cannot follow a Vote that implementation
+could emit. Invocation identity is feed-wide, binds one proposal, and each
+complete pinned caller appears only once per proposal. The consumer replays
+cumulative pinned `ybc_votes` with checked uint256 arithmetic and derives the
+shared aggregate bps from cumulative Yea and weight.
+For any constructor genesis, the immutable ABI word, creation-code-plus-word
+initcode, and runtime-template-plus-word deployed runtime are derived and
+hashed coherently; the fixture genesis and its hashes are examples, not schema
+literals. A positive `pinned_voter_trace_unavailable` Vote also makes cumulative
+aggregate state unknown. Later aggregate-bearing events must cascade to
+raw/unclassified unless an authenticated cumulative seed is available; they
+cannot restart at zero.
+
+The trace request is `debug_traceTransaction` with geth `callTracer`,
+`onlyTopCall:false`, `withLog:true`, and `reexec:0`. Live
+`rawTraceSha256` hashes the exact UTF-8 bytes encoding the successful non-null
+top-level JSON-RPC `result` object, from opening `{` through matching `}`, before
+JSON decoding or reserialization and excluding the envelope, ID, and
+surrounding whitespace. Synthetic records use a committed projection and leave
+live client/raw fields null. Public Voter selectors are
+`vote_yea(address,uint256)` / `0x69586e2e` and
+`vote_nay(address,uint256)` / `0xff855dde`.
+Transaction, receipt, code, storage, header, and log-result raw hashes follow the same exact
+top-level JSON-RPC result-token byte rule defined in `feed-schema-v1.md`, with
+named retained keys where the selected branch exposes them and null exposed
+live hash/key fields for synthetic projections. Generic archive branches use
+`rawResultSha256` plus `rawResultObjectKey`; Executor log replay uses
+`rawLogsSha256` plus `rawLogsObjectKey`.
 
 ## 6. Proposal view model
 
@@ -328,6 +459,11 @@ veto blocks voting, while a veto after participation can leave voting available
 until the window closes. An empty-script raw `executed` signal has an approved
 vote result and `no_actions` execution state.
 
+The frozen feed chooses the immutable Veto branch from the
+last-write-per-account total immediately before the log: zero is
+`early_no_votes`, positive is `post_participation`. Zero-weight Vote history
+does not turn the early branch into post-participation.
+
 Execution integrity is a separate derived fact:
 
 ```ts
@@ -349,8 +485,60 @@ account permission.
 
 Rules belong to the proposal. The constructor/default fixture uses 5,000 basis
 points; a retained alternate snapshot uses 6,000. Mutable voting period, delay,
-guard, and global threshold observations carry their observation block. The UI
-formats these supplied facts and does not reconstruct protocol rules.
+and guard carry their configuration boundary. Each proposal threshold snapshot
+is independently storage-proven at its Propose block and hash. The UI formats
+these supplied facts and does not reconstruct protocol rules. In the
+frozen feed, the copied proposal-rule configuration is the Propose-effective
+historical disclosure, each Vote uses its event-effective window, and raw
+snapshot timing/status uses the configuration effective at the end of the
+canonical block. The first history entry is a logical `start_of_block`
+position, ordered before transaction zero/log zero. Its authenticated
+producer-start snapshot replays every tracked setter from contract creation
+through the parent block and proves zero skipped lifecycle logs. Each unique
+setter transaction binds sender, successful receipt, exact calldata, and full
+geth call trace. Later entries become effective at their final retained real
+Set* log. Those logs share the block-global namespace with lifecycle,
+preconfigured-Voter-history, and Executor-authorization logs; lifecycle events
+on opposite sides of a same-transaction setter select old and new rows.
+The committed fixture deploys at block `23900000`, starts the producer reducer
+at `23900001`, replays nine bootstrap setters, and anchors `config-2` after ten
+setters at block `23902000`, transaction `0`, global log index `9`.
+Repeated setters for one tracked field replay in canonical call/log order and
+the row equals the last mutation. A retired generation remains valid through
+its inclusive retirement block; its successor deploys at the same block/hash,
+starts one block later, and is the only active generation. Old events and
+configurations stop at retirement, new events begin at successor start, and
+bootstrap lifecycle counts are scoped to the exact Voting emitter so an old
+log in the shared cutover block is not counted for the successor.
+`set_propose_parameters` minimum-weight and cooldown values are uint256-bounded
+before ABI re-encoding so safe admission cannot leak an encoder exception.
+
+Configuration includes Voter decay in `0..604799`, with zero disabling decay. A
+changed pointer either establishes all four nested Voter values after the
+pointer setter, is explicitly zero-disabled, or authenticates a preconfigured
+Voter from direct code birth through the boundary with a complete setter
+manifest and replay. Setters must follow code birth, code birth must precede the
+pointer, and block-end state requires zero later same-block relevant setters.
+Reused physical logs are ordered once and retain identical feed-wide position,
+transaction hash, emitter, topics, and data. Configuration and
+preconfigured-Voter call evidence additionally retains identical
+sender/caller/target/trace/calldata/decoded-mutation evidence; Executor
+authorization does not claim sender or call-trace fields.
+The stored proposal threshold is separately proved at Propose from Vyper mapping
+slot `17`, slot-then-key hashing, struct offset `4`, exact word, and decoded
+basis points; duplicated threshold fields are not self-authentication.
+
+The frozen rule record also includes typed Voter, Executor, proposal-blacklist,
+hook, weight-measure, aggregate, operator, and guardian states. Historical
+event admission follows the exact call path: Propose needs blacklist, weight
+measure, and hook; Vote needs Voter and weight measure, with hook required for
+positive weight; Retract and Flag need hook; early Veto needs hook while
+post-participation Veto does not; nonempty Execute needs Executor while empty
+signal Execute skips it. Flag and guarded Execute need the operator. Retract and
+Flag test the last-write-per-account running total, so zero-weight Vote history
+is allowed. Executor and blacklist may start at zero but cannot return to zero
+after their nonzero-only setters initialize them. Each Vote multiplication and
+updated running total must also fit checked uint256 arithmetic at that event.
 
 Connected-wallet state is not part of the global proposal feed:
 
@@ -467,7 +655,8 @@ Proposal creation does not guess the next numeric ID. Chain context is supplied
 separately from the receipt. The decoder requires a successful receipt with the
 exact submitted transaction hash and exactly one `Propose` log from the expected
 Voting address. Proposer, voting epoch, content digest, and exact script must
-match the submitted values. The log has exactly four canonical topics. Its
+match the submitted values, and the authenticated receipt sender must equal the
+decoded proposer. The log has exactly four canonical topics. Its
 decoded topics and non-indexed content digest and script must re-encode to the
 exact receipt bytes, with no extra topic, trailing word, alternate offset, or
 dirty padding. A missing, duplicate, malformed, wrong-contract, or mismatched
@@ -475,6 +664,10 @@ log yields no proposal ref. Once decoded, the same composite ref is
 used for the receipt-confirmed view, browser-local `awaiting_index` overlay, and
 indexed fixture. That local overlay intentionally does not survive another
 browser session.
+Each creation-stage receipt chooses exact archive-RPC or committed-synthetic
+provenance. Live `eth_getTransactionReceipt` retains the SHA-256 and immutable
+object key for the successful non-null raw result token; synthetic evidence
+keeps both live fields null and binds its fixture projection.
 
 The explicit submission request controls transaction outcomes. Forum topic
 `1002` remains the publication-failure fixture and `1005` remains the missing
@@ -502,9 +695,12 @@ only mock client that prepares and submits actions.
   points.
 - `createdAt <= voteStartsAt < voteEndsAt`. When both execution times exist,
   `voteEndsAt <= executionStartsAt < executionEndsAt`.
-- App type is derived from the event script: Signal has empty bytes and the
-  empty-script hash; Executable has non-empty bytes. A conflicting IPFS
-  `proposalType` is a content inconsistency, not the authoritative type.
+- App type is derived from the stored script hash even when event bytes are
+  unavailable: Signal iff the stored hash is `keccak256(0x)`; every other hash
+  is Executable. When bytes are present they must be empty for Signal and
+  non-empty for Executable and must verify against that stored hash. A
+  conflicting IPFS `proposalType` is a content inconsistency, not the
+  authoritative type.
 - `hashVerified` is `null` only when exact bytes are absent. When bytes exist,
   it equals the actual keccak comparison with the stored hash.
 - The six affected boost epochs start at `expectedVotingEpoch` and are
@@ -513,14 +709,32 @@ only mock client that prepares and submits actions.
 - Upcoming contains discussion-phase proposals. Active contains voting proposals
   and approved executable proposals that have not executed or expired. Closed
   contains terminal outcomes and approved signals.
-- Verified forum status requires an allowed stable category ID. A matching
-  display label alone is insufficient.
+- Verified forum status requires an allowed stable category ID and the exact
+  `https://gov.yearn.fi/t/<slug>/<id>` URL whose original serialization equals
+  `${url.origin}${url.pathname}`. A trailing slash, query, fragment, port,
+  ambiguous path, or terminal bare `?`/`#` delimiter is invalid. A matching
+  display label alone is
+  insufficient.
 - `rules.approvalThresholdBps === thresholdBps`; proposal type, Voting address,
   timing, delay, and guard agree with the proposal record.
+- Threshold evidence reproduces the pinned Vyper storage slot and exact Propose
+  word; both threshold copies equal its decoded basis points.
 - Every structured source passes the HTTPS provenance validator. Unknown calls
   have no verified source.
-- Event time and transaction availability remain nullable facts. Events from
-  one transaction/block share the same producer-owned timestamp.
+- Event time and transaction availability remain nullable facts. All
+  block-bearing evidence at one height shares one hash and each known
+  timestamp; one hash maps to one height. Block-global log indices are unique
+  and rise with transaction order.
+- Human participation is complete only when every raw Vote has exact pinned
+  invocation evidence. Trace-unavailable and custom-Voter events are
+  unclassified and make the count a lower bound.
+- Pinned Executor framing and completed simulation require exact per-config
+  source/build/archive-or-committed-synthetic code evidence. Completed
+  simulation also proves `operators[Voting]` at Propose from mapping slot `2`,
+  block-end storage, exact same-block SetOperator replay, and zero later relevant
+  logs; its typed gate/script stage and error code agree. Custom or zero
+  Executor state never borrows pinned framing and forces executable
+  analysis/simulation unavailable.
 
 The exact canonical content vector is
 [`examples/proposal-content.example.json`](examples/proposal-content.example.json).
@@ -532,6 +746,10 @@ including its 660-byte length, SHA-256 digest, raw CID, media type, and
 1,280-by-720 dimensions.
 
 ## 8. Feed envelope
+
+The committed feed example contains 27 proposals and 81 lifecycle events. Its
+published rejection corpus contains 114 vectors, and the focused boundary suite
+contains 152 tests.
 
 The mock client should resemble the future feed:
 
@@ -556,6 +774,14 @@ When JSON is used, bigint values serialize as base-10 strings and adapters parse
 them at the domain boundary. The v1 adapter accepts canonical unsigned decimal
 strings only: `0` or a non-zero digit followed by digits. Signs, whitespace,
 decimals, exponent notation, and leading zeroes are rejected.
+
+The frozen feed's safe boundaries are total. `safeParseDaoFeedJsonV1` handles
+malformed or oversized JSON, and `safeParseDaoFeedV1` rejects non-serializable
+or oversized in-memory values before traversal. Direct schema safe parse returns
+typed failure without throwing for structurally parsed semantic mutations,
+including inconsistent totals, timelines, and every rejection vector. The
+throwing `parse*` helpers only expose the same Zod error for callers that choose
+exception flow.
 
 ## 9. Required deterministic fixtures
 
@@ -706,3 +932,10 @@ independently diagnosable: 65 empty 32-byte headers already occupy 2,080 bytes.
 All other inputs over 2,048 bytes report `SCRIPT_TOO_LARGE` before ordinary
 framing errors. Structural validation proves only framing; it never labels a
 script safe or verified.
+
+Feed content failures use separate deterministic byte checks. Their fixed
+precedence is `CONTENT_DIGEST_MISMATCH`, `CONTENT_UTF8_INVALID`,
+`CONTENT_JSON_INVALID`, `CONTENT_SCHEMA_INVALID`,
+`CONTENT_FINAL_LF_INVALID`, then `CONTENT_CANONICAL_INVALID`. The retained bytes
+must reproduce the named code. If none applies, the bytes are valid canonical
+content and the `invalid` state is rejected.

@@ -46,6 +46,9 @@ contract revision as equivalent.
 - `yearn.dao.proposal.v1` contains one exact Markdown source and a bounded asset
   manifest. Title and summary are parsed results, not duplicate stored fields.
   The canonical JSON ends with one LF; its SHA-256 digest is the onchain value.
+  Immutable content `createdAt` remains distinct from the canonical Propose
+  block time. Digest-invalid fetched bytes retain both expected and computed
+  identities rather than replacing the onchain value.
 - Immutable images render as no-load attachment cards. Relative targets are
   authenticated manifest lookups, direct targets are exact raw CIDs, and both
   open the suffix-free trusted gateway URL only after user activation.
@@ -55,7 +58,12 @@ contract revision as equivalent.
   proposal-time simulation. The frontend renders that analysis.
 - Lifecycle status, vote result, moderation, and execution are separate facts.
   Event time comes from the block producer, verified sources are structured
-  HTTPS records, and proposal rules are proposal-owned snapshots.
+  HTTPS records, and the approval threshold is the only proposal-owned rule
+  snapshot. Vote timing, guard, contract, hook, and role values are ordered
+  historical observations.
+- One Voting generation retains its fixed genesis and 14-day epoch formula plus
+  ordered Voter, Executor, timing, guard, hook, and role history. Mutable
+  configuration changes do not invent replacement Voting deployments.
 - Proposal-level execution readiness covers exact script integrity only. Missing
   event bytes and a stored-hash mismatch are hard blockers; lifecycle, account,
   guard, schedule, and simulation facts stay separate.
@@ -80,6 +88,8 @@ contract revision as equivalent.
 - User outcomes: [`user-stories.md`](user-stories.md)
 - Layout and copy: [`ui-spec.md`](ui-spec.md)
 - Mock/domain data: [`mock-data-schema-v1.md`](mock-data-schema-v1.md)
+- Frozen feed contract: [`feed-schema-v1.md`](feed-schema-v1.md)
+- Feed JSON Schema: [`feed-schema-v1.schema.json`](feed-schema-v1.schema.json)
 - Delivery and agent workflow: [`delivery/README.md`](delivery/README.md)
 - Delivery ledger: [`delivery/status.md`](delivery/status.md)
 - Sol Ultra kickoff: [`delivery/kickoff-prompt.md`](delivery/kickoff-prompt.md)

@@ -16,6 +16,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "generate:dao-feed": "node ./scripts/generate-dao-feed-v1.mjs",
     "test:e2e": "playwright test --project=smoke --workers=1",
     "test:e2e:full": "playwright test --project=full",
     "check:veyfi-apr": "node ./scripts/check-veyfi-base-apr.mjs",

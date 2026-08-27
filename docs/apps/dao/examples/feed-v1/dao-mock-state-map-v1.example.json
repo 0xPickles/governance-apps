@@ -1,0 +1,835 @@
+[
+  {
+    "fixture": "discussion",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "1"
+    },
+    "predicates": {
+      "protocolStatus": "proposed",
+      "displayStatus": "discussion",
+      "displayGroup": "upcoming",
+      "proposalType": "signal",
+      "chainCreatedAtState": "unavailable",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": true,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "voting",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "2"
+    },
+    "predicates": {
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote",
+        "vote",
+        "vote",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "late-voting",
+    "representation": "consumer_wallet_overlay",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "3"
+    },
+    "predicates": {
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": {
+      "owner": "consumer_wallet",
+      "predicate": "wallet_weight_decay_changes_vote_eligibility",
+      "feedFields": []
+    }
+  },
+  {
+    "fixture": "approved-signal",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "4"
+    },
+    "predicates": {
+      "protocolStatus": "executed",
+      "displayStatus": "approved",
+      "displayGroup": "closed",
+      "proposalType": "signal",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "approved-executable",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "5"
+    },
+    "predicates": {
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "executed",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "6"
+    },
+    "predicates": {
+      "protocolStatus": "executed",
+      "displayStatus": "executed",
+      "displayGroup": "closed",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote",
+        "execute"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "rejected",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "7"
+    },
+    "predicates": {
+      "protocolStatus": "failed",
+      "displayStatus": "rejected",
+      "displayGroup": "closed",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 6000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "no-votes",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "8"
+    },
+    "predicates": {
+      "protocolStatus": "failed",
+      "displayStatus": "rejected",
+      "displayGroup": "closed",
+      "proposalType": "signal",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "expired",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "9"
+    },
+    "predicates": {
+      "protocolStatus": "expired",
+      "displayStatus": "expired",
+      "displayGroup": "closed",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "retracted",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "10"
+    },
+    "predicates": {
+      "protocolStatus": "retracted",
+      "displayStatus": "retracted",
+      "displayGroup": "closed",
+      "proposalType": "signal",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "retract"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "flagged",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "11"
+    },
+    "predicates": {
+      "protocolStatus": "flagged",
+      "displayStatus": "flagged",
+      "displayGroup": "closed",
+      "proposalType": "signal",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "flag"
+      ],
+      "flagReason": "Malformed proposal content",
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "early-veto",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "12"
+    },
+    "predicates": {
+      "protocolStatus": "vetoed",
+      "displayStatus": "vetoed",
+      "displayGroup": "closed",
+      "proposalType": "signal",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "veto"
+      ],
+      "flagReason": null,
+      "vetoReason": "Guardian veto before the first vote",
+      "hasUnavailableActorEvidence": true,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "post-vote-veto",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "13"
+    },
+    "predicates": {
+      "protocolStatus": "vetoed",
+      "displayStatus": "vetoed",
+      "displayGroup": "closed",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote",
+        "vote",
+        "vote",
+        "veto"
+      ],
+      "flagReason": null,
+      "vetoReason": "Guardian veto after participation began",
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "content-unavailable",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "14"
+    },
+    "predicates": {
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "unavailable",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "content-invalid",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "15"
+    },
+    "predicates": {
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "invalid",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "analysis-pending",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "16"
+    },
+    "predicates": {
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "pending",
+      "simulationState": "pending",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "partial-decode",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "17"
+    },
+    "predicates": {
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "partial",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "simulation-failed",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "18"
+    },
+    "predicates": {
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "failed",
+      "simulationState": "failed",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "hash-mismatch",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "19"
+    },
+    "predicates": {
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "mismatch",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "direct-proposal",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "20"
+    },
+    "predicates": {
+      "protocolStatus": "proposed",
+      "displayStatus": "discussion",
+      "displayGroup": "upcoming",
+      "proposalType": "signal",
+      "chainCreatedAtState": "unavailable",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "unverified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "permissionless",
+      "eventTypes": [
+        "propose"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": true,
+      "hasNullableTransactionHash": true
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "guarded-execution",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "21"
+    },
+    "predicates": {
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "permissionless-execution",
+    "representation": "feed_proposal",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "22"
+    },
+    "predicates": {
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "proposalType": "executable",
+      "chainCreatedAtState": "available",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "complete",
+      "simulationState": "succeeded",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "valid",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose",
+        "vote",
+        "vote"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": false,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": null
+  },
+  {
+    "fixture": "proposal-capacity-full",
+    "representation": "consumer_wallet_overlay",
+    "proposalRef": {
+      "chainId": 1,
+      "votingAddress": "0x1111111111111111111111111111111111111111",
+      "proposalId": "1"
+    },
+    "predicates": {
+      "protocolStatus": "proposed",
+      "displayStatus": "discussion",
+      "displayGroup": "upcoming",
+      "proposalType": "signal",
+      "chainCreatedAtState": "unavailable",
+      "thresholdBps": 5000,
+      "contentState": "available",
+      "discussionState": "verified",
+      "analysisState": "unavailable",
+      "simulationState": "unavailable",
+      "scriptRetentionState": "retained",
+      "scriptStructureState": "empty",
+      "scriptHashVerificationState": "verified",
+      "executionGuard": "guarded",
+      "eventTypes": [
+        "propose"
+      ],
+      "flagReason": null,
+      "vetoReason": null,
+      "hasUnavailableActorEvidence": false,
+      "hasNullableEventTimestamp": true,
+      "hasNullableTransactionHash": false
+    },
+    "consumerOverlay": {
+      "owner": "consumer_wallet",
+      "predicate": "live_six_epoch_shared_cap_changes_proposal_eligibility",
+      "feedFields": []
+    }
+  }
+]
