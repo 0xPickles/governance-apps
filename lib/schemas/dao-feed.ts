@@ -122,6 +122,45 @@ export const DAO_FEED_LIFECYCLE_EVENT_ABI = {
   ],
 } as const;
 
+export const DAO_FEED_CONFIGURATION_SETTER_SELECTORS = {
+  setProposeParameters: "0xff6df1ac",
+  setVoteParameters: "0xf182b394",
+  setExecuteParameters: "0xdcfec72c",
+  setHooks: "0x0c360521",
+  setWeightMeasure: "0x80ad61a3",
+  setOperator: "0x30c7be72",
+  acceptGuardian: "0x831352f4",
+  setDecayLength: "0xe4c341fa",
+  setDelegatedStaking: "0xa1275ce1",
+  setYbc: "0x58007401",
+  setYbcWeightAggregator: "0x6265d619",
+} as const;
+
+export const DAO_FEED_CONFIGURATION_SETTER_TOPICS = {
+  setProposeParameters:
+    "0xfab3227f78255cd593ef6859519102d5fb7ad8f773deb32a3464ce696f0020fa",
+  setVoteParameters:
+    "0x559116557c3a62b0f633fca41b82c45045bd81575f2ffdb29b3b6a8a6ecb34bb",
+  setExecuteParameters:
+    "0xbcd64841ac721e268f925c3209cfd0b682bf2586bf932242b82c33df319a8ed6",
+  setHooks:
+    "0xdb0670e174c4203280e70166db52920a0ddc53923128a7e0e964c5350de54f1f",
+  setWeightMeasure:
+    "0x89f0256426a7eb0b05f11201574bca64c364ad351205803c24ace8d86da8798f",
+  setOperator:
+    "0xdbebfba65bd6398fb722063efc10c99f624f9cd8ba657201056af918a676d5ee",
+  acceptGuardian:
+    "0x31845eceb9cde510c7e8b37f76301c688feb70bc9653aa4c28a3734999840fd8",
+  setDecayLength:
+    "0xbe2521cc0bf1d6a1506707fc3ab6beef8f2762765d9f3225eb6a0b5d5deca60f",
+  setDelegatedStaking:
+    "0x4496eefeccfc48b5cd0fa817b69dec275ec2bbb52c30814103e57e1b8912b8f8",
+  setYbc:
+    "0xa2db453907b40a335339c283751d2fec56404ede4a7afb005cc5db2dfeb35c71",
+  setYbcWeightAggregator:
+    "0x3469dc7f2a84fbbd6baa33558d5887880fa272c9b35ba89f97e8831dd677f2de",
+} as const;
+
 const PINNED_VOTING_SOURCE_PATH = "contracts/governance/Voting.vy";
 const PINNED_VOTING_SOURCE_LABEL =
   "Voting.vy at pinned stYFI revision" as const;
@@ -209,6 +248,10 @@ const PINNED_EXECUTOR_RUNTIME_SHA256 =
 const PINNED_VOTING_LAYOUT_SHA256 =
   "0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26" as const;
 const VOTING_PROPOSALS_MAPPING_SLOT = 17n;
+const EXECUTOR_OPERATORS_MAPPING_SLOT = 2n;
+const EXECUTOR_SET_OPERATOR_EVENT_TOPIC =
+  "0x1618a22a3b00b9ac70fd5a82f1f5cdd8cb272bd0f1b740ddf7c26ab05881dd5b" as const;
+const VOTING_PROPOSAL_THRESHOLD_SLOT_OFFSET = 4n;
 const VOTING_PROPOSAL_EXECUTED_SLOT_OFFSET = 8n;
 const UINT_PATTERN = /^(0|[1-9]\d*)$/u;
 const POSITIVE_UINT_PATTERN = /^[1-9]\d*$/u;
@@ -521,6 +564,21 @@ const EventPositionSchema = z.strictObject({
   logIndex: zSafeUint,
 });
 
+const ConfigurationEffectivePositionSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("start_of_block"),
+    blockNumber: zUint,
+    blockHash: zNonZeroHash,
+  }),
+  z.strictObject({
+    kind: z.literal("canonical_setter_log"),
+    blockNumber: zUint,
+    blockHash: zNonZeroHash,
+    transactionIndex: zSafeUint,
+    logIndex: zSafeUint,
+  }),
+]);
+
 const LogRefSchema = EventPositionSchema.extend({
   timestamp: zUnixSeconds.nullable(),
   transactionHash: zNonZeroHash.nullable(),
@@ -548,7 +606,7 @@ const ActorEvidenceSchema = z.union([
   z.strictObject({
     state: z.literal("verified"),
     method: z.literal("historical_role_and_transaction_sender"),
-    observedAt: EventPositionSchema,
+    observedAt: ConfigurationEffectivePositionSchema,
     configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
     transactionSender: zNonZeroAddress,
     configuredRoleAddress: zNonZeroAddress,
@@ -669,7 +727,7 @@ const VoterAggregatorResultSchema = z.discriminatedUnion("state", [
 const VoteClassificationCommonShape = {
   configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
   voterAddress: zNonZeroAddress,
-  observedAt: EventPositionSchema,
+  observedAt: ConfigurationEffectivePositionSchema,
   observationSemantics: z.literal("effective_at_event"),
 };
 
@@ -1128,6 +1186,75 @@ const VotingTransitionOverrideSchema = z.strictObject({
   }),
 });
 
+const ExecutorOperatorAuthorizationProofSchema = z.strictObject({
+  state: z.literal("verified_at_propose_position"),
+  executorAddress: zNonZeroAddress,
+  votingAddress: zNonZeroAddress,
+  blockNumber: zUint,
+  blockHash: zNonZeroHash,
+  blockHashVerification: z.literal("canonical_hash_at_height"),
+  getterSelector: z.literal("0x13e7c9d8"),
+  blockEndEvidence: z.strictObject({
+    evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+    rpcMethod: z.literal("eth_getStorageAt").nullable(),
+    fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+    fixtureProjectionSha256: zNonZeroHash.nullable(),
+    storageLayout: z.strictObject({
+      compiler: z.literal("vyper@0.4.2"),
+      sourceSha256: z.literal(PINNED_EXECUTOR_SOURCE_SHA256),
+      derivation: z.literal(
+        "keccak256(bytes32(mapping_base_slot) || bytes32(uint256(voting_address)))"
+      ),
+      mappingBaseSlot: z.literal(EXECUTOR_OPERATORS_MAPPING_SLOT.toString()),
+      mappingKey: zNonZeroAddress,
+      mappingHashInputOrder: z.literal("slot_then_key"),
+      resolvedStorageSlot: zNonZeroHash,
+    }),
+    storageWord: zHash,
+    decodedAuthorized: z.boolean(),
+  }),
+  positionReplay: z.strictObject({
+    method: z.literal(
+      "canonical_executor_set_operator_log_replay_to_propose_position"
+    ),
+    proposeTransactionIndex: zSafeUint,
+    proposeLogIndex: zSafeUint,
+    relevantSetterLogCount: zSafeUint.max(100_000),
+    appliedThroughProposeLogCount: zSafeUint.max(100_000),
+    laterSetterLogCount: z.literal(0),
+    relevantSetterLogs: z
+      .array(
+        z.strictObject({
+          blockNumber: zUint,
+          blockHash: zNonZeroHash,
+          transactionHash: zNonZeroHash,
+          transactionIndex: zSafeUint,
+          logIndex: zSafeUint,
+          emitter: zNonZeroAddress,
+          topics: z.tuple([zHash, zHash]),
+          data: zHash,
+          operatorAddress: zNonZeroAddress,
+          authorized: z.boolean(),
+        })
+      )
+      .max(100_000),
+    canonicalManifestEncoding: z.literal(
+      "canonical_json_utf8_lexicographic_keys_no_whitespace_one_final_lf"
+    ),
+    canonicalManifestByteLength: zPositiveSafeUint.max(16 * 1024 * 1024),
+    canonicalManifestSha256: zNonZeroHash,
+    evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+    rpcMethod: z.literal("eth_getLogs").nullable(),
+    fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+    fixtureProjectionSha256: zNonZeroHash.nullable(),
+    rawLogsSha256: zNonZeroHash.nullable(),
+    semantics: z.literal(
+      "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
+    ),
+  }),
+  authorizedAtPropose: z.boolean(),
+});
+
 const SimulationCompleteShape = {
   method: z.literal("revm_engine_injected_executor_frame_conditional_origin"),
   engine: z.literal("revm@34.0.0"),
@@ -1157,7 +1284,14 @@ const SimulationCompleteShape = {
     targetCaller: zNonZeroAddress,
     callValue: z.literal("0"),
     noCodeOverrides: z.literal(true),
-    operatorCheckExecuted: z.literal(true),
+    operatorCheckOutcome: z.enum(["passed", "reverted"]),
+    scriptEntered: z.boolean(),
+    executionResultStage: z.enum([
+      "script_completed",
+      "executor_script_revert",
+      "executor_operator_check_revert",
+    ]),
+    executorOperatorAuthorization: ExecutorOperatorAuthorizationProofSchema,
     executionInput: z.strictObject({
       functionSignature: z.literal("execute(bytes)"),
       calldata: zSimulationCalldata,
@@ -1543,6 +1677,9 @@ const HistoricalConfigurationValuesShape = {
   votingWindowState: z.enum(["enabled", "disabled_zero_length"]),
   executionDelaySeconds: zSafeUint.max(DAO_FEED_EPOCH_LENGTH_SECONDS - 1),
   executionGuard: z.enum(["guarded", "permissionless"]),
+  voterDecayLengthSeconds: zSafeUint.max(
+    DAO_FEED_EPOCH_LENGTH_SECONDS / 2 - 1
+  ),
   voterAddress: zAddress,
   voterState: z.enum(["configured", "disabled_zero_address"]),
   voterImplementation: VoterImplementationSchema,
@@ -1569,43 +1706,641 @@ const HistoricalConfigurationValuesShape = {
   guardianAddress: zNonZeroAddress,
 };
 
-const ConfigurationSetterCallSchema = z.strictObject({
+const ConfigurationSetterLogBaseShape = {
+  emitter: zNonZeroAddress,
+  logIndex: zSafeUint,
+  topics: z.array(zHash).min(1).max(2),
+  data: zBytes,
+  matchingLogCount: z.literal(1),
+  canonicalReencodingMatched: z.literal(true),
+};
+
+const ConfigurationSetterCallBaseShape = {
   target: zNonZeroAddress,
-  sourceContract: z.enum(["Voting", "Voter", "Executor"]),
+  sourceContract: z.enum(["Voting", "Voter"]),
+  caller: zNonZeroAddress,
   traceAddress: z.array(zSafeUint).max(64),
-  selector: zSelector,
   calldata: zBytes,
   result: z.literal("success"),
+};
+
+const ConfigurationSetterCallSchema = z.discriminatedUnion("setter", [
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_propose_parameters"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setProposeParameters
+    ),
+    arguments: z.strictObject({
+      minWeight: zUint,
+      cooldownSeconds: zUint,
+      blacklistAddress: zNonZeroAddress,
+    }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({
+        minWeight: zUint,
+        cooldownSeconds: zUint,
+        blacklistAddress: zNonZeroAddress,
+      }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_vote_parameters"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setVoteParameters
+    ),
+    arguments: z.strictObject({
+      votingPeriodSeconds: zSafeUint.max(
+        DAO_FEED_EPOCH_LENGTH_SECONDS
+      ),
+      voterAddress: zAddress,
+    }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({
+        votingPeriodSeconds: zSafeUint.max(
+          DAO_FEED_EPOCH_LENGTH_SECONDS
+        ),
+        voterAddress: zAddress,
+      }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_execute_parameters"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setExecuteParameters
+    ),
+    arguments: z.strictObject({
+      executionDelaySeconds: zSafeUint.max(
+        DAO_FEED_EPOCH_LENGTH_SECONDS - 1
+      ),
+      executionGuard: z.enum(["guarded", "permissionless"]),
+      executorAddress: zNonZeroAddress,
+    }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({
+        executionDelaySeconds: zSafeUint.max(
+          DAO_FEED_EPOCH_LENGTH_SECONDS - 1
+        ),
+        executionGuard: z.enum(["guarded", "permissionless"]),
+        executorAddress: zNonZeroAddress,
+      }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_hooks"),
+    selector: z.literal(DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setHooks),
+    arguments: z.strictObject({ hooksAddress: zAddress }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ hooksAddress: zAddress }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_weight_measure"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setWeightMeasure
+    ),
+    arguments: z.strictObject({ measureAddress: zAddress }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ measureAddress: zAddress }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_operator"),
+    selector: z.literal(DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setOperator),
+    arguments: z.strictObject({ operatorAddress: zAddress }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ operatorAddress: zAddress }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("accept_guardian"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.acceptGuardian
+    ),
+    arguments: z.strictObject({}),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ guardianAddress: zNonZeroAddress }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_decay_length"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setDecayLength
+    ),
+    arguments: z.strictObject({
+      voterDecayLengthSeconds: zSafeUint.max(
+        DAO_FEED_EPOCH_LENGTH_SECONDS / 2 - 1
+      ),
+    }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({
+        voterDecayLengthSeconds: zSafeUint.max(
+          DAO_FEED_EPOCH_LENGTH_SECONDS / 2 - 1
+        ),
+      }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_delegated_staking"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setDelegatedStaking
+    ),
+    arguments: z.strictObject({ delegatedStakingAddress: zAddress }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ delegatedStakingAddress: zAddress }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_ybc"),
+    selector: z.literal(DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setYbc),
+    arguments: z.strictObject({ ybcAddress: zAddress }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ ybcAddress: zAddress }),
+    }),
+  }),
+  z.strictObject({
+    ...ConfigurationSetterCallBaseShape,
+    setter: z.literal("set_ybc_weight_aggregator"),
+    selector: z.literal(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setYbcWeightAggregator
+    ),
+    arguments: z.strictObject({ ybcWeightAggregatorAddress: zAddress }),
+    log: z.strictObject({
+      ...ConfigurationSetterLogBaseShape,
+      decoded: z.strictObject({ ybcWeightAggregatorAddress: zAddress }),
+    }),
+  }),
+]);
+
+const ConfigurationSetterTraceEvidenceSchema = z.discriminatedUnion(
+  "sourceKind",
+  [
+    z.strictObject({
+      sourceKind: z.literal("committed_synthetic_fixture"),
+      rpcMethod: z.literal("debug_traceTransaction"),
+      tracer: z.literal("callTracer"),
+      fixtureMethod: z.literal(
+        "committed_synthetic_configuration_setter_trace_fixture_v1"
+      ),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+      fixtureProjectionSha256: zNonZeroHash,
+      clientVersion: z.null(),
+      rawTraceSha256: z.null(),
+      tracerConfig: z.strictObject({
+        onlyTopCall: z.literal(false),
+        withLog: z.literal(true),
+      }),
+      reexec: z.literal(0),
+      normalization: z.literal(
+        "root_empty_array_then_zero_based_full_call_tree_child_indices"
+      ),
+    }),
+    z.strictObject({
+      sourceKind: z.literal("archive_rpc"),
+      rpcMethod: z.literal("debug_traceTransaction"),
+      tracer: z.literal("callTracer"),
+      fixtureMethod: z.null(),
+      fixturePath: z.null(),
+      fixtureProjectionSha256: z.null(),
+      clientVersion: z.string().min(1).max(256),
+      rawTraceSha256: zNonZeroHash,
+      tracerConfig: z.strictObject({
+        onlyTopCall: z.literal(false),
+        withLog: z.literal(true),
+      }),
+      reexec: z.literal(0),
+      normalization: z.literal(
+        "root_empty_array_then_zero_based_full_call_tree_child_indices"
+      ),
+    }),
+  ]
+);
+
+const ConfigurationBootstrapEvidenceCommonShape = {
+  parentBlockNumber: zUint,
+  parentBlockHash: zNonZeroHash,
+  statePosition: z.literal("end_of_parent_block_for_start_of_next_block"),
+  configurationValuesSha256: zNonZeroHash,
+};
+
+const ConfigurationBootstrapTrackedSetterLogSchema = z.strictObject({
+  blockNumber: zUint,
+  blockHash: zNonZeroHash,
+  blockTimestamp: zUnixSeconds.nullable(),
+  transactionHash: zNonZeroHash,
+  transactionSender: zNonZeroAddress,
+  transactionIndex: zSafeUint,
+  receiptStatus: z.literal("success"),
+  call: ConfigurationSetterCallSchema,
 });
+
+const ConfigurationSetterTransactionEvidenceSchema = z.discriminatedUnion(
+  "sourceKind",
+  [
+    z.strictObject({
+      sourceKind: z.literal("committed_synthetic_fixture"),
+      projectionKind: z.enum([
+        "bootstrap_configuration_setter_transaction",
+        "preconfigured_voter_setter_transaction",
+      ]),
+      transactionHash: zNonZeroHash,
+      transactionSender: zNonZeroAddress,
+      blockNumber: zUint,
+      blockHash: zNonZeroHash,
+      transactionIndex: zSafeUint,
+      receiptStatus: z.literal("success"),
+      retainedSetterCallCount: zPositiveSafeUint.max(64),
+      retainedSetterLogIndices: z.array(zSafeUint).min(1).max(64),
+      transactionRpcMethod: z.literal("eth_getTransactionByHash"),
+      receiptRpcMethod: z.literal("eth_getTransactionReceipt"),
+      traceRpcMethod: z.literal("debug_traceTransaction"),
+      tracer: z.literal("callTracer"),
+      tracerConfig: z.strictObject({
+        onlyTopCall: z.literal(false),
+        withLog: z.literal(true),
+      }),
+      reexec: z.literal(0),
+      normalization: z.literal(
+        "root_empty_array_then_zero_based_full_call_tree_child_indices"
+      ),
+      fixtureMethod: z.literal(
+        "committed_synthetic_configuration_setter_transaction_fixture_v1"
+      ),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+      fixtureProjectionSha256: zNonZeroHash,
+      clientVersion: z.null(),
+      rawTransactionSha256: z.null(),
+      rawReceiptSha256: z.null(),
+      rawTraceSha256: z.null(),
+      transactionObjectKey: z.null(),
+      receiptObjectKey: z.null(),
+      traceObjectKey: z.null(),
+    }),
+    z.strictObject({
+      sourceKind: z.literal("archive_rpc"),
+      projectionKind: z.enum([
+        "bootstrap_configuration_setter_transaction",
+        "preconfigured_voter_setter_transaction",
+      ]),
+      transactionHash: zNonZeroHash,
+      transactionSender: zNonZeroAddress,
+      blockNumber: zUint,
+      blockHash: zNonZeroHash,
+      transactionIndex: zSafeUint,
+      receiptStatus: z.literal("success"),
+      retainedSetterCallCount: zPositiveSafeUint.max(64),
+      retainedSetterLogIndices: z.array(zSafeUint).min(1).max(64),
+      transactionRpcMethod: z.literal("eth_getTransactionByHash"),
+      receiptRpcMethod: z.literal("eth_getTransactionReceipt"),
+      traceRpcMethod: z.literal("debug_traceTransaction"),
+      tracer: z.literal("callTracer"),
+      tracerConfig: z.strictObject({
+        onlyTopCall: z.literal(false),
+        withLog: z.literal(true),
+      }),
+      reexec: z.literal(0),
+      normalization: z.literal(
+        "root_empty_array_then_zero_based_full_call_tree_child_indices"
+      ),
+      fixtureMethod: z.null(),
+      fixturePath: z.null(),
+      fixtureProjectionSha256: z.null(),
+      clientVersion: z.string().min(1).max(256),
+      rawTransactionSha256: zNonZeroHash,
+      rawReceiptSha256: zNonZeroHash,
+      rawTraceSha256: zNonZeroHash,
+      transactionObjectKey: z.string().min(1).max(1_024),
+      receiptObjectKey: z.string().min(1).max(1_024),
+      traceObjectKey: z.string().min(1).max(1_024),
+    }),
+  ]
+);
+
+const VoterCodeBirthEvidenceSchema = z.discriminatedUnion("evidenceKind", [
+  z.strictObject({
+    evidenceKind: z.literal("committed_synthetic_fixture"),
+    address: zNonZeroAddress,
+    deploymentBlockNumber: zUint,
+    deploymentBlockHash: zNonZeroHash,
+    deploymentTransactionHash: zNonZeroHash,
+    deploymentTransactionIndex: zSafeUint,
+    receiptStatus: z.literal("success"),
+    receiptContractAddress: zNonZeroAddress,
+    previousBlockNumber: zUint,
+    previousBlockHash: zNonZeroHash,
+    previousCodeByteLength: z.literal(0),
+    deployedCodeByteLength: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH
+    ),
+    deployedBytecodeHash: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
+    ),
+    deployedRuntimeSha256: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_SHA256
+    ),
+    rpcMethods: z.null(),
+    fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+    fixtureProjectionSha256: zNonZeroHash,
+    rawReceiptSha256: z.null(),
+    rawPreviousCodeSha256: z.null(),
+    rawDeployedCodeSha256: z.null(),
+    receiptObjectKey: z.null(),
+    previousCodeObjectKey: z.null(),
+    deployedCodeObjectKey: z.null(),
+  }),
+  z.strictObject({
+    evidenceKind: z.literal("archive_rpc"),
+    address: zNonZeroAddress,
+    deploymentBlockNumber: zUint,
+    deploymentBlockHash: zNonZeroHash,
+    deploymentTransactionHash: zNonZeroHash,
+    deploymentTransactionIndex: zSafeUint,
+    receiptStatus: z.literal("success"),
+    receiptContractAddress: zNonZeroAddress,
+    previousBlockNumber: zUint,
+    previousBlockHash: zNonZeroHash,
+    previousCodeByteLength: z.literal(0),
+    deployedCodeByteLength: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH
+    ),
+    deployedBytecodeHash: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
+    ),
+    deployedRuntimeSha256: z.literal(
+      PINNED_VOTER_DEPLOYED_RUNTIME_SHA256
+    ),
+    rpcMethods: z.tuple([
+      z.literal("eth_getTransactionReceipt"),
+      z.literal("eth_getCode"),
+    ]),
+    fixturePath: z.null(),
+    fixtureProjectionSha256: z.null(),
+    rawReceiptSha256: zNonZeroHash,
+    rawPreviousCodeSha256: zNonZeroHash,
+    rawDeployedCodeSha256: zNonZeroHash,
+    receiptObjectKey: z.string().min(1).max(1_024),
+    previousCodeObjectKey: z.string().min(1).max(1_024),
+    deployedCodeObjectKey: z.string().min(1).max(1_024),
+  }),
+]);
+
+const ConfigurationBootstrapEvidenceSchema = z.discriminatedUnion(
+  "evidenceKind",
+  [
+    z.strictObject({
+      evidenceKind: z.literal("archive_rpc"),
+      rpcMethods: z.tuple([
+        z.literal("eth_call"),
+        z.literal("eth_getCode"),
+      ]),
+      fixturePath: z.null(),
+      fixtureProjectionSha256: z.null(),
+      ...ConfigurationBootstrapEvidenceCommonShape,
+    }),
+    z.strictObject({
+      evidenceKind: z.literal("committed_synthetic_fixture"),
+      rpcMethods: z.null(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+      fixtureProjectionSha256: zNonZeroHash,
+      ...ConfigurationBootstrapEvidenceCommonShape,
+    }),
+  ]
+);
+
+const ConfigurationBootstrapScanManifestCommonShape = {
+  fromBlockNumber: zUint,
+  toBlockNumber: zUint,
+  toBlockHash: zNonZeroHash,
+  coveredBlocks: z.array(NullableBlockTimeSchema).min(1).max(100_000),
+  votingAddress: zNonZeroAddress,
+  lifecycleLogCount: z.literal(0),
+  trackedSetterLogCount: zSafeUint.max(100_000),
+  trackedSetterLogs: z
+    .array(ConfigurationBootstrapTrackedSetterLogSchema)
+    .max(100_000),
+  transactionEvidence: z
+    .array(ConfigurationSetterTransactionEvidenceSchema)
+    .max(100_000),
+  canonicalManifestEncoding: z.literal(
+    "canonical_json_utf8_lexicographic_keys_no_whitespace_one_final_lf"
+  ),
+  canonicalManifestByteLength: zPositiveSafeUint.max(16 * 1024 * 1024),
+  canonicalManifestSha256: zNonZeroHash,
+  replayedConfigurationValuesSha256: zNonZeroHash,
+  coverage: z.literal(
+    "contract_creation_through_end_of_parent_block_inclusive"
+  ),
+  replaySemantics: z.literal(
+    "canonical_tracked_setter_log_replay_equals_start_state_snapshot"
+  ),
+};
+
+const ConfigurationVoterTargetStateEvidenceSchema = z.discriminatedUnion(
+  "state",
+  [
+    z.strictObject({
+      state: z.literal("inherited_unchanged_pointer"),
+      voterAddress: zAddress,
+      priorConfigurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
+      semantics: z.literal(
+        "prior_nested_state_with_no_voter_setter_in_boundary_row"
+      ),
+    }),
+    z.strictObject({
+      state: z.literal("same_pointer_prior_state_plus_row_setter_replay"),
+      voterAddress: zAddress,
+      priorConfigurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
+      semantics: z.literal(
+        "prior_nested_state_then_canonical_same_pointer_row_setters"
+      ),
+    }),
+    z.strictObject({
+      state: z.literal("established_by_post_pointer_setters"),
+      voterAddress: zNonZeroAddress,
+      pointerSetterLogIndex: zSafeUint,
+      decayLengthSetterLogIndex: zSafeUint,
+      delegatedStakingSetterLogIndex: zSafeUint,
+      ybcSetterLogIndex: zSafeUint,
+      ybcWeightAggregatorSetterLogIndex: zSafeUint,
+      semantics: z.literal(
+        "all_nested_voter_values_established_after_pointer_setter"
+      ),
+    }),
+    z.strictObject({
+      state: z.literal("disabled_zero_pointer"),
+      voterAddress: z.literal(ZERO_ADDRESS),
+      pointerSetterLogIndex: zSafeUint,
+      nestedState: z.literal(
+        "not_applicable_canonical_zero_addresses_and_zero_decay"
+      ),
+    }),
+    z.strictObject({
+      state: z.literal("authenticated_preconfigured_voter_state"),
+      voterAddress: zNonZeroAddress,
+      blockNumber: zUint,
+      blockHash: zNonZeroHash,
+      transactionIndex: zSafeUint,
+      logIndex: zSafeUint,
+      statePosition: z.literal(
+        "exact_boundary_from_block_end_state_and_zero_later_same_block_setters"
+      ),
+      values: z.strictObject({
+        voterDecayLengthSeconds: zSafeUint.max(
+          DAO_FEED_EPOCH_LENGTH_SECONDS / 2 - 1
+        ),
+        delegatedStakingAddress: zAddress,
+        ybcAddress: zAddress,
+        ybcWeightAggregatorAddress: zAddress,
+      }),
+      valuesSha256: zNonZeroHash,
+      codeBirthEvidence: VoterCodeBirthEvidenceSchema,
+      historyFromBlockNumber: zUint,
+      historyToBlockNumber: zUint,
+      historyToBlockHash: zNonZeroHash,
+      historicalSetterLogCount: zSafeUint.max(100_000),
+      historicalSetterManifestEncoding: z.literal(
+        "canonical_json_utf8_lexicographic_keys_no_whitespace_one_final_lf"
+      ),
+      historicalSetterManifestByteLength: zPositiveSafeUint.max(
+        16 * 1024 * 1024
+      ),
+      historicalSetterManifestSha256: zNonZeroHash,
+      historicalSetterLogs: z
+        .array(ConfigurationBootstrapTrackedSetterLogSchema)
+        .max(100_000),
+      transactionEvidence: z
+        .array(ConfigurationSetterTransactionEvidenceSchema)
+        .max(100_000),
+      laterSameBlockRelevantSetterLogCount: z.literal(0),
+      evidenceKind: z.enum([
+        "archive_rpc",
+        "committed_synthetic_fixture",
+      ]),
+      rpcMethods: z
+        .tuple([z.literal("eth_call"), z.literal("eth_getLogs")])
+        .nullable(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+      fixtureProjectionSha256: zNonZeroHash.nullable(),
+      rawLogsSha256: zNonZeroHash.nullable(),
+      manifestObjectKey: z.string().min(1).max(1_024).nullable(),
+    }),
+  ]
+);
+
+const ConfigurationSetterStateEvidenceCommonShape = {
+  blockNumber: zUint,
+  blockHash: zNonZeroHash,
+  transactionIndex: zSafeUint,
+  logIndex: zSafeUint,
+  statePosition: z.literal("immediately_after_final_canonical_setter_log"),
+  configurationValuesSha256: zNonZeroHash,
+  trackedSetterHistoryLogCount: zSafeUint.max(100_000),
+  trackedSetterHistoryManifestSha256: zNonZeroHash,
+  voterTargetStateEvidence: ConfigurationVoterTargetStateEvidenceSchema,
+  replayCoverage: z.literal(
+    "voting_creation_and_effective_voter_history_through_final_setter_log"
+  ),
+  replaySemantics: z.literal(
+    "canonical_voting_and_effective_voter_setter_replay_equals_configuration"
+  ),
+};
+
+const ConfigurationSetterStateEvidenceSchema = z.discriminatedUnion(
+  "evidenceKind",
+  [
+    z.strictObject({
+      evidenceKind: z.literal("archive_rpc"),
+      rpcMethods: z.tuple([z.literal("eth_call"), z.literal("eth_getCode")]),
+      fixturePath: z.null(),
+      fixtureProjectionSha256: z.null(),
+      manifestObjectKey: z.string().min(1).max(1_024),
+      ...ConfigurationSetterStateEvidenceCommonShape,
+    }),
+    z.strictObject({
+      evidenceKind: z.literal("committed_synthetic_fixture"),
+      rpcMethods: z.null(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+      fixtureProjectionSha256: zNonZeroHash,
+      manifestObjectKey: z.null(),
+      ...ConfigurationSetterStateEvidenceCommonShape,
+    }),
+  ]
+);
+
+const ConfigurationBootstrapScanManifestSchema = z.discriminatedUnion(
+  "evidenceKind",
+  [
+    z.strictObject({
+      evidenceKind: z.literal("archive_rpc"),
+      rpcMethod: z.literal("eth_getLogs"),
+      fixturePath: z.null(),
+      fixtureProjectionSha256: z.null(),
+      manifestObjectKey: z.string().min(1).max(1_024),
+      ...ConfigurationBootstrapScanManifestCommonShape,
+    }),
+    z.strictObject({
+      evidenceKind: z.literal("committed_synthetic_fixture"),
+      rpcMethod: z.null(),
+      fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
+      fixtureProjectionSha256: zNonZeroHash,
+      manifestObjectKey: z.null(),
+      ...ConfigurationBootstrapScanManifestCommonShape,
+    }),
+  ]
+);
 
 const ConfigurationBoundarySchema = z.discriminatedUnion("kind", [
   z.strictObject({
-    kind: z.literal("deployment_start_sentinel"),
+    kind: z.literal("producer_start_state_snapshot_sentinel"),
     positionSemantics: z.literal(
-      "start_of_block_before_transaction_zero_log_zero"
+      "logical_start_of_scan_after_authenticated_prestart_setter_replay"
     ),
-    transactionHash: z.null(),
-    rpcMethod: z.null(),
-    tracer: z.null(),
-    transactionIndex: z.null(),
-    firstEffectiveLogIndex: z.null(),
+    stateSnapshot: ConfigurationBootstrapEvidenceSchema,
+    scanManifest: ConfigurationBootstrapScanManifestSchema,
     effectiveness: z.literal(
-      "effective_for_all_positions_at_or_after_start_block"
+      "effective_for_all_included_positions_at_or_after_producer_start"
     ),
     setterCalls: z.tuple([]),
   }),
   z.strictObject({
     kind: z.literal("setter_trace_observation"),
     positionSemantics: z.literal(
-      "first_lifecycle_log_position_after_successful_setter_calls"
+      "last_canonical_setter_log_after_successful_setter_calls"
     ),
-    transactionHash: zNonZeroHash,
-    rpcMethod: z.literal("debug_traceTransaction"),
-    tracer: z.literal("callTracer"),
-    transactionIndex: zSafeUint,
-    firstEffectiveLogIndex: zSafeUint,
+    receipt: z.strictObject({
+      status: z.literal("success"),
+      transactionHash: zNonZeroHash,
+      transactionSender: zNonZeroAddress,
+      blockNumber: zUint,
+      blockHash: zNonZeroHash,
+      blockTimestamp: zUnixSeconds.nullable(),
+      transactionIndex: zSafeUint,
+      totalMatchingSetterLogCount: zPositiveSafeUint.max(64),
+      retainedBoundarySetterLogCount: zPositiveSafeUint.max(64),
+    }),
+    traceEvidence: ConfigurationSetterTraceEvidenceSchema,
+    stateSnapshot: ConfigurationSetterStateEvidenceSchema,
     effectiveness: z.literal(
-      "after_successful_setter_calls_before_first_effective_log"
+      "effective_at_and_after_last_canonical_setter_log"
     ),
     setterCalls: z.array(ConfigurationSetterCallSchema).min(1).max(64),
   }),
@@ -1613,21 +2348,54 @@ const ConfigurationBoundarySchema = z.discriminatedUnion("kind", [
 
 const HistoricalConfigurationSchema = z.strictObject({
   ...HistoricalConfigurationValuesShape,
-  effectiveAt: EventPositionSchema,
+  effectiveAt: ConfigurationEffectivePositionSchema,
   boundary: ConfigurationBoundarySchema,
   source: VerifiedSourceSchema,
 });
 
 const MutableConfigurationSchema = z.strictObject({
   ...HistoricalConfigurationValuesShape,
-  observedAt: EventPositionSchema,
+  observedAt: ConfigurationEffectivePositionSchema,
   observationSemantics: z.literal("effective_at_propose_event"),
   valuesAreSnapshotted: z.literal(false),
+});
+
+const ProposalThresholdEvidenceSchema = z.strictObject({
+  state: z.literal("verified_stored_proposal_threshold"),
+  source: VerifiedSourceSchema,
+  evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+  rpcMethod: z.literal("eth_getStorageAt").nullable(),
+  fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+  fixtureProjectionSha256: zNonZeroHash.nullable(),
+  votingAddress: zNonZeroAddress,
+  proposalId: zUint,
+  blockNumber: zUint,
+  blockHash: zNonZeroHash,
+  blockHashVerification: z.literal("canonical_hash_at_height"),
+  storageLayout: z.strictObject({
+    compiler: z.literal("vyper@0.4.2"),
+    sourceSha256: z.literal(PINNED_VOTING_SOURCE_SHA256),
+    layoutArtifactSha256: z.literal(PINNED_VOTING_LAYOUT_SHA256),
+    derivation: z.literal(
+      "keccak256(bytes32(mapping_base_slot) || bytes32(proposal_id)) + threshold_field_slot_offset"
+    ),
+    mappingBaseSlot: z.literal(VOTING_PROPOSALS_MAPPING_SLOT.toString()),
+    mappingKey: zUint,
+    mappingHashInputOrder: z.literal("slot_then_key"),
+    proposalStorageBaseSlot: zNonZeroHash,
+    thresholdFieldSlotOffset: z.literal(
+      Number(VOTING_PROPOSAL_THRESHOLD_SLOT_OFFSET)
+    ),
+    resolvedStorageSlot: zNonZeroHash,
+  }),
+  storageWord: zHash,
+  decodedThresholdBps: z.number().int().min(0).max(DAO_BPS),
 });
 
 const ProposalRulesSchema = z.strictObject({
   approvalThresholdBps: z.number().int().min(0).max(DAO_BPS),
   thresholdSnapshottedAtCreation: z.literal(true),
+  thresholdEvidence: ProposalThresholdEvidenceSchema,
   minimumTurnout: z.null(),
   passageRequiresPositiveTotal: z.literal(true),
   proposalType: z.enum(["signal", "executable"]),
@@ -1691,7 +2459,7 @@ const ChainCreatedAtSchema = z.discriminatedUnion("state", [
 
 const StatusConfigurationSchema = z.strictObject({
   configurationId: z.string().regex(CONFIGURATION_ID_PATTERN),
-  effectiveAt: EventPositionSchema,
+  effectiveAt: ConfigurationEffectivePositionSchema,
   observationSemantics: z.literal("effective_at_end_of_canonical_block"),
 });
 
@@ -2156,6 +2924,21 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     | "archive_rpc_and_reproducible_build"
     | "committed_synthetic_fixture_and_reproducible_build";
   executorEvidenceFixtureProjectionSha256: Hex | null;
+  executorOperatorStorageSlot: Hex;
+  executorOperatorBlockEndStorageWord: Hex;
+  executorOperatorAuthorizedAtPropose: boolean;
+  executorOperatorBlockEndEvidenceKind:
+    | "archive_rpc"
+    | "committed_synthetic_fixture";
+  executorOperatorBlockEndFixtureProjectionSha256: Hex | null;
+  executorOperatorReplayManifestSha256: Hex;
+  executorOperatorReplayRelevantSetterLogCount: number;
+  executorOperatorReplayAppliedSetterLogCount: number;
+  executorOperatorReplayEvidenceKind:
+    | "archive_rpc"
+    | "committed_synthetic_fixture";
+  executorOperatorReplayFixtureProjectionSha256: Hex | null;
+  executorOperatorReplayRawLogsSha256: Hex | null;
   executorFrameInitialGas: string;
   effectiveGasPriceWei: string;
   overrideVotingAddress: Address;
@@ -2174,7 +2957,7 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     beneficiary: input.blockBeneficiary,
   });
   const canonicalInputs = JSON.stringify({
-    schema: "yearn.dao.simulation-context-inputs.v3",
+    schema: "yearn.dao.simulation-context-inputs.v4",
     chainId: input.chainId,
     blockNumber: input.blockNumber,
     blockHash: input.blockHash,
@@ -2237,7 +3020,32 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     targetCaller: input.targetCaller,
     callValue: "0",
     noCodeOverrides: true,
-    operatorCheckExecuted: true,
+    executorOperatorGetterSelector: "0x13e7c9d8",
+    executorOperatorMappingBaseSlot:
+      EXECUTOR_OPERATORS_MAPPING_SLOT.toString(),
+    executorOperatorMappingHashInputOrder: "slot_then_key",
+    executorOperatorStorageSlot: input.executorOperatorStorageSlot,
+    executorOperatorBlockEndStorageWord:
+      input.executorOperatorBlockEndStorageWord,
+    executorOperatorAuthorizedAtPropose:
+      input.executorOperatorAuthorizedAtPropose,
+    executorOperatorBlockEndEvidenceKind:
+      input.executorOperatorBlockEndEvidenceKind,
+    executorOperatorBlockEndFixtureProjectionSha256:
+      input.executorOperatorBlockEndFixtureProjectionSha256,
+    executorOperatorReplayManifestSha256:
+      input.executorOperatorReplayManifestSha256,
+    executorOperatorReplayRelevantSetterLogCount:
+      input.executorOperatorReplayRelevantSetterLogCount,
+    executorOperatorReplayAppliedSetterLogCount:
+      input.executorOperatorReplayAppliedSetterLogCount,
+    executorOperatorReplayLaterSetterLogCount: 0,
+    executorOperatorReplayEvidenceKind:
+      input.executorOperatorReplayEvidenceKind,
+    executorOperatorReplayFixtureProjectionSha256:
+      input.executorOperatorReplayFixtureProjectionSha256,
+    executorOperatorReplayRawLogsSha256:
+      input.executorOperatorReplayRawLogsSha256,
     harnessName: "gov-apps-stats-revm-frame-injector",
     harnessRevision: input.harnessRevision,
     harnessArtifactSha256: input.harnessArtifactSha256,
@@ -2519,6 +3327,517 @@ export function encodeDaoFeedLifecycleEventAbi(
   };
 }
 
+export type DaoConfigurationSetterAbiInput =
+  | {
+      setter: "set_propose_parameters";
+      minWeight: bigint;
+      cooldownSeconds: bigint;
+      blacklistAddress: Address;
+    }
+  | {
+      setter: "set_vote_parameters";
+      votingPeriodSeconds: bigint;
+      voterAddress: Address;
+    }
+  | {
+      setter: "set_execute_parameters";
+      executionDelaySeconds: bigint;
+      executionGuard: "guarded" | "permissionless";
+      executorAddress: Address;
+    }
+  | { setter: "set_hooks"; hooksAddress: Address }
+  | { setter: "set_weight_measure"; measureAddress: Address }
+  | { setter: "set_operator"; operatorAddress: Address }
+  | { setter: "accept_guardian"; guardianAddress: Address }
+  | { setter: "set_decay_length"; voterDecayLengthSeconds: bigint }
+  | { setter: "set_delegated_staking"; delegatedStakingAddress: Address }
+  | { setter: "set_ybc"; ybcAddress: Address }
+  | {
+      setter: "set_ybc_weight_aggregator";
+      ybcWeightAggregatorAddress: Address;
+    };
+
+function prefixSelector(selector: Hex, encodedArguments: Hex): Hex {
+  return `${selector}${encodedArguments.slice(2)}` as Hex;
+}
+
+function indexedAddressTopic(address: Address): Hex {
+  return encodeAbiParameters([{ name: "value", type: "address" }], [address]);
+}
+
+export function encodeDaoFeedConfigurationSetterAbi(
+  input: DaoConfigurationSetterAbiInput
+): { selector: Hex; calldata: Hex; topics: Hex[]; data: Hex } {
+  if (input.setter === "set_propose_parameters") {
+    const selector =
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setProposeParameters;
+    const encoded = encodeAbiParameters(
+      [
+        { name: "minWeight", type: "uint256" },
+        { name: "cooldownSeconds", type: "uint256" },
+        { name: "blacklistAddress", type: "address" },
+      ],
+      [input.minWeight, input.cooldownSeconds, input.blacklistAddress]
+    );
+    return {
+      selector,
+      calldata: prefixSelector(selector, encoded),
+      topics: [DAO_FEED_CONFIGURATION_SETTER_TOPICS.setProposeParameters],
+      data: encoded,
+    };
+  }
+  if (input.setter === "set_vote_parameters") {
+    const selector = DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setVoteParameters;
+    const encoded = encodeAbiParameters(
+      [
+        { name: "votingPeriodSeconds", type: "uint256" },
+        { name: "voterAddress", type: "address" },
+      ],
+      [input.votingPeriodSeconds, input.voterAddress]
+    );
+    return {
+      selector,
+      calldata: prefixSelector(selector, encoded),
+      topics: [DAO_FEED_CONFIGURATION_SETTER_TOPICS.setVoteParameters],
+      data: encoded,
+    };
+  }
+  if (input.setter === "set_execute_parameters") {
+    const selector =
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setExecuteParameters;
+    const encoded = encodeAbiParameters(
+      [
+        { name: "executionDelaySeconds", type: "uint256" },
+        { name: "executionGuard", type: "bool" },
+        { name: "executorAddress", type: "address" },
+      ],
+      [
+        input.executionDelaySeconds,
+        input.executionGuard === "guarded",
+        input.executorAddress,
+      ]
+    );
+    return {
+      selector,
+      calldata: prefixSelector(selector, encoded),
+      topics: [DAO_FEED_CONFIGURATION_SETTER_TOPICS.setExecuteParameters],
+      data: encoded,
+    };
+  }
+
+  const indexed = (
+    selector: Hex,
+    topic: Hex,
+    address: Address
+  ): { selector: Hex; calldata: Hex; topics: Hex[]; data: Hex } => ({
+    selector,
+    calldata: prefixSelector(
+      selector,
+      encodeAbiParameters([{ name: "value", type: "address" }], [address])
+    ),
+    topics: [topic, indexedAddressTopic(address)],
+    data: "0x",
+  });
+
+  if (input.setter === "set_hooks") {
+    return indexed(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setHooks,
+      DAO_FEED_CONFIGURATION_SETTER_TOPICS.setHooks,
+      input.hooksAddress
+    );
+  }
+  if (input.setter === "set_weight_measure") {
+    return indexed(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setWeightMeasure,
+      DAO_FEED_CONFIGURATION_SETTER_TOPICS.setWeightMeasure,
+      input.measureAddress
+    );
+  }
+  if (input.setter === "set_operator") {
+    return indexed(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setOperator,
+      DAO_FEED_CONFIGURATION_SETTER_TOPICS.setOperator,
+      input.operatorAddress
+    );
+  }
+  if (input.setter === "accept_guardian") {
+    const selector = DAO_FEED_CONFIGURATION_SETTER_SELECTORS.acceptGuardian;
+    return {
+      selector,
+      calldata: selector,
+      topics: [
+        DAO_FEED_CONFIGURATION_SETTER_TOPICS.acceptGuardian,
+        indexedAddressTopic(input.guardianAddress),
+      ],
+      data: "0x",
+    };
+  }
+  if (input.setter === "set_decay_length") {
+    const selector = DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setDecayLength;
+    const encoded = encodeAbiParameters(
+      [{ name: "voterDecayLengthSeconds", type: "uint256" }],
+      [input.voterDecayLengthSeconds]
+    );
+    return {
+      selector,
+      calldata: prefixSelector(selector, encoded),
+      topics: [DAO_FEED_CONFIGURATION_SETTER_TOPICS.setDecayLength],
+      data: encoded,
+    };
+  }
+  if (input.setter === "set_delegated_staking") {
+    return indexed(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setDelegatedStaking,
+      DAO_FEED_CONFIGURATION_SETTER_TOPICS.setDelegatedStaking,
+      input.delegatedStakingAddress
+    );
+  }
+  if (input.setter === "set_ybc") {
+    return indexed(
+      DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setYbc,
+      DAO_FEED_CONFIGURATION_SETTER_TOPICS.setYbc,
+      input.ybcAddress
+    );
+  }
+  return indexed(
+    DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setYbcWeightAggregator,
+    DAO_FEED_CONFIGURATION_SETTER_TOPICS.setYbcWeightAggregator,
+    input.ybcWeightAggregatorAddress
+  );
+}
+
+export function deriveDaoConfigurationSetterTraceProjectionSha256(input: {
+  receipt: {
+    transactionHash: Hex;
+    transactionSender: Address;
+    blockNumber: string;
+    blockHash: Hex;
+    transactionIndex: number;
+  };
+  setterCalls: readonly {
+    setter: string;
+    target: string;
+    sourceContract: string;
+    caller: string;
+    traceAddress: readonly number[];
+    selector: string;
+    calldata: string;
+    arguments: unknown;
+    log: {
+      emitter: string;
+      logIndex: number;
+      topics: readonly string[];
+      data: string;
+      decoded: unknown;
+    };
+  }[];
+}): Hex {
+  return sha256(
+    new TextEncoder().encode(
+      canonicalHashJson({
+        schema: "yearn.dao.synthetic-configuration-setter-trace-projection.v1",
+        rpcMethod: "debug_traceTransaction",
+        tracer: "callTracer",
+        tracerConfig: { onlyTopCall: false, withLog: true },
+        reexec: 0,
+        normalization:
+          "root_empty_array_then_zero_based_full_call_tree_child_indices",
+        receipt: input.receipt,
+        setterCalls: input.setterCalls,
+      })
+    )
+  );
+}
+
+export function deriveDaoConfigurationValuesSha256(input: {
+  voteStartOffsetSeconds: number;
+  votingPeriodSeconds: number;
+  executionDelaySeconds: number;
+  executionGuard: "guarded" | "permissionless";
+  voterDecayLengthSeconds: number;
+  voterAddress: string;
+  voterImplementation: unknown;
+  delegatedStakingAddress: string;
+  ybcAddress: string;
+  ybcWeightAggregatorAddress: string;
+  executorAddress: string;
+  executorImplementation: unknown;
+  votingHookAddress: string;
+  weightMeasureAddress: string;
+  proposalBlacklistAddress: string;
+  operatorAddress: string;
+  guardianAddress: string;
+}): Hex {
+  return sha256(
+    new TextEncoder().encode(
+      canonicalHashJson({
+        schema: "yearn.dao.configuration-values.v1",
+        voteStartOffsetSeconds: input.voteStartOffsetSeconds,
+        votingPeriodSeconds: input.votingPeriodSeconds,
+        executionDelaySeconds: input.executionDelaySeconds,
+        executionGuard: input.executionGuard,
+        voterDecayLengthSeconds: input.voterDecayLengthSeconds,
+        voterAddress: input.voterAddress,
+        voterImplementation: input.voterImplementation,
+        delegatedStakingAddress: input.delegatedStakingAddress,
+        ybcAddress: input.ybcAddress,
+        ybcWeightAggregatorAddress: input.ybcWeightAggregatorAddress,
+        executorAddress: input.executorAddress,
+        executorImplementation: input.executorImplementation,
+        votingHookAddress: input.votingHookAddress,
+        weightMeasureAddress: input.weightMeasureAddress,
+        proposalBlacklistAddress: input.proposalBlacklistAddress,
+        operatorAddress: input.operatorAddress,
+        guardianAddress: input.guardianAddress,
+      })
+    )
+  );
+}
+
+export function deriveDaoConfigurationBootstrapProjectionSha256(input: {
+  startBlockNumber: string;
+  startBlockHash: Hex;
+  parentBlockNumber: string;
+  parentBlockHash: Hex;
+  votingAddress: Address;
+  configurationValuesSha256: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "configuration_start_state_snapshot_projection",
+    input
+  );
+}
+
+export function deriveDaoConfigurationBootstrapScanProjectionSha256(input: {
+  fromBlockNumber: string;
+  toBlockNumber: string;
+  toBlockHash: Hex;
+  coveredBlocks: readonly {
+    number: string;
+    hash: Hex;
+    timestamp: number | null;
+  }[];
+  votingAddress: Address;
+  lifecycleLogCount: 0;
+  trackedSetterLogCount: number;
+  canonicalManifestByteLength: number;
+  canonicalManifestSha256: Hex;
+  replayedConfigurationValuesSha256: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "configuration_bootstrap_setter_replay_scan_projection",
+    input
+  );
+}
+
+export function deriveDaoConfigurationSetterStateProjectionSha256(input: {
+  votingAddress: Address;
+  blockNumber: string;
+  blockHash: Hex;
+  transactionIndex: number;
+  logIndex: number;
+  configurationValuesSha256: Hex;
+  trackedSetterHistoryLogCount: number;
+  trackedSetterHistoryManifestSha256: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "configuration_setter_state_projection",
+    input
+  );
+}
+
+export function deriveDaoVoterTargetStateValuesSha256(input: {
+  voterDecayLengthSeconds: number;
+  delegatedStakingAddress: string;
+  ybcAddress: string;
+  ybcWeightAggregatorAddress: string;
+}): Hex {
+  return sha256(
+    new TextEncoder().encode(
+      canonicalHashJson({
+        schema: "yearn.dao.voter-target-state-values.v1",
+        ...input,
+      })
+    )
+  );
+}
+
+export function deriveDaoConfigurationSetterTransactionProjectionSha256(
+  input: {
+    projectionKind:
+      | "bootstrap_configuration_setter_transaction"
+      | "preconfigured_voter_setter_transaction";
+    transactionHash: Hex;
+    transactionSender: Address;
+    blockNumber: string;
+    blockHash: Hex;
+    transactionIndex: number;
+    receiptStatus: "success";
+    setterCalls: readonly unknown[];
+  }
+): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "configuration_setter_transaction_trace_projection",
+    input
+  );
+}
+
+export function deriveDaoVoterCodeBirthProjectionSha256(input: {
+  address: Address;
+  deploymentBlockNumber: string;
+  deploymentBlockHash: Hex;
+  deploymentTransactionHash: Hex;
+  deploymentTransactionIndex: number;
+  receiptStatus: "success";
+  receiptContractAddress: Address;
+  previousBlockNumber: string;
+  previousBlockHash: Hex;
+  previousCodeByteLength: 0;
+  deployedCodeByteLength: number;
+  deployedBytecodeHash: Hex;
+  deployedRuntimeSha256: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "voter_code_birth_receipt_and_code_projection",
+    input
+  );
+}
+
+export function canonicalizeDaoPreconfiguredVoterSetterManifest(input: {
+  chainId: number;
+  voterAddress: Address;
+  historyFromBlockNumber: string;
+  historyToBlockNumber: string;
+  historyToBlockHash: Hex;
+  codeBirthEvidence: unknown;
+  historicalSetterLogs: readonly unknown[];
+  transactionEvidence: readonly unknown[];
+  historyEvidence: {
+    evidenceKind: "archive_rpc" | "committed_synthetic_fixture";
+    rpcMethods: readonly ["eth_call", "eth_getLogs"] | null;
+    fixturePath: "tests/fixtures/dao-feed-v1.ts" | null;
+    rawLogsSha256: Hex | null;
+    manifestObjectKey: string | null;
+  };
+}): string {
+  return `${canonicalHashJson({
+    schema: "yearn.dao.preconfigured-voter-setter-manifest.v1",
+    ...input,
+  })}\n`;
+}
+
+export function deriveDaoVoterTargetStateProjectionSha256(input: {
+  voterAddress: Address;
+  blockNumber: string;
+  blockHash: Hex;
+  transactionIndex: number;
+  logIndex: number;
+  valuesSha256: Hex;
+  historyFromBlockNumber: string;
+  historyToBlockNumber: string;
+  historyToBlockHash: Hex;
+  historicalSetterLogCount: number;
+  historicalSetterManifestByteLength: number;
+  historicalSetterManifestSha256: Hex;
+  laterSameBlockRelevantSetterLogCount: 0;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "preconfigured_voter_exact_boundary_state_projection",
+    input
+  );
+}
+
+export function canonicalizeDaoConfigurationSetterHistoryManifest(input: {
+  priorTrackedSetterHistoryLogCount: number;
+  priorTrackedSetterHistoryManifestSha256: Hex;
+  receipt: {
+    status: "success";
+    transactionHash: Hex;
+    transactionSender: Address;
+    blockNumber: string;
+    blockHash: Hex;
+    blockTimestamp: number | null;
+    transactionIndex: number;
+    totalMatchingSetterLogCount: number;
+    retainedBoundarySetterLogCount: number;
+  };
+  setterCalls: readonly unknown[];
+}): string {
+  return `${canonicalHashJson({
+    schema: "yearn.dao.configuration-setter-history-chain.v1",
+    priorTrackedSetterHistoryLogCount:
+      input.priorTrackedSetterHistoryLogCount,
+    priorTrackedSetterHistoryManifestSha256:
+      input.priorTrackedSetterHistoryManifestSha256,
+    receipt: input.receipt,
+    setterCalls: input.setterCalls,
+  })}\n`;
+}
+
+export function canonicalizeDaoConfigurationBootstrapSetterManifest(input: {
+  chainId: number;
+  votingAddress: Address;
+  fromBlockNumber: string;
+  toBlockNumber: string;
+  coveredBlocks: readonly {
+    number: string;
+    hash: Hex;
+    timestamp: number | null;
+  }[];
+  trackedSetterLogs: readonly {
+    blockNumber: string;
+    blockHash: Hex;
+    blockTimestamp: number | null;
+    transactionHash: Hex;
+    transactionSender: Address;
+    transactionIndex: number;
+    receiptStatus: "success";
+    call: unknown;
+  }[];
+  transactionEvidence: readonly unknown[];
+}): string {
+  return `${canonicalHashJson({
+    schema: "yearn.dao.configuration-bootstrap-setter-manifest.v1",
+    chainId: input.chainId,
+    votingAddress: input.votingAddress,
+    fromBlockNumber: input.fromBlockNumber,
+    toBlockNumber: input.toBlockNumber,
+    coveredBlocks: input.coveredBlocks,
+    trackedSetterLogs: input.trackedSetterLogs,
+    transactionEvidence: input.transactionEvidence,
+  })}\n`;
+}
+
+function canonicalHashJson(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => canonicalHashJson(entry)).join(",")}]`;
+  }
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map(
+      (key) => `${JSON.stringify(key)}:${canonicalHashJson(record[key])}`
+    )
+    .join(",")}}`;
+}
+
+export function deriveDaoProposalThresholdProjectionSha256(input: {
+  votingAddress: Address;
+  proposalId: string;
+  blockNumber: string;
+  blockHash: Hex;
+  resolvedStorageSlot: Hex;
+  storageWord: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "proposal_threshold_eth_getStorageAt_projection",
+    input
+  );
+}
+
 export function deriveDaoVotingExecutedStorageSlots(proposalId: bigint): {
   proposalStorageBaseSlot: Hex;
   resolvedStorageSlot: Hex;
@@ -2543,6 +3862,95 @@ export function deriveDaoVotingExecutedStorageSlots(proposalId: bigint): {
     proposalStorageBaseSlot,
     resolvedStorageSlot: `0x${resolved.toString(16).padStart(64, "0")}`,
   };
+}
+
+export function deriveDaoVotingThresholdStorageSlots(proposalId: bigint): {
+  proposalStorageBaseSlot: Hex;
+  resolvedStorageSlot: Hex;
+} {
+  if (proposalId < 0n || proposalId > UINT256_MAX) {
+    throw new RangeError("DAO proposal ID must be within the uint256 range.");
+  }
+  const proposalStorageBaseSlot = keccak256(
+    encodeAbiParameters(
+      [
+        { name: "mappingBaseSlot", type: "uint256" },
+        { name: "proposalId", type: "uint256" },
+      ],
+      [VOTING_PROPOSALS_MAPPING_SLOT, proposalId]
+    )
+  );
+  const resolved =
+    (BigInt(proposalStorageBaseSlot) +
+      VOTING_PROPOSAL_THRESHOLD_SLOT_OFFSET) &
+    UINT256_MAX;
+  return {
+    proposalStorageBaseSlot,
+    resolvedStorageSlot: `0x${resolved.toString(16).padStart(64, "0")}`,
+  };
+}
+
+export function deriveDaoExecutorOperatorStorageSlot(
+  votingAddress: Address
+): Hex {
+  return keccak256(
+    encodeAbiParameters(
+      [
+        { name: "mappingBaseSlot", type: "uint256" },
+        { name: "votingAddress", type: "address" },
+      ],
+      [EXECUTOR_OPERATORS_MAPPING_SLOT, votingAddress]
+    )
+  );
+}
+
+export function deriveDaoExecutorOperatorStorageProjectionSha256(input: {
+  executorAddress: Address;
+  votingAddress: Address;
+  blockNumber: string;
+  blockHash: Hex;
+  resolvedStorageSlot: Hex;
+  storageWord: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "executor_operator_eth_getStorageAt_projection",
+    input
+  );
+}
+
+export function deriveDaoExecutorOperatorReplayProjectionSha256(input: {
+  executorAddress: Address;
+  votingAddress: Address;
+  blockNumber: string;
+  blockHash: Hex;
+  proposeTransactionIndex: number;
+  proposeLogIndex: number;
+  relevantSetterLogCount: number;
+  appliedThroughProposeLogCount: number;
+  laterSetterLogCount: 0;
+  canonicalManifestSha256: Hex;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "executor_operator_same_block_setter_replay_projection",
+    input
+  );
+}
+
+export function canonicalizeDaoExecutorOperatorSetterManifest(input: {
+  executorAddress: Address;
+  votingAddress: Address;
+  blockNumber: string;
+  blockHash: Hex;
+  relevantSetterLogs: readonly unknown[];
+}): string {
+  return `${canonicalHashJson({
+    schema: "yearn.dao.executor-operator-setter-manifest.v1",
+    executorAddress: input.executorAddress,
+    votingAddress: input.votingAddress,
+    blockNumber: input.blockNumber,
+    blockHash: input.blockHash,
+    relevantSetterLogs: input.relevantSetterLogs,
+  })}\n`;
 }
 
 function scalarTopics(topics: readonly (Hex | Hex[] | null)[]): Hex[] {
@@ -2656,6 +4064,25 @@ function validateGlobalBlockIdentity(
         typeof record.timestamp === "number" ? record.timestamp : null,
         path
       );
+    }
+    for (const [numberKey, hashKey] of [
+      ["parentBlockNumber", "parentBlockHash"],
+      ["toBlockNumber", "toBlockHash"],
+      ["historyToBlockNumber", "historyToBlockHash"],
+      ["deploymentBlockNumber", "deploymentBlockHash"],
+      ["previousBlockNumber", "previousBlockHash"],
+    ] as const) {
+      if (
+        typeof record[numberKey] === "string" &&
+        typeof record[hashKey] === "string"
+      ) {
+        register(
+          record[numberKey] as string,
+          record[hashKey] as string,
+          null,
+          [...path, numberKey]
+        );
+      }
     }
     for (const [key, item] of Object.entries(record)) {
       visit(item, [...path, key]);
@@ -2971,44 +4398,15 @@ function validateContracts(
         context,
         configurationPath
       );
-      if (configurationIndex === 0) {
-        if (
-          configuration.boundary.kind !== "deployment_start_sentinel" ||
-          configuration.effectiveAt.transactionIndex !== 0 ||
-          configuration.effectiveAt.logIndex !== 0
-        ) {
-          issue(
-            context,
-            [...configurationPath, "boundary"],
-            "The first configuration must use the exact producer-start sentinel at transaction zero/log zero; it is not a synthetic setter log."
-          );
-        }
-      } else if (configuration.boundary.kind !== "setter_trace_observation") {
-        issue(
-          context,
-          [...configurationPath, "boundary"],
-          "Every later configuration must bind exact successful setter-call trace evidence and its first effective lifecycle-log position."
-        );
-      } else {
-        const boundary = configuration.boundary;
-        if (
-          boundary.transactionIndex !==
-            configuration.effectiveAt.transactionIndex ||
-          boundary.firstEffectiveLogIndex !==
-            configuration.effectiveAt.logIndex ||
-          boundary.setterCalls.some(
-            (call) =>
-              !call.calldata.startsWith(call.selector) ||
-              call.traceAddress.length === 0
-          )
-        ) {
-          issue(
-            context,
-            [...configurationPath, "boundary"],
-            "Setter trace evidence must bind the effective transaction, exact first lifecycle log, non-root call path, and selector-prefixed calldata; values become effective after those successful calls."
-          );
-        }
-      }
+      validateConfigurationBoundary(
+        feed,
+        contract,
+        configuration,
+        previousConfiguration,
+        configurationIndex,
+        context,
+        configurationPath
+      );
       if (
         previousConfiguration !== null &&
         ((previousConfiguration.executorState === "configured" &&
@@ -3042,7 +4440,10 @@ function validateContracts(
       }
       if (
         previousConfiguration !== null &&
-        comparePositions(previousConfiguration.effectiveAt, configuration.effectiveAt) >= 0
+        compareConfigurationEffectivePositions(
+          previousConfiguration.effectiveAt,
+          configuration.effectiveAt
+        ) >= 0
       ) {
         issue(context, [...configurationPath, "effectiveAt"], "Historical configuration evidence must be strictly ordered by exact block, transaction, and log position.");
       }
@@ -3054,6 +4455,129 @@ function validateContracts(
       }
       validatePinnedVotingSource(configuration.source, context, [...configurationPath, "source"]);
       previousConfiguration = configuration;
+    }
+    const setterTransactions = new Map<
+      string,
+      {
+        blockNumber: string;
+        blockHash: string;
+        transactionIndex: number;
+        transactionSender: string;
+        totalMatchingSetterLogCount: number;
+        logIndices: Set<number>;
+        tracePaths: Map<string, string>;
+        path: readonly PropertyKey[];
+        sourceKind: "archive_rpc" | "committed_synthetic_fixture";
+        clientVersion: string | null;
+        rawTraceSha256: string | null;
+      }
+    >();
+    for (const [configurationIndex, configuration] of
+      contract.configurationHistory.entries()) {
+      if (configuration.boundary.kind !== "setter_trace_observation") {
+        continue;
+      }
+      const boundary = configuration.boundary;
+      const boundaryPath = [
+        ...path,
+        "configurationHistory",
+        configurationIndex,
+        "boundary",
+      ] as const;
+      const existing = setterTransactions.get(
+        boundary.receipt.transactionHash
+      );
+      if (!existing) {
+        setterTransactions.set(boundary.receipt.transactionHash, {
+          blockNumber: boundary.receipt.blockNumber,
+          blockHash: boundary.receipt.blockHash,
+          transactionIndex: boundary.receipt.transactionIndex,
+          transactionSender: boundary.receipt.transactionSender,
+          totalMatchingSetterLogCount:
+            boundary.receipt.totalMatchingSetterLogCount,
+          logIndices: new Set(
+            boundary.setterCalls.map((call) => call.log.logIndex)
+          ),
+          tracePaths: new Map(
+            boundary.setterCalls.map((call) => [
+              JSON.stringify(call.traceAddress),
+              canonicalHashJson({
+                target: call.target,
+                caller: call.caller,
+                calldata: call.calldata,
+                result: call.result,
+                log: call.log,
+              }),
+            ])
+          ),
+          path: boundaryPath,
+          sourceKind: boundary.traceEvidence.sourceKind,
+          clientVersion: boundary.traceEvidence.clientVersion,
+          rawTraceSha256: boundary.traceEvidence.rawTraceSha256,
+        });
+        continue;
+      }
+      if (
+        existing.blockNumber !== boundary.receipt.blockNumber ||
+        existing.blockHash !== boundary.receipt.blockHash ||
+        existing.transactionIndex !== boundary.receipt.transactionIndex ||
+        !sameAddress(
+          existing.transactionSender,
+          boundary.receipt.transactionSender
+        ) ||
+        existing.totalMatchingSetterLogCount !==
+          boundary.receipt.totalMatchingSetterLogCount ||
+        existing.sourceKind !== boundary.traceEvidence.sourceKind ||
+        (existing.sourceKind === "archive_rpc" &&
+          (existing.clientVersion !== boundary.traceEvidence.clientVersion ||
+            existing.rawTraceSha256 !==
+              boundary.traceEvidence.rawTraceSha256))
+      ) {
+        issue(
+          context,
+          [...boundaryPath, "receipt"],
+          "Configuration rows split across one setter transaction must retain one exact receipt, total tracked-setter count, and archive trace identity."
+        );
+      }
+      for (const call of boundary.setterCalls) {
+        const tracePath = JSON.stringify(call.traceAddress);
+        const traceIdentity = canonicalHashJson({
+          target: call.target,
+          caller: call.caller,
+          calldata: call.calldata,
+          result: call.result,
+          log: call.log,
+        });
+        if (existing.tracePaths.has(tracePath)) {
+          issue(
+            context,
+            [...boundaryPath, "setterCalls"],
+            "One transaction-wide full call-tree trace path must map to one exact setter call and cannot be reused across split configuration rows."
+          );
+        } else {
+          existing.tracePaths.set(tracePath, traceIdentity);
+        }
+        if (existing.logIndices.has(call.log.logIndex)) {
+          issue(
+            context,
+            [...boundaryPath, "setterCalls"],
+            "Split configuration rows must partition, never duplicate, the retained setter logs in their shared transaction."
+          );
+        }
+        existing.logIndices.add(call.log.logIndex);
+      }
+    }
+    for (const transaction of setterTransactions.values()) {
+      if (
+        transaction.logIndices.size !==
+        transaction.totalMatchingSetterLogCount
+      ) {
+        issue(
+          context,
+          [...transaction.path, "receipt", "totalMatchingSetterLogCount"],
+          "All configuration rows for one setter transaction must collectively retain every matching tracked setter log exactly once."
+        );
+      }
     }
     if (
       start !== null &&
@@ -3106,6 +4630,1325 @@ function validateContracts(
   return byGeneration;
 }
 
+type HistoricalConfiguration = z.infer<typeof HistoricalConfigurationSchema>;
+type ConfigurationSetterCall = z.infer<typeof ConfigurationSetterCallSchema>;
+type ConfigurationTrackedSetterLog = z.infer<
+  typeof ConfigurationBootstrapTrackedSetterLogSchema
+>;
+type ConfigurationSetterTransactionEvidence = z.infer<
+  typeof ConfigurationSetterTransactionEvidenceSchema
+>;
+
+function configurationValuesSha256(
+  configuration: HistoricalConfiguration
+): Hex {
+  return deriveDaoConfigurationValuesSha256({
+    voteStartOffsetSeconds: configuration.voteStartOffsetSeconds,
+    votingPeriodSeconds: configuration.votingPeriodSeconds,
+    executionDelaySeconds: configuration.executionDelaySeconds,
+    executionGuard: configuration.executionGuard,
+    voterDecayLengthSeconds: configuration.voterDecayLengthSeconds,
+    voterAddress: configuration.voterAddress,
+    voterImplementation: configuration.voterImplementation,
+    delegatedStakingAddress: configuration.delegatedStakingAddress,
+    ybcAddress: configuration.ybcAddress,
+    ybcWeightAggregatorAddress: configuration.ybcWeightAggregatorAddress,
+    executorAddress: configuration.executorAddress,
+    executorImplementation: configuration.executorImplementation,
+    votingHookAddress: configuration.votingHookAddress,
+    weightMeasureAddress: configuration.weightMeasureAddress,
+    proposalBlacklistAddress: configuration.proposalBlacklistAddress,
+    operatorAddress: configuration.operatorAddress,
+    guardianAddress: configuration.guardianAddress,
+  });
+}
+
+function setterAbiInput(
+  call: ConfigurationSetterCall
+): DaoConfigurationSetterAbiInput {
+  switch (call.setter) {
+    case "set_propose_parameters":
+      return {
+        setter: call.setter,
+        minWeight: BigInt(call.arguments.minWeight),
+        cooldownSeconds: BigInt(call.arguments.cooldownSeconds),
+        blacklistAddress: call.arguments.blacklistAddress as Address,
+      };
+    case "set_vote_parameters":
+      return {
+        setter: call.setter,
+        votingPeriodSeconds: BigInt(call.arguments.votingPeriodSeconds),
+        voterAddress: call.arguments.voterAddress as Address,
+      };
+    case "set_execute_parameters":
+      return {
+        setter: call.setter,
+        executionDelaySeconds: BigInt(call.arguments.executionDelaySeconds),
+        executionGuard: call.arguments.executionGuard,
+        executorAddress: call.arguments.executorAddress as Address,
+      };
+    case "set_hooks":
+      return {
+        setter: call.setter,
+        hooksAddress: call.arguments.hooksAddress as Address,
+      };
+    case "set_weight_measure":
+      return {
+        setter: call.setter,
+        measureAddress: call.arguments.measureAddress as Address,
+      };
+    case "set_operator":
+      return {
+        setter: call.setter,
+        operatorAddress: call.arguments.operatorAddress as Address,
+      };
+    case "accept_guardian":
+      return {
+        setter: call.setter,
+        guardianAddress: call.log.decoded.guardianAddress as Address,
+      };
+    case "set_decay_length":
+      return {
+        setter: call.setter,
+        voterDecayLengthSeconds: BigInt(
+          call.arguments.voterDecayLengthSeconds
+        ),
+      };
+    case "set_delegated_staking":
+      return {
+        setter: call.setter,
+        delegatedStakingAddress:
+          call.arguments.delegatedStakingAddress as Address,
+      };
+    case "set_ybc":
+      return {
+        setter: call.setter,
+        ybcAddress: call.arguments.ybcAddress as Address,
+      };
+    case "set_ybc_weight_aggregator":
+      return {
+        setter: call.setter,
+        ybcWeightAggregatorAddress:
+          call.arguments.ybcWeightAggregatorAddress as Address,
+      };
+  }
+}
+
+function validateConfigurationSetterCall(
+  call: ConfigurationSetterCall,
+  contract: StructuralFeed["contracts"][number],
+  effectiveVoterAddress: string,
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  const expected = encodeDaoFeedConfigurationSetterAbi(setterAbiInput(call));
+  const voterSetter =
+    call.setter === "set_decay_length" ||
+    call.setter === "set_delegated_staking" ||
+    call.setter === "set_ybc" ||
+    call.setter === "set_ybc_weight_aggregator";
+  const expectedSourceContract = voterSetter ? "Voter" : "Voting";
+  const expectedTarget = voterSetter
+    ? effectiveVoterAddress
+    : contract.votingAddress;
+  const proposeCooldown =
+    call.setter === "set_propose_parameters"
+      ? toUint(call.arguments.cooldownSeconds)
+      : null;
+  if (
+    call.sourceContract !== expectedSourceContract ||
+    !sameAddress(call.target, expectedTarget) ||
+    !sameAddress(call.log.emitter, call.target) ||
+    call.selector !== expected.selector ||
+    call.calldata !== expected.calldata ||
+    !stringArraysEqual(call.log.topics, expected.topics) ||
+    call.log.data !== expected.data ||
+    JSON.stringify(call.arguments) !==
+      JSON.stringify(
+        call.setter === "accept_guardian" ? {} : call.log.decoded
+      ) ||
+    (call.setter === "accept_guardian" &&
+      !sameAddress(call.caller, call.log.decoded.guardianAddress)) ||
+    (call.setter === "set_propose_parameters" &&
+      (proposeCooldown === null ||
+        proposeCooldown < 86_400n ||
+        proposeCooldown > BigInt(DAO_FEED_EPOCH_LENGTH_SECONDS)))
+  ) {
+    issue(
+      context,
+      path,
+      "Each tracked setter call must bind its exact target, caller-dependent semantics, selector, full ABI calldata, canonical Set* log, decoded mutation, and re-encoding."
+    );
+  }
+}
+
+function validateConfigurationSetterTransactionEvidence(input: {
+  retainedLogs: readonly ConfigurationTrackedSetterLog[];
+  evidence: readonly ConfigurationSetterTransactionEvidence[];
+  projectionKind:
+    | "bootstrap_configuration_setter_transaction"
+    | "preconfigured_voter_setter_transaction";
+  context: RefinementContext;
+  path: readonly PropertyKey[];
+}): void {
+  const groups = new Map<string, ConfigurationTrackedSetterLog[]>();
+  for (const retained of input.retainedLogs) {
+    const group = groups.get(retained.transactionHash) ?? [];
+    group.push(retained);
+    groups.set(retained.transactionHash, group);
+  }
+  const seen = new Set<string>();
+  for (const [evidenceIndex, evidence] of input.evidence.entries()) {
+    const evidencePath = [...input.path, evidenceIndex] as const;
+    const group = groups.get(evidence.transactionHash);
+    if (!group || seen.has(evidence.transactionHash)) {
+      issue(
+        input.context,
+        evidencePath,
+        "Each retained setter transaction must have exactly one trace/receipt evidence record and no orphan or duplicate evidence."
+      );
+      continue;
+    }
+    seen.add(evidence.transactionHash);
+    const first = group[0]!;
+    const setterCalls = group.map((entry) => entry.call);
+    const expectedLogIndices = setterCalls.map((call) => call.log.logIndex);
+    const expectedProjection =
+      deriveDaoConfigurationSetterTransactionProjectionSha256({
+        projectionKind: input.projectionKind,
+        transactionHash: first.transactionHash as Hex,
+        transactionSender: first.transactionSender as Address,
+        blockNumber: first.blockNumber,
+        blockHash: first.blockHash as Hex,
+        transactionIndex: first.transactionIndex,
+        receiptStatus: "success",
+        setterCalls,
+      });
+    const groupIdentityMatches = group.every(
+      (entry) =>
+        entry.transactionHash === first.transactionHash &&
+        sameAddress(entry.transactionSender, first.transactionSender) &&
+        entry.blockNumber === first.blockNumber &&
+        entry.blockHash === first.blockHash &&
+        entry.transactionIndex === first.transactionIndex &&
+        entry.receiptStatus === "success"
+    );
+    if (
+      !groupIdentityMatches ||
+      evidence.projectionKind !== input.projectionKind ||
+      !sameAddress(evidence.transactionSender, first.transactionSender) ||
+      evidence.blockNumber !== first.blockNumber ||
+      evidence.blockHash !== first.blockHash ||
+      evidence.transactionIndex !== first.transactionIndex ||
+      evidence.receiptStatus !== "success" ||
+      evidence.retainedSetterCallCount !== setterCalls.length ||
+      !numberArraysEqual(
+        evidence.retainedSetterLogIndices,
+        expectedLogIndices
+      )
+    ) {
+      issue(
+        input.context,
+        evidencePath,
+        "Setter transaction evidence must bind one exact successful transaction/receipt and partition every retained Set* call and log in canonical order."
+      );
+    }
+    if (
+      evidence.sourceKind === "committed_synthetic_fixture" &&
+      evidence.fixtureProjectionSha256 !== expectedProjection
+    ) {
+      issue(
+        input.context,
+        evidencePath,
+        `Synthetic setter transaction evidence must reproduce the exact committed sender, receipt, full callTracer paths/calldata, and retained log projection (expected ${expectedProjection}, retained ${evidence.fixtureProjectionSha256}).`
+      );
+    }
+  }
+  if (seen.size !== groups.size) {
+    issue(
+      input.context,
+      input.path,
+      "Every unique retained setter transaction must carry authenticated transaction, receipt, and callTracer evidence."
+    );
+  }
+}
+
+function applyConfigurationMutationAssertions(
+  configuration: HistoricalConfiguration,
+  previous: HistoricalConfiguration | null,
+  calls: readonly ConfigurationSetterCall[],
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  const mutated = new Set<string>();
+  const expectValue = (
+    field: keyof HistoricalConfiguration,
+    value: unknown,
+    address = false
+  ) => {
+    mutated.add(field as string);
+    const actual = configuration[field];
+    const matches =
+      address && typeof actual === "string" && typeof value === "string"
+        ? sameAddress(actual, value)
+        : actual === value;
+    if (!matches) {
+      issue(
+        context,
+        [...path, field],
+        `Configuration field ${String(field)} must equal its final canonical setter mutation.`
+      );
+    }
+  };
+
+  for (const call of [...calls].sort((a, b) => a.log.logIndex - b.log.logIndex)) {
+    switch (call.setter) {
+      case "set_propose_parameters":
+        expectValue(
+          "proposalBlacklistAddress",
+          call.arguments.blacklistAddress,
+          true
+        );
+        break;
+      case "set_vote_parameters":
+        expectValue(
+          "votingPeriodSeconds",
+          call.arguments.votingPeriodSeconds
+        );
+        expectValue(
+          "voteStartOffsetSeconds",
+          DAO_FEED_EPOCH_LENGTH_SECONDS -
+            call.arguments.votingPeriodSeconds
+        );
+        expectValue("voterAddress", call.arguments.voterAddress, true);
+        break;
+      case "set_execute_parameters":
+        expectValue(
+          "executionDelaySeconds",
+          call.arguments.executionDelaySeconds
+        );
+        expectValue("executionGuard", call.arguments.executionGuard);
+        expectValue("executorAddress", call.arguments.executorAddress, true);
+        break;
+      case "set_hooks":
+        expectValue("votingHookAddress", call.arguments.hooksAddress, true);
+        break;
+      case "set_weight_measure":
+        expectValue(
+          "weightMeasureAddress",
+          call.arguments.measureAddress,
+          true
+        );
+        break;
+      case "set_operator":
+        expectValue("operatorAddress", call.arguments.operatorAddress, true);
+        break;
+      case "accept_guardian":
+        expectValue("guardianAddress", call.log.decoded.guardianAddress, true);
+        break;
+      case "set_decay_length":
+        expectValue(
+          "voterDecayLengthSeconds",
+          call.arguments.voterDecayLengthSeconds
+        );
+        break;
+      case "set_delegated_staking":
+        expectValue(
+          "delegatedStakingAddress",
+          call.arguments.delegatedStakingAddress,
+          true
+        );
+        break;
+      case "set_ybc":
+        expectValue("ybcAddress", call.arguments.ybcAddress, true);
+        break;
+      case "set_ybc_weight_aggregator":
+        expectValue(
+          "ybcWeightAggregatorAddress",
+          call.arguments.ybcWeightAggregatorAddress,
+          true
+        );
+        break;
+    }
+  }
+
+  if (previous === null) return;
+  const voterChanged = !sameAddress(
+    previous.voterAddress,
+    configuration.voterAddress
+  );
+  const executorChanged = !sameAddress(
+    previous.executorAddress,
+    configuration.executorAddress
+  );
+  if (voterChanged && !mutated.has("voterAddress")) {
+    issue(
+      context,
+      [...path, "voterAddress"],
+      "A Voter pointer change requires an exact successful Voting.set_vote_parameters mutation in the retained boundary."
+    );
+  }
+  if (executorChanged && !mutated.has("executorAddress")) {
+    issue(
+      context,
+      [...path, "executorAddress"],
+      "An Executor pointer change requires an exact successful Voting.set_execute_parameters mutation in the retained boundary."
+    );
+  }
+  const inheritedFields: readonly (keyof HistoricalConfiguration)[] = [
+    "voteStartOffsetSeconds",
+    "votingPeriodSeconds",
+    "executionDelaySeconds",
+    "executionGuard",
+    "votingHookAddress",
+    "weightMeasureAddress",
+    "proposalBlacklistAddress",
+    "operatorAddress",
+    "guardianAddress",
+  ];
+  const additionalVoterFields: readonly (keyof HistoricalConfiguration)[] = [
+    "voterDecayLengthSeconds",
+    "delegatedStakingAddress",
+    "ybcAddress",
+    "ybcWeightAggregatorAddress",
+  ];
+  const fields = [
+    ...inheritedFields,
+    ...(voterChanged ? [] : additionalVoterFields),
+  ];
+  for (const field of fields) {
+    if (mutated.has(field as string)) continue;
+    const left = previous[field];
+    const right = configuration[field];
+    const equal =
+      typeof left === "string" &&
+      typeof right === "string" &&
+      left.startsWith("0x") &&
+      right.startsWith("0x")
+        ? left.toLowerCase() === right.toLowerCase()
+        : JSON.stringify(left) === JSON.stringify(right);
+    if (!equal) {
+      issue(
+        context,
+        [...path, field],
+        `Configuration field ${String(field)} changed without a canonical tracked setter mutation or a pointer change to independently replayed state.`
+      );
+    }
+  }
+  if (
+    !voterChanged &&
+    stableImplementationIdentity(previous.voterImplementation) !==
+      stableImplementationIdentity(configuration.voterImplementation)
+  ) {
+    issue(
+      context,
+      [...path, "voterImplementation"],
+      "An unchanged Voter pointer must preserve its source/build/runtime identity while refreshing only boundary-specific code evidence."
+    );
+  }
+  if (
+    !executorChanged &&
+    stableImplementationIdentity(previous.executorImplementation) !==
+      stableImplementationIdentity(configuration.executorImplementation)
+  ) {
+    issue(
+      context,
+      [...path, "executorImplementation"],
+      "An unchanged Executor pointer must preserve its source/build/runtime identity while refreshing only boundary-specific code evidence."
+    );
+  }
+}
+
+function stableImplementationIdentity(
+  implementation:
+    | HistoricalConfiguration["voterImplementation"]
+    | HistoricalConfiguration["executorImplementation"]
+): string {
+  const stable = Object.fromEntries(
+    Object.entries(implementation).filter(([key]) => key !== "bytecode")
+  );
+  return canonicalHashJson(stable);
+}
+
+function validateConfigurationBoundary(
+  feed: StructuralFeed,
+  contract: StructuralFeed["contracts"][number],
+  configuration: HistoricalConfiguration,
+  previous: HistoricalConfiguration | null,
+  configurationIndex: number,
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  const configurationHash = configurationValuesSha256(configuration);
+  const deployment = toUint(contract.deploymentBlock.number);
+  const start = toUint(contract.startBlock);
+  if (configurationIndex === 0) {
+    if (configuration.boundary.kind !== "producer_start_state_snapshot_sentinel") {
+      issue(context, [...path, "boundary"], "The first configuration must be an authenticated producer-start state snapshot sentinel.");
+      return;
+    }
+    const boundary = configuration.boundary;
+    const parent = toUint(boundary.stateSnapshot.parentBlockNumber);
+    if (
+      deployment === null ||
+      start === null ||
+      start !== deployment + 1n ||
+      parent !== deployment ||
+      boundary.stateSnapshot.parentBlockHash !== contract.deploymentBlock.hash ||
+      configuration.effectiveAt.blockNumber !== contract.startBlock ||
+      configuration.effectiveAt.kind !== "start_of_block" ||
+      boundary.stateSnapshot.configurationValuesSha256 !== configurationHash
+    ) {
+      issue(context, [...path, "boundary"], `The v1 producer-start sentinel must begin exactly one block after deployment and bind parent-end state to the complete initial configuration, including implementation evidence (expected ${configurationHash}, retained ${boundary.stateSnapshot.configurationValuesSha256}).`);
+    }
+    if (boundary.stateSnapshot.evidenceKind === "committed_synthetic_fixture") {
+      const expected = deriveDaoConfigurationBootstrapProjectionSha256({
+        startBlockNumber: contract.startBlock,
+        startBlockHash: configuration.effectiveAt.blockHash as Hex,
+        parentBlockNumber: boundary.stateSnapshot.parentBlockNumber,
+        parentBlockHash: boundary.stateSnapshot.parentBlockHash as Hex,
+        votingAddress: contract.votingAddress as Address,
+        configurationValuesSha256: configurationHash,
+      });
+      if (
+        boundary.stateSnapshot.rpcMethods !== null ||
+        boundary.stateSnapshot.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
+        boundary.stateSnapshot.fixtureProjectionSha256 !== expected
+      ) {
+        issue(context, [...path, "boundary", "stateSnapshot"], `Synthetic producer-start state evidence must reproduce its exact complete-configuration projection (expected ${expected}, retained ${boundary.stateSnapshot.fixtureProjectionSha256}).`);
+      }
+    } else if (
+      boundary.stateSnapshot.fixturePath !== null ||
+      boundary.stateSnapshot.fixtureProjectionSha256 !== null
+    ) {
+      issue(context, [...path, "boundary", "stateSnapshot"], "Live producer-start state evidence must use only the exact archive-RPC branch.");
+    }
+
+    const scan = boundary.scanManifest;
+    const tracked = scan.trackedSetterLogs;
+    const manifest = canonicalizeDaoConfigurationBootstrapSetterManifest({
+      chainId: feed.chainId,
+      votingAddress: contract.votingAddress as Address,
+      fromBlockNumber: scan.fromBlockNumber,
+      toBlockNumber: scan.toBlockNumber,
+      coveredBlocks: scan.coveredBlocks as Parameters<
+        typeof canonicalizeDaoConfigurationBootstrapSetterManifest
+      >[0]["coveredBlocks"],
+      trackedSetterLogs: tracked as Parameters<typeof canonicalizeDaoConfigurationBootstrapSetterManifest>[0]["trackedSetterLogs"],
+      transactionEvidence:
+        scan.transactionEvidence as Parameters<
+          typeof canonicalizeDaoConfigurationBootstrapSetterManifest
+        >[0]["transactionEvidence"],
+    });
+    const manifestBytes = toBytes(manifest);
+    const manifestSha256 = sha256(manifestBytes);
+    const actualLifecycleLogs = feed.proposals.reduce(
+      (count, proposal) =>
+        count +
+        proposal.events.filter((event) => {
+          const block = toUint(event.log.blockNumber);
+          return block !== null && block >= deployment! && block <= parent!;
+        }).length,
+      0
+    );
+    const coveredFrom = toUint(scan.fromBlockNumber);
+    const coveredTo = toUint(scan.toBlockNumber);
+    const coveredBlocksAreComplete =
+      coveredFrom !== null &&
+      coveredTo !== null &&
+      coveredTo >= coveredFrom &&
+      BigInt(scan.coveredBlocks.length) === coveredTo - coveredFrom + 1n &&
+      scan.coveredBlocks.every(
+        (block, blockIndex) =>
+          toUint(block.number) === coveredFrom + BigInt(blockIndex)
+      ) &&
+      scan.coveredBlocks.at(-1)?.hash === scan.toBlockHash;
+    if (
+      scan.fromBlockNumber !== contract.deploymentBlock.number ||
+      scan.toBlockNumber !== boundary.stateSnapshot.parentBlockNumber ||
+      scan.toBlockHash !== boundary.stateSnapshot.parentBlockHash ||
+      !sameAddress(scan.votingAddress, contract.votingAddress) ||
+      scan.lifecycleLogCount !== actualLifecycleLogs ||
+      actualLifecycleLogs !== 0 ||
+      scan.trackedSetterLogCount !== tracked.length ||
+      scan.canonicalManifestByteLength !== manifestBytes.length ||
+      scan.canonicalManifestSha256 !== manifestSha256 ||
+      scan.replayedConfigurationValuesSha256 !== configurationHash ||
+      !coveredBlocksAreComplete
+    ) {
+      issue(context, [...path, "boundary", "scanManifest"], `The bootstrap scan must cover deployment through the parent block, prove zero omitted lifecycle logs, retain every tracked setter log, and replay exactly to config-1 (expected config ${configurationHash}, retained ${scan.replayedConfigurationValuesSha256}; expected manifest ${manifestSha256}, retained ${scan.canonicalManifestSha256}).`);
+    }
+    let previousBootstrapSetterPosition:
+      | {
+          blockNumber: string;
+          transactionIndex: number;
+          logIndex: number;
+        }
+      | null = null;
+    const bootstrapTracePathsByTransaction = new Map<string, Set<string>>();
+    for (const [setterIndex, retained] of tracked.entries()) {
+      validateConfigurationSetterCall(
+        retained.call,
+        contract,
+        configuration.voterAddress,
+        context,
+        [...path, "boundary", "scanManifest", "trackedSetterLogs", setterIndex, "call"]
+      );
+      const retainedBlock = toUint(retained.blockNumber);
+      const retainedPosition = {
+        blockNumber: retained.blockNumber,
+        transactionIndex: retained.transactionIndex,
+        logIndex: retained.call.log.logIndex,
+      };
+      const traceTransactionKey = `${retained.blockHash}:${retained.transactionIndex}:${retained.transactionHash}`;
+      const tracePaths =
+        bootstrapTracePathsByTransaction.get(traceTransactionKey) ??
+        new Set<string>();
+      const tracePath = JSON.stringify(retained.call.traceAddress);
+      if (
+        retainedBlock === null ||
+        retainedBlock < deployment! ||
+        retainedBlock > parent! ||
+        retained.receiptStatus !== "success" ||
+        (previousBootstrapSetterPosition !== null &&
+          comparePositions(
+            previousBootstrapSetterPosition,
+            retainedPosition
+          ) >= 0) ||
+        tracePaths.has(tracePath) ||
+        (retained.call.traceAddress.length === 0 &&
+          !sameAddress(
+            retained.call.caller,
+            retained.transactionSender
+          ))
+      ) {
+        issue(context, [...path, "boundary", "scanManifest", "trackedSetterLogs", setterIndex], "Every retained bootstrap setter log must be a successful canonical log in strict block/transaction/log order inside the scan range, with a unique full call-tree path per transaction; a root trace binds its caller to the transaction sender.");
+      }
+      tracePaths.add(tracePath);
+      bootstrapTracePathsByTransaction.set(
+        traceTransactionKey,
+        tracePaths
+      );
+      previousBootstrapSetterPosition = retainedPosition;
+    }
+    validateConfigurationSetterTransactionEvidence({
+      retainedLogs: tracked,
+      evidence: scan.transactionEvidence,
+      projectionKind: "bootstrap_configuration_setter_transaction",
+      context,
+      path: [...path, "boundary", "scanManifest", "transactionEvidence"],
+    });
+    applyConfigurationMutationAssertions(
+      configuration,
+      null,
+      tracked.map((entry) => entry.call),
+      context,
+      path
+    );
+    if (scan.evidenceKind === "committed_synthetic_fixture") {
+      const expectedScan = deriveDaoConfigurationBootstrapScanProjectionSha256({
+        fromBlockNumber: scan.fromBlockNumber,
+        toBlockNumber: scan.toBlockNumber,
+        toBlockHash: scan.toBlockHash as Hex,
+        coveredBlocks: scan.coveredBlocks as Parameters<
+          typeof deriveDaoConfigurationBootstrapScanProjectionSha256
+        >[0]["coveredBlocks"],
+        votingAddress: scan.votingAddress as Address,
+        lifecycleLogCount: 0,
+        trackedSetterLogCount: scan.trackedSetterLogCount,
+        canonicalManifestByteLength: scan.canonicalManifestByteLength,
+        canonicalManifestSha256: scan.canonicalManifestSha256 as Hex,
+        replayedConfigurationValuesSha256: scan.replayedConfigurationValuesSha256 as Hex,
+      });
+      if (
+        scan.rpcMethod !== null ||
+        scan.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
+        scan.fixtureProjectionSha256 !== expectedScan ||
+        scan.manifestObjectKey !== null
+      ) {
+        issue(context, [...path, "boundary", "scanManifest"], "Synthetic bootstrap scan evidence must reproduce the canonical manifest projection without archive claims.");
+      }
+    } else if (
+      scan.fixturePath !== null ||
+      scan.fixtureProjectionSha256 !== null ||
+      scan.manifestObjectKey === null
+    ) {
+      issue(context, [...path, "boundary", "scanManifest"], "Live bootstrap scans must retain the archive manifest object and omit synthetic fixture fields.");
+    }
+    return;
+  }
+
+  if (configuration.boundary.kind !== "setter_trace_observation") {
+    issue(context, [...path, "boundary"], "Every later configuration must bind a successful real canonical setter-log boundary.");
+    return;
+  }
+  const boundary = configuration.boundary;
+  if (configuration.effectiveAt.kind !== "canonical_setter_log") {
+    issue(
+      context,
+      [...path, "effectiveAt"],
+      "Every post-start configuration must use a real canonical setter-log position."
+    );
+    return;
+  }
+  const sortedCalls = [...boundary.setterCalls].sort(
+    (left, right) => left.log.logIndex - right.log.logIndex
+  );
+  const finalCall = sortedCalls.at(-1)!;
+  const tracePaths = new Set<string>();
+  const logIndices = new Set<number>();
+  for (const [setterIndex, call] of boundary.setterCalls.entries()) {
+    validateConfigurationSetterCall(
+      call,
+      contract,
+      configuration.voterAddress,
+      context,
+      [...path, "boundary", "setterCalls", setterIndex]
+    );
+    const traceKey = JSON.stringify(call.traceAddress);
+    if (tracePaths.has(traceKey) || logIndices.has(call.log.logIndex)) {
+      issue(context, [...path, "boundary", "setterCalls", setterIndex], "Setter trace paths and canonical log indices must be unique within one boundary transaction; a root [] path is valid only once.");
+    }
+    tracePaths.add(traceKey);
+    logIndices.add(call.log.logIndex);
+    if (
+      setterIndex > 0 &&
+      call.log.logIndex <= boundary.setterCalls[setterIndex - 1]!.log.logIndex
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "setterCalls", setterIndex, "log", "logIndex"],
+        "Setter calls must be retained in strict canonical log order."
+      );
+    }
+    if (
+      call.traceAddress.length === 0 &&
+      !sameAddress(call.caller, boundary.receipt.transactionSender)
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "setterCalls", setterIndex, "caller"],
+        "A root setter trace must bind its immediate caller to the authenticated transaction sender."
+      );
+    }
+  }
+  if (
+    boundary.receipt.transactionHash === null ||
+    boundary.receipt.blockNumber !== configuration.effectiveAt.blockNumber ||
+    boundary.receipt.blockHash !== configuration.effectiveAt.blockHash ||
+    boundary.receipt.transactionIndex !== configuration.effectiveAt.transactionIndex ||
+    boundary.receipt.retainedBoundarySetterLogCount !==
+      boundary.setterCalls.length ||
+    boundary.receipt.totalMatchingSetterLogCount <
+      boundary.receipt.retainedBoundarySetterLogCount ||
+    finalCall.log.logIndex !== configuration.effectiveAt.logIndex
+  ) {
+    issue(context, [...path, "boundary"], "The configuration effective position must equal the final retained Set* log in its successful canonical receipt.");
+  }
+  const interleavedLifecycle = feed.proposals.some((proposal) =>
+    proposal.events.some(
+      (event) =>
+        event.log.blockHash === boundary.receipt.blockHash &&
+        event.log.transactionIndex === boundary.receipt.transactionIndex &&
+        event.log.logIndex >= sortedCalls[0]!.log.logIndex &&
+        event.log.logIndex <= finalCall.log.logIndex
+    )
+  );
+  if (interleavedLifecycle) {
+    issue(context, [...path, "boundary", "setterCalls"], "A configuration row cannot batch setter logs around an intervening lifecycle log; split history at every such event-effective boundary.");
+  }
+  if (boundary.traceEvidence.sourceKind === "committed_synthetic_fixture") {
+    const expectedTrace = deriveDaoConfigurationSetterTraceProjectionSha256({
+      receipt: {
+        transactionHash: boundary.receipt.transactionHash as Hex,
+        transactionSender: boundary.receipt.transactionSender as Address,
+        blockNumber: boundary.receipt.blockNumber,
+        blockHash: boundary.receipt.blockHash as Hex,
+        transactionIndex: boundary.receipt.transactionIndex,
+      },
+      setterCalls: boundary.setterCalls,
+    });
+    if (
+      boundary.traceEvidence.fixtureProjectionSha256 !== expectedTrace ||
+      boundary.traceEvidence.clientVersion !== null ||
+      boundary.traceEvidence.rawTraceSha256 !== null
+    ) {
+      issue(context, [...path, "boundary", "traceEvidence"], "Synthetic setter traces must reproduce the exact committed callTracer projection and cannot claim archive bytes.");
+    }
+  } else if (
+    boundary.traceEvidence.fixturePath !== null ||
+    boundary.traceEvidence.fixtureProjectionSha256 !== null ||
+    boundary.traceEvidence.clientVersion === null ||
+    boundary.traceEvidence.rawTraceSha256 === null
+  ) {
+    issue(context, [...path, "boundary", "traceEvidence"], "Live setter traces must retain exact archive client and raw-result-byte evidence without synthetic fixture fields.");
+  }
+  const state = boundary.stateSnapshot;
+  const priorHistory =
+    previous?.boundary.kind === "producer_start_state_snapshot_sentinel"
+      ? {
+          count: previous.boundary.scanManifest.trackedSetterLogCount,
+          sha256: previous.boundary.scanManifest
+            .canonicalManifestSha256 as Hex,
+        }
+      : previous?.boundary.kind === "setter_trace_observation"
+        ? {
+            count:
+              previous.boundary.stateSnapshot
+                .trackedSetterHistoryLogCount,
+            sha256: previous.boundary.stateSnapshot
+              .trackedSetterHistoryManifestSha256 as Hex,
+          }
+        : null;
+  const historyManifest =
+    priorHistory === null
+      ? null
+      : canonicalizeDaoConfigurationSetterHistoryManifest({
+          priorTrackedSetterHistoryLogCount: priorHistory.count,
+          priorTrackedSetterHistoryManifestSha256: priorHistory.sha256,
+          receipt: boundary.receipt as Parameters<
+            typeof canonicalizeDaoConfigurationSetterHistoryManifest
+          >[0]["receipt"],
+          setterCalls: boundary.setterCalls,
+        });
+  const expectedHistoryManifestSha256 =
+    historyManifest === null ? null : sha256(toBytes(historyManifest));
+  const voterChanged =
+    previous !== null &&
+    !sameAddress(previous.voterAddress, configuration.voterAddress);
+  const voterTargetEvidence = state.voterTargetStateEvidence;
+  if (!voterChanged) {
+    const hasRowLocalNestedSetter = boundary.setterCalls.some(
+      (call) =>
+        call.setter === "set_decay_length" ||
+        call.setter === "set_delegated_staking" ||
+        call.setter === "set_ybc" ||
+        call.setter === "set_ybc_weight_aggregator"
+    );
+    const expectedEvidenceState = hasRowLocalNestedSetter
+      ? "same_pointer_prior_state_plus_row_setter_replay"
+      : "inherited_unchanged_pointer";
+    if (
+      previous === null ||
+      voterTargetEvidence.state !== expectedEvidenceState ||
+      !sameAddress(
+        voterTargetEvidence.voterAddress,
+        configuration.voterAddress
+      ) ||
+      voterTargetEvidence.priorConfigurationId !==
+        previous.configurationId
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+        hasRowLocalNestedSetter
+          ? "An unchanged Voter pointer with nested setters must start from the immediately prior authenticated state and replay those canonical same-pointer setters."
+          : "An unchanged Voter pointer without nested setters must explicitly inherit the immediately prior authenticated nested state."
+      );
+    }
+  } else if (
+    voterTargetEvidence.state ===
+    "established_by_post_pointer_setters"
+  ) {
+    const finalCallFor = (setter: ConfigurationSetterCall["setter"]) =>
+      [...boundary.setterCalls]
+        .filter((call) => call.setter === setter)
+        .sort((left, right) => left.log.logIndex - right.log.logIndex)
+        .at(-1);
+    const pointerCall = finalCallFor("set_vote_parameters");
+    const decayCall = finalCallFor("set_decay_length");
+    const delegatedCall = finalCallFor("set_delegated_staking");
+    const ybcCall = finalCallFor("set_ybc");
+    const aggregatorCall = finalCallFor("set_ybc_weight_aggregator");
+    if (
+      !pointerCall ||
+      !decayCall ||
+      !delegatedCall ||
+      !ybcCall ||
+      !aggregatorCall ||
+      !sameAddress(
+        voterTargetEvidence.voterAddress,
+        configuration.voterAddress
+      ) ||
+      voterTargetEvidence.pointerSetterLogIndex !==
+        pointerCall.log.logIndex ||
+      voterTargetEvidence.decayLengthSetterLogIndex !==
+        decayCall.log.logIndex ||
+      voterTargetEvidence.delegatedStakingSetterLogIndex !==
+        delegatedCall.log.logIndex ||
+      voterTargetEvidence.ybcSetterLogIndex !== ybcCall.log.logIndex ||
+      voterTargetEvidence.ybcWeightAggregatorSetterLogIndex !==
+        aggregatorCall.log.logIndex ||
+      [decayCall, delegatedCall, ybcCall, aggregatorCall].some(
+        (call) =>
+          call.log.logIndex <= pointerCall.log.logIndex ||
+          !sameAddress(call.target, configuration.voterAddress)
+      )
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+        "A changed Voter pointer using row-local state must retain all four canonical Voter setters after the final set_vote_parameters log and target the new Voter."
+      );
+    }
+  } else if (
+    voterTargetEvidence.state ===
+    "authenticated_preconfigured_voter_state"
+  ) {
+    const expectedValuesSha256 = deriveDaoVoterTargetStateValuesSha256({
+      voterDecayLengthSeconds: configuration.voterDecayLengthSeconds,
+      delegatedStakingAddress: configuration.delegatedStakingAddress,
+      ybcAddress: configuration.ybcAddress,
+      ybcWeightAggregatorAddress:
+        configuration.ybcWeightAggregatorAddress,
+    });
+    const expectedProjection =
+      deriveDaoVoterTargetStateProjectionSha256({
+        voterAddress: configuration.voterAddress as Address,
+        blockNumber: state.blockNumber,
+        blockHash: state.blockHash as Hex,
+        transactionIndex: state.transactionIndex,
+        logIndex: state.logIndex,
+        valuesSha256: expectedValuesSha256,
+        historyFromBlockNumber:
+          voterTargetEvidence.historyFromBlockNumber,
+        historyToBlockNumber:
+          voterTargetEvidence.historyToBlockNumber,
+        historyToBlockHash: voterTargetEvidence.historyToBlockHash as Hex,
+        historicalSetterLogCount:
+          voterTargetEvidence.historicalSetterLogCount,
+        historicalSetterManifestByteLength:
+          voterTargetEvidence.historicalSetterManifestByteLength,
+        historicalSetterManifestSha256:
+          voterTargetEvidence.historicalSetterManifestSha256 as Hex,
+        laterSameBlockRelevantSetterLogCount: 0,
+      });
+    const hasRowLocalNestedSetter = boundary.setterCalls.some(
+      (call) =>
+        call.setter === "set_decay_length" ||
+        call.setter === "set_delegated_staking" ||
+        call.setter === "set_ybc" ||
+        call.setter === "set_ybc_weight_aggregator"
+    );
+    const historyFrom = toUint(
+      voterTargetEvidence.historyFromBlockNumber
+    );
+    const historyTo = toUint(voterTargetEvidence.historyToBlockNumber);
+    const codeBirth = voterTargetEvidence.codeBirthEvidence;
+    const deploymentBlock = toUint(codeBirth.deploymentBlockNumber);
+    const previousBlock = toUint(codeBirth.previousBlockNumber);
+    const historicalLogs = voterTargetEvidence.historicalSetterLogs;
+    const stateBlock = toUint(state.blockNumber);
+    const voterHistoryManifest =
+      canonicalizeDaoPreconfiguredVoterSetterManifest({
+        chainId: feed.chainId,
+        voterAddress: configuration.voterAddress as Address,
+        historyFromBlockNumber:
+          voterTargetEvidence.historyFromBlockNumber,
+        historyToBlockNumber: voterTargetEvidence.historyToBlockNumber,
+        historyToBlockHash: voterTargetEvidence.historyToBlockHash as Hex,
+        codeBirthEvidence: codeBirth,
+        historicalSetterLogs: historicalLogs,
+        transactionEvidence: voterTargetEvidence.transactionEvidence,
+        historyEvidence: {
+          evidenceKind: voterTargetEvidence.evidenceKind,
+          rpcMethods: voterTargetEvidence.rpcMethods,
+          fixturePath: voterTargetEvidence.fixturePath,
+          rawLogsSha256: voterTargetEvidence.rawLogsSha256 as Hex | null,
+          manifestObjectKey: voterTargetEvidence.manifestObjectKey,
+        },
+      });
+    const voterHistoryManifestBytes = toBytes(voterHistoryManifest);
+    const expectedVoterHistoryManifestSha256 = sha256(
+      voterHistoryManifestBytes
+    );
+    const expectedCodeBirthProjection =
+      deriveDaoVoterCodeBirthProjectionSha256({
+        address: codeBirth.address as Address,
+        deploymentBlockNumber: codeBirth.deploymentBlockNumber,
+        deploymentBlockHash: codeBirth.deploymentBlockHash as Hex,
+        deploymentTransactionHash:
+          codeBirth.deploymentTransactionHash as Hex,
+        deploymentTransactionIndex: codeBirth.deploymentTransactionIndex,
+        receiptStatus: "success",
+        receiptContractAddress: codeBirth.receiptContractAddress as Address,
+        previousBlockNumber: codeBirth.previousBlockNumber,
+        previousBlockHash: codeBirth.previousBlockHash as Hex,
+        previousCodeByteLength: 0,
+        deployedCodeByteLength: codeBirth.deployedCodeByteLength,
+        deployedBytecodeHash: codeBirth.deployedBytecodeHash as Hex,
+        deployedRuntimeSha256: codeBirth.deployedRuntimeSha256 as Hex,
+      });
+    let replayedDecayLengthSeconds = 0;
+    let replayedDelegatedStakingAddress = ZERO_ADDRESS;
+    let replayedYbcAddress = ZERO_ADDRESS;
+    let replayedAggregatorAddress = ZERO_ADDRESS;
+    let previousHistoricalSetterPosition:
+      | {
+          blockNumber: string;
+          transactionIndex: number;
+          logIndex: number;
+        }
+      | null = null;
+    let laterSameBlockRelevantSetterLogCount = 0;
+    const historicalTracePathsByTransaction = new Map<
+      string,
+      Set<string>
+    >();
+    for (const [setterIndex, retained] of historicalLogs.entries()) {
+      const setterPath = [
+        ...path,
+        "boundary",
+        "stateSnapshot",
+        "voterTargetStateEvidence",
+        "historicalSetterLogs",
+        setterIndex,
+      ] as const;
+      validateConfigurationSetterCall(
+        retained.call,
+        contract,
+        configuration.voterAddress,
+        context,
+        [...setterPath, "call"]
+      );
+      const retainedBlock = toUint(retained.blockNumber);
+      const retainedAfterCodeBirth =
+        retainedBlock !== null &&
+        deploymentBlock !== null &&
+        (retainedBlock > deploymentBlock ||
+          (retainedBlock === deploymentBlock &&
+            retained.transactionIndex >
+              codeBirth.deploymentTransactionIndex));
+      const position = {
+        blockNumber: retained.blockNumber,
+        transactionIndex: retained.transactionIndex,
+        logIndex: retained.call.log.logIndex,
+      };
+      const isPinnedVoterSetter =
+        retained.call.setter === "set_decay_length" ||
+        retained.call.setter === "set_delegated_staking" ||
+        retained.call.setter === "set_ybc" ||
+        retained.call.setter === "set_ybc_weight_aggregator";
+      const historicalTransactionKey = `${retained.blockHash}:${retained.transactionIndex}:${retained.transactionHash}`;
+      const historicalTracePaths =
+        historicalTracePathsByTransaction.get(historicalTransactionKey) ??
+        new Set<string>();
+      const historicalTracePath = JSON.stringify(
+        retained.call.traceAddress
+      );
+      if (
+        !isPinnedVoterSetter ||
+        retainedBlock === null ||
+        historyFrom === null ||
+        historyTo === null ||
+        retainedBlock < historyFrom ||
+        retainedBlock > historyTo ||
+        retained.receiptStatus !== "success" ||
+        (previousHistoricalSetterPosition !== null &&
+          comparePositions(previousHistoricalSetterPosition, position) >= 0) ||
+        !sameAddress(retained.call.target, configuration.voterAddress) ||
+        historicalTracePaths.has(historicalTracePath) ||
+        (retained.call.traceAddress.length === 0 &&
+          !sameAddress(
+            retained.call.caller,
+            retained.transactionSender
+          ))
+      ) {
+        issue(
+          context,
+          setterPath,
+          "A preconfigured Voter manifest must retain every successful pinned Voter setter in strict canonical order from code birth through the exact boundary."
+        );
+      }
+      if (!retainedAfterCodeBirth) {
+        issue(
+          context,
+          setterPath,
+          "Every retained preconfigured-Voter setter must be strictly after the authenticated Voter code-birth transaction position."
+        );
+      }
+      historicalTracePaths.add(historicalTracePath);
+      historicalTracePathsByTransaction.set(
+        historicalTransactionKey,
+        historicalTracePaths
+      );
+      if (
+        retained.blockNumber === state.blockNumber &&
+        (retained.transactionIndex > state.transactionIndex ||
+          (retained.transactionIndex === state.transactionIndex &&
+            retained.call.log.logIndex > state.logIndex))
+      ) {
+        laterSameBlockRelevantSetterLogCount += 1;
+      }
+      switch (retained.call.setter) {
+        case "set_decay_length":
+          replayedDecayLengthSeconds =
+            retained.call.arguments.voterDecayLengthSeconds;
+          break;
+        case "set_delegated_staking":
+          replayedDelegatedStakingAddress =
+            retained.call.arguments.delegatedStakingAddress;
+          break;
+        case "set_ybc":
+          replayedYbcAddress = retained.call.arguments.ybcAddress;
+          break;
+        case "set_ybc_weight_aggregator":
+          replayedAggregatorAddress =
+            retained.call.arguments.ybcWeightAggregatorAddress;
+          break;
+        default:
+          break;
+      }
+      previousHistoricalSetterPosition = position;
+    }
+    validateConfigurationSetterTransactionEvidence({
+      retainedLogs: historicalLogs,
+      evidence: voterTargetEvidence.transactionEvidence,
+      projectionKind: "preconfigured_voter_setter_transaction",
+      context,
+      path: [
+        ...path,
+        "boundary",
+        "stateSnapshot",
+        "voterTargetStateEvidence",
+        "transactionEvidence",
+      ],
+    });
+    const codeBirthBeforePointerBoundary =
+      deploymentBlock !== null &&
+      stateBlock !== null &&
+      (deploymentBlock < stateBlock ||
+        (deploymentBlock === stateBlock &&
+          codeBirth.deploymentTransactionIndex < state.transactionIndex));
+    if (!codeBirthBeforePointerBoundary) {
+      issue(
+        context,
+        [
+          ...path,
+          "boundary",
+          "stateSnapshot",
+          "voterTargetStateEvidence",
+          "codeBirthEvidence",
+        ],
+        "Authenticated Voter code birth must be strictly before the Voting pointer boundary that selects the Voter."
+      );
+    }
+    if (
+      !sameAddress(
+        voterTargetEvidence.voterAddress,
+        configuration.voterAddress
+      ) ||
+      voterTargetEvidence.blockNumber !== state.blockNumber ||
+      voterTargetEvidence.blockHash !== state.blockHash ||
+      voterTargetEvidence.transactionIndex !== state.transactionIndex ||
+      voterTargetEvidence.logIndex !== state.logIndex ||
+      voterTargetEvidence.values.voterDecayLengthSeconds !==
+        configuration.voterDecayLengthSeconds ||
+      !sameAddress(
+        voterTargetEvidence.values.delegatedStakingAddress,
+        configuration.delegatedStakingAddress
+      ) ||
+      !sameAddress(
+        voterTargetEvidence.values.ybcAddress,
+        configuration.ybcAddress
+      ) ||
+      !sameAddress(
+        voterTargetEvidence.values.ybcWeightAggregatorAddress,
+        configuration.ybcWeightAggregatorAddress
+      ) ||
+      voterTargetEvidence.valuesSha256 !== expectedValuesSha256 ||
+      historyFrom === null ||
+      historyTo === null ||
+      deploymentBlock === null ||
+      previousBlock === null ||
+      historyFrom !== deploymentBlock ||
+      previousBlock + 1n !== deploymentBlock ||
+      historyFrom > historyTo ||
+      voterTargetEvidence.historyToBlockNumber !== state.blockNumber ||
+      voterTargetEvidence.historyToBlockHash !== state.blockHash ||
+      !sameAddress(codeBirth.address, configuration.voterAddress) ||
+      !sameAddress(
+        codeBirth.receiptContractAddress,
+        configuration.voterAddress
+      ) ||
+      configuration.voterImplementation.state !== "verified_pinned" ||
+      !sameAddress(
+        configuration.voterImplementation.address,
+        codeBirth.address
+      ) ||
+      codeBirth.deployedCodeByteLength !==
+        configuration.voterImplementation.bytecode.codeByteLength ||
+      codeBirth.deployedBytecodeHash !==
+        configuration.voterImplementation.bytecode.deployedBytecodeHash ||
+      codeBirth.deployedRuntimeSha256 !==
+        configuration.voterImplementation.bytecode.deployedRuntimeSha256 ||
+      voterTargetEvidence.historicalSetterLogCount !==
+        historicalLogs.length ||
+      voterTargetEvidence.historicalSetterManifestByteLength !==
+        voterHistoryManifestBytes.length ||
+      voterTargetEvidence.historicalSetterManifestSha256 !==
+        expectedVoterHistoryManifestSha256 ||
+      laterSameBlockRelevantSetterLogCount !== 0 ||
+      replayedDecayLengthSeconds !==
+        configuration.voterDecayLengthSeconds ||
+      !sameAddress(
+        replayedDelegatedStakingAddress,
+        configuration.delegatedStakingAddress
+      ) ||
+      !sameAddress(replayedYbcAddress, configuration.ybcAddress) ||
+      !sameAddress(
+        replayedAggregatorAddress,
+        configuration.ybcWeightAggregatorAddress
+      ) ||
+      hasRowLocalNestedSetter
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+        "A pointer to a preconfigured Voter must bind all four nested values to an independent exact-boundary history/state projection, not guess them from the new address or mix the proof with row-local initialization."
+      );
+    }
+    if (
+      codeBirth.evidenceKind === "committed_synthetic_fixture" &&
+      codeBirth.fixtureProjectionSha256 !== expectedCodeBirthProjection
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "boundary",
+          "stateSnapshot",
+          "voterTargetStateEvidence",
+          "codeBirthEvidence",
+        ],
+        "Synthetic Voter code-birth evidence must reproduce the exact deployment receipt and zero-before/nonzero-after code projection."
+      );
+    }
+    if (
+      voterTargetEvidence.evidenceKind ===
+      "committed_synthetic_fixture"
+    ) {
+      if (
+        voterTargetEvidence.rpcMethods !== null ||
+        voterTargetEvidence.fixturePath !==
+          "tests/fixtures/dao-feed-v1.ts" ||
+        voterTargetEvidence.fixtureProjectionSha256 !==
+          expectedProjection ||
+        voterTargetEvidence.rawLogsSha256 !== null ||
+        voterTargetEvidence.manifestObjectKey !== null
+      ) {
+        issue(
+          context,
+          [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+          "Synthetic preconfigured-Voter state evidence must reproduce its exact committed history/state projection without archive claims."
+        );
+      }
+    } else if (
+      voterTargetEvidence.rpcMethods === null ||
+      voterTargetEvidence.fixturePath !== null ||
+      voterTargetEvidence.fixtureProjectionSha256 !== null ||
+      voterTargetEvidence.rawLogsSha256 === null ||
+      voterTargetEvidence.manifestObjectKey === null
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+        "Live preconfigured-Voter evidence must retain exact eth_call/eth_getLogs provenance and raw log bytes without synthetic fields."
+      );
+    }
+  } else if (voterTargetEvidence.state === "disabled_zero_pointer") {
+    const pointerCall = [...boundary.setterCalls]
+      .filter((call) => call.setter === "set_vote_parameters")
+      .sort((left, right) => left.log.logIndex - right.log.logIndex)
+      .at(-1);
+    const hasNestedSetter = boundary.setterCalls.some(
+      (call) =>
+        call.setter === "set_decay_length" ||
+        call.setter === "set_delegated_staking" ||
+        call.setter === "set_ybc" ||
+        call.setter === "set_ybc_weight_aggregator"
+    );
+    if (
+      !pointerCall ||
+      pointerCall.log.logIndex !==
+        voterTargetEvidence.pointerSetterLogIndex ||
+      pointerCall.arguments.voterAddress !== ZERO_ADDRESS ||
+      configuration.voterAddress !== ZERO_ADDRESS ||
+      configuration.voterState !== "disabled_zero_address" ||
+      configuration.voterImplementation.state !==
+        "disabled_zero_address" ||
+      configuration.voterDecayLengthSeconds !== 0 ||
+      configuration.delegatedStakingAddress !== ZERO_ADDRESS ||
+      configuration.delegatedStakingState !== "zero_address" ||
+      configuration.ybcAddress !== ZERO_ADDRESS ||
+      configuration.ybcState !== "zero_address" ||
+      configuration.ybcWeightAggregatorAddress !== ZERO_ADDRESS ||
+      configuration.ybcWeightAggregatorState !== "zero_address" ||
+      hasNestedSetter
+    ) {
+      issue(
+        context,
+        [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+        "A contract-valid zero Voter pointer transition requires the exact set_vote_parameters log and an explicitly non-applicable canonical-zero nested Voter state without impossible calls to address zero."
+      );
+    }
+  } else {
+    issue(
+      context,
+      [...path, "boundary", "stateSnapshot", "voterTargetStateEvidence"],
+      "A changed Voter pointer cannot inherit nested state from the prior pointer."
+    );
+  }
+  if (
+    state.blockNumber !== configuration.effectiveAt.blockNumber ||
+    state.blockHash !== configuration.effectiveAt.blockHash ||
+    state.transactionIndex !== configuration.effectiveAt.transactionIndex ||
+    state.logIndex !== configuration.effectiveAt.logIndex ||
+    state.configurationValuesSha256 !== configurationHash ||
+    priorHistory === null ||
+    state.trackedSetterHistoryLogCount !==
+      priorHistory.count + boundary.setterCalls.length ||
+    state.trackedSetterHistoryManifestSha256 !==
+      expectedHistoryManifestSha256
+  ) {
+    issue(context, [...path, "boundary", "stateSnapshot"], `Post-setter state evidence must bind the exact final setter log, chain the prior canonical setter manifest plus this receipt/call batch, and reproduce the complete configuration projection (expected config ${configurationHash}, retained ${state.configurationValuesSha256}; expected history ${expectedHistoryManifestSha256}, retained ${state.trackedSetterHistoryManifestSha256}).`);
+  }
+  if (state.evidenceKind === "committed_synthetic_fixture") {
+    const expectedState = deriveDaoConfigurationSetterStateProjectionSha256({
+      votingAddress: contract.votingAddress as Address,
+      blockNumber: state.blockNumber,
+      blockHash: state.blockHash as Hex,
+      transactionIndex: state.transactionIndex,
+      logIndex: state.logIndex,
+      configurationValuesSha256: state.configurationValuesSha256 as Hex,
+      trackedSetterHistoryLogCount: state.trackedSetterHistoryLogCount,
+      trackedSetterHistoryManifestSha256:
+        state.trackedSetterHistoryManifestSha256 as Hex,
+    });
+    if (
+      state.fixtureProjectionSha256 !== expectedState ||
+      state.rpcMethods !== null ||
+      state.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
+      state.manifestObjectKey !== null
+    ) {
+      issue(context, [...path, "boundary", "stateSnapshot"], "Synthetic post-setter state evidence must reproduce its complete canonical history/state projection.");
+    }
+  } else if (
+    state.fixturePath !== null ||
+    state.fixtureProjectionSha256 !== null ||
+    state.manifestObjectKey === null
+  ) {
+    issue(context, [...path, "boundary", "stateSnapshot"], "Live post-setter state evidence must retain its canonical replay manifest and omit synthetic fixture fields.");
+  }
+  applyConfigurationMutationAssertions(
+    configuration,
+    previous,
+    boundary.setterCalls,
+    context,
+    path
+  );
+}
+
 function validateProposals(
   feed: StructuralFeed,
   contracts: Map<string, StructuralFeed["contracts"][number]>,
@@ -3114,7 +5957,27 @@ function validateProposals(
   const proposalKeys = new Set<string>();
   const eventIds = new Set<string>();
   const logCoordinates = new Set<string>();
-  const blockGlobalLogIndices = new Set<string>();
+  const blockGlobalLogIndices = new Map<
+    string,
+    {
+      category:
+        | "configuration"
+        | "voter_history"
+        | "authorization"
+        | "lifecycle";
+      identity: string;
+    }
+  >();
+  const retainedSetterTransactions = new Map<
+    string,
+    {
+      blockNumber: string;
+      blockHash: string;
+      transactionIndex: number;
+      transactionSender: string;
+      tracePaths: Map<string, string>;
+    }
+  >();
   const transactionGroups = new Map<
     string,
     Pick<FeedEvent["log"], "blockNumber" | "blockHash" | "timestamp" | "transactionHash">
@@ -3140,6 +6003,376 @@ function validateProposals(
     }>
   >();
   const pinnedVoterInvocationIdentities = new Map<string, string>();
+
+  const registerRetainedCanonicalLog = (input: {
+    chainId: number;
+    blockNumber: string;
+    blockHash: string;
+    timestamp: number | null;
+    transactionHash: string;
+    transactionIndex: number;
+    logIndex: number;
+    category: "configuration" | "voter_history" | "authorization";
+    identity: unknown;
+    setterReference?: {
+      transactionSender: string;
+      call: ConfigurationSetterCall;
+    };
+    path: PropertyKey[];
+  }): void => {
+    const blockGlobalLogIndex = `${input.chainId}:${input.blockHash}:${input.logIndex}`;
+    const identity = canonicalHashJson(input.identity);
+    const priorLog = blockGlobalLogIndices.get(blockGlobalLogIndex);
+    if (priorLog) {
+      if (
+        priorLog.identity === identity
+      ) {
+        // One physical Set* log may be referenced by multiple configuration,
+        // Voter-history, or authorization proofs. Reconcile the transaction
+        // and trace identity below, but enroll its global ordering only once.
+      } else {
+        issue(
+          context,
+          [...input.path, "logIndex"],
+          "Ethereum logIndex must be block-global across lifecycle, configuration-setter, and retained Executor-authorization logs."
+        );
+      }
+    } else {
+      blockGlobalLogIndices.set(blockGlobalLogIndex, {
+        category: input.category,
+        identity,
+      });
+      const orderedLogs = orderedLogsByBlock.get(input.blockHash) ?? [];
+      orderedLogs.push({
+        transactionIndex: input.transactionIndex,
+        logIndex: input.logIndex,
+        path: input.path,
+      });
+      orderedLogsByBlock.set(input.blockHash, orderedLogs);
+    }
+
+    if (input.setterReference) {
+      const transaction = retainedSetterTransactions.get(
+        input.transactionHash
+      );
+      const tracePath = JSON.stringify(
+        input.setterReference.call.traceAddress
+      );
+      const callIdentity = canonicalHashJson({
+        transactionSender: input.setterReference.transactionSender,
+        caller: input.setterReference.call.caller,
+        target: input.setterReference.call.target,
+        traceAddress: input.setterReference.call.traceAddress,
+        setter: input.setterReference.call.setter,
+        selector: input.setterReference.call.selector,
+        calldata: input.setterReference.call.calldata,
+        arguments: input.setterReference.call.arguments,
+        log: input.setterReference.call.log,
+      });
+      if (!transaction) {
+        retainedSetterTransactions.set(input.transactionHash, {
+          blockNumber: input.blockNumber,
+          blockHash: input.blockHash,
+          transactionIndex: input.transactionIndex,
+          transactionSender: input.setterReference.transactionSender,
+          tracePaths: new Map([[tracePath, callIdentity]]),
+        });
+      } else {
+        if (
+          transaction.blockNumber !== input.blockNumber ||
+          transaction.blockHash !== input.blockHash ||
+          transaction.transactionIndex !== input.transactionIndex ||
+          !sameAddress(
+            transaction.transactionSender,
+            input.setterReference.transactionSender
+          )
+        ) {
+          issue(
+            context,
+            input.path,
+            "Every retained setter transaction reference must agree on one canonical position and authenticated transaction sender feed-wide."
+          );
+        }
+        const priorCall = transaction.tracePaths.get(tracePath);
+        if (priorCall && priorCall !== callIdentity) {
+          issue(
+            context,
+            [...input.path, "traceAddress"],
+            "One feed-wide setter transaction trace path must identify one exact caller, target, calldata, decoded mutation, and canonical log."
+          );
+        } else if (!priorCall) {
+          transaction.tracePaths.set(tracePath, callIdentity);
+        }
+      }
+    }
+
+    const blockGroup = blockGroups.get(input.blockNumber);
+    if (
+      blockGroup &&
+      (blockGroup.blockHash !== input.blockHash ||
+        (blockGroup.timestamp !== null &&
+          input.timestamp !== null &&
+          blockGroup.timestamp !== input.timestamp))
+    ) {
+      issue(
+        context,
+        input.path,
+        "Retained canonical logs at one block height must share its hash and known timestamp."
+      );
+    } else if (!blockGroup) {
+      blockGroups.set(input.blockNumber, {
+        blockHash: input.blockHash,
+        timestamp: input.timestamp,
+      });
+    } else if (blockGroup.timestamp === null && input.timestamp !== null) {
+      blockGroup.timestamp = input.timestamp;
+    }
+
+    const blockHashGroup = blockHashGroups.get(input.blockHash);
+    if (
+      blockHashGroup &&
+      (blockHashGroup.blockNumber !== input.blockNumber ||
+        (blockHashGroup.timestamp !== null &&
+          input.timestamp !== null &&
+          blockHashGroup.timestamp !== input.timestamp))
+    ) {
+      issue(
+        context,
+        [...input.path, "blockHash"],
+        "One retained canonical block hash must map to exactly one height and known timestamp."
+      );
+    } else if (!blockHashGroup) {
+      blockHashGroups.set(input.blockHash, {
+        blockNumber: input.blockNumber,
+        timestamp: input.timestamp,
+      });
+    } else if (
+      blockHashGroup.timestamp === null &&
+      input.timestamp !== null
+    ) {
+      blockHashGroup.timestamp = input.timestamp;
+    }
+
+    const transactionKey = `${input.blockHash}:${input.transactionIndex}`;
+    const transactionGroup = transactionGroups.get(transactionKey);
+    if (
+      transactionGroup &&
+      (transactionGroup.blockNumber !== input.blockNumber ||
+        transactionGroup.blockHash !== input.blockHash ||
+        (transactionGroup.timestamp !== null &&
+          input.timestamp !== null &&
+          transactionGroup.timestamp !== input.timestamp) ||
+        transactionGroup.transactionHash !== input.transactionHash)
+    ) {
+      issue(
+        context,
+        input.path,
+        "One canonical transaction position must bind exactly one transaction hash, block, and known timestamp across all retained logs."
+      );
+    } else if (!transactionGroup) {
+      transactionGroups.set(transactionKey, {
+        blockNumber: input.blockNumber,
+        blockHash: input.blockHash,
+        timestamp: input.timestamp,
+        transactionHash: input.transactionHash,
+      });
+    } else if (
+      transactionGroup.timestamp === null &&
+      input.timestamp !== null
+    ) {
+      transactionGroup.timestamp = input.timestamp;
+    }
+
+    const reverse = transactionHashGroups.get(input.transactionHash);
+    if (
+      reverse &&
+      (reverse.blockNumber !== input.blockNumber ||
+        reverse.blockHash !== input.blockHash ||
+        reverse.transactionIndex !== input.transactionIndex)
+    ) {
+      issue(
+        context,
+        [...input.path, "transactionHash"],
+        "One retained transaction hash must map back to exactly one canonical block and transaction position."
+      );
+    } else if (!reverse) {
+      transactionHashGroups.set(input.transactionHash, {
+        blockNumber: input.blockNumber,
+        blockHash: input.blockHash,
+        transactionIndex: input.transactionIndex,
+      });
+    }
+  };
+
+  for (const [contractIndex, contract] of feed.contracts.entries()) {
+    for (const [configurationIndex, configuration] of
+      contract.configurationHistory.entries()) {
+      if (
+        configuration.boundary.kind ===
+        "producer_start_state_snapshot_sentinel"
+      ) {
+        for (const [setterIndex, retained] of
+          configuration.boundary.scanManifest.trackedSetterLogs.entries()) {
+          registerRetainedCanonicalLog({
+            chainId: feed.chainId,
+            blockNumber: retained.blockNumber,
+            blockHash: retained.blockHash,
+            timestamp: retained.blockTimestamp,
+            transactionHash: retained.transactionHash,
+            transactionIndex: retained.transactionIndex,
+            logIndex: retained.call.log.logIndex,
+            category: "configuration",
+            identity: {
+              transactionHash: retained.transactionHash,
+              emitter: retained.call.log.emitter,
+              topics: retained.call.log.topics,
+              data: retained.call.log.data,
+            },
+            setterReference: {
+              transactionSender: retained.transactionSender,
+              call: retained.call,
+            },
+            path: [
+              "contracts",
+              contractIndex,
+              "configurationHistory",
+              configurationIndex,
+              "boundary",
+              "scanManifest",
+              "trackedSetterLogs",
+              setterIndex,
+              "call",
+              "log",
+            ],
+          });
+        }
+      } else {
+        for (const [setterIndex, call] of
+          configuration.boundary.setterCalls.entries()) {
+          registerRetainedCanonicalLog({
+            chainId: feed.chainId,
+            blockNumber: configuration.boundary.receipt.blockNumber,
+            blockHash: configuration.boundary.receipt.blockHash,
+            timestamp: configuration.boundary.receipt.blockTimestamp,
+            transactionHash:
+              configuration.boundary.receipt.transactionHash,
+            transactionIndex:
+              configuration.boundary.receipt.transactionIndex,
+            logIndex: call.log.logIndex,
+            category: "configuration",
+            identity: {
+              transactionHash:
+                configuration.boundary.receipt.transactionHash,
+              emitter: call.log.emitter,
+              topics: call.log.topics,
+              data: call.log.data,
+            },
+            setterReference: {
+              transactionSender:
+                configuration.boundary.receipt.transactionSender,
+              call,
+            },
+            path: [
+              "contracts",
+              contractIndex,
+              "configurationHistory",
+              configurationIndex,
+              "boundary",
+              "setterCalls",
+              setterIndex,
+              "log",
+            ],
+          });
+        }
+        const voterTargetEvidence =
+          configuration.boundary.stateSnapshot.voterTargetStateEvidence;
+        if (
+          voterTargetEvidence.state ===
+          "authenticated_preconfigured_voter_state"
+        ) {
+          for (const [setterIndex, retained] of
+            voterTargetEvidence.historicalSetterLogs.entries()) {
+            registerRetainedCanonicalLog({
+              chainId: feed.chainId,
+              blockNumber: retained.blockNumber,
+              blockHash: retained.blockHash,
+              timestamp: retained.blockTimestamp,
+              transactionHash: retained.transactionHash,
+              transactionIndex: retained.transactionIndex,
+              logIndex: retained.call.log.logIndex,
+              category: "voter_history",
+              identity: {
+                transactionHash: retained.transactionHash,
+                emitter: retained.call.log.emitter,
+                topics: retained.call.log.topics,
+                data: retained.call.log.data,
+              },
+              setterReference: {
+                transactionSender: retained.transactionSender,
+                call: retained.call,
+              },
+              path: [
+                "contracts",
+                contractIndex,
+                "configurationHistory",
+                configurationIndex,
+                "boundary",
+                "stateSnapshot",
+                "voterTargetStateEvidence",
+                "historicalSetterLogs",
+                setterIndex,
+                "call",
+                "log",
+              ],
+            });
+          }
+        }
+      }
+    }
+  }
+
+  for (const [proposalIndex, proposal] of feed.proposals.entries()) {
+    const simulation = proposal.analysis.proposalSimulation;
+    if (
+      simulation.state !== "succeeded" &&
+      simulation.state !== "failed"
+    ) {
+      continue;
+    }
+    for (const [setterIndex, setterLog] of
+      simulation.frameContext.executorOperatorAuthorization.positionReplay
+        .relevantSetterLogs.entries()) {
+      registerRetainedCanonicalLog({
+        chainId: feed.chainId,
+        blockNumber: setterLog.blockNumber,
+        blockHash: setterLog.blockHash,
+        timestamp:
+          proposal.events.find((event) => event.type === "propose")?.log
+            .timestamp ?? null,
+        transactionHash: setterLog.transactionHash,
+        transactionIndex: setterLog.transactionIndex,
+        logIndex: setterLog.logIndex,
+        category: "authorization",
+        identity: {
+          transactionHash: setterLog.transactionHash,
+          emitter: setterLog.emitter,
+          topics: setterLog.topics,
+          data: setterLog.data,
+        },
+        path: [
+          "proposals",
+          proposalIndex,
+          "analysis",
+          "proposalSimulation",
+          "frameContext",
+          "executorOperatorAuthorization",
+          "positionReplay",
+          "relevantSetterLogs",
+          setterIndex,
+        ],
+      });
+    }
+  }
 
   for (const [proposalIndex, proposal] of feed.proposals.entries()) {
     const path = ["proposals", proposalIndex] as const;
@@ -3211,7 +6444,14 @@ function validateProposals(
           "Ethereum logIndex must be block-global across transactions, proposals, and Voting generations."
         );
       }
-      blockGlobalLogIndices.add(blockGlobalLogIndex);
+      blockGlobalLogIndices.set(blockGlobalLogIndex, {
+        category: "lifecycle",
+        identity: canonicalHashJson({
+          transactionHash: event.log.transactionHash,
+          votingAddress: proposal.ref.votingAddress,
+          eventId: event.eventId,
+        }),
+      });
       const orderedLogs = orderedLogsByBlock.get(event.log.blockHash) ?? [];
       orderedLogs.push({
         transactionIndex: event.log.transactionIndex,
@@ -3379,7 +6619,7 @@ function validateProposal(
     issue(context, [...path, "executionStartsAt"], "Execution timestamps must follow the voting window.");
   }
 
-  validateRules(proposal, contract, context, [...path, "rules"]);
+  validateRules(feed, proposal, contract, context, [...path, "rules"]);
   validateContent(feed, proposal, context, [...path, "content"]);
   validateDiscussion(proposal, context, [...path, "discussion"]);
   validateScript(proposal, context, [...path, "script"]);
@@ -3424,6 +6664,7 @@ function validateProposal(
 }
 
 function validateRules(
+  feed: StructuralFeed,
   proposal: FeedProposal,
   contract: StructuralFeed["contracts"][number] | undefined,
   context: RefinementContext,
@@ -3444,6 +6685,12 @@ function validateRules(
     issue(context, [...path, "mutableConfiguration", "contractGeneration"], "Mutable rule observations must bind to the proposal contract generation.");
   }
   const propose = proposal.events.find((event) => event.type === "propose");
+  validateProposalThresholdEvidence(
+    proposal,
+    propose,
+    context,
+    [...path, "thresholdEvidence"]
+  );
   const effective =
     contract && propose
       ? getEffectiveConfiguration(contract, propose.log)
@@ -3453,7 +6700,10 @@ function validateRules(
   }
   if (
     effective &&
-    (comparePositions(mutable.observedAt, effective.effectiveAt) !== 0 ||
+    (compareConfigurationEffectivePositions(
+      mutable.observedAt,
+      effective.effectiveAt
+    ) !== 0 ||
       mutable.observedAt.blockHash !== effective.effectiveAt.blockHash)
   ) {
     issue(context, [...path, "mutableConfiguration", "observedAt"], "Proposal configuration block hash and position must match its effective lifecycle provenance.");
@@ -3461,12 +6711,15 @@ function validateRules(
 
   if (contract) {
     const votingEpoch = toUint(proposal.votingEpoch);
-    const snapshotConfiguration = getSnapshotConfiguration(contract);
+    const snapshotConfiguration = getSnapshotConfiguration(
+      contract,
+      feed.canonicalBlock.number
+    );
     if (
       !snapshotConfiguration ||
       proposal.statusConfiguration.configurationId !==
         snapshotConfiguration.configurationId ||
-      comparePositions(
+      compareConfigurationEffectivePositions(
         proposal.statusConfiguration.effectiveAt,
         snapshotConfiguration.effectiveAt
       ) !== 0 ||
@@ -3541,6 +6794,66 @@ function validateRules(
     }
   }
   validatePinnedVotingSource(rules.votingSource, context, [...path, "votingSource"]);
+}
+
+function validateProposalThresholdEvidence(
+  proposal: FeedProposal,
+  propose: FeedEvent | undefined,
+  context: RefinementContext,
+  path: readonly PropertyKey[]
+): void {
+  const evidence = proposal.rules.thresholdEvidence;
+  validatePinnedVotingSource(evidence.source, context, [...path, "source"]);
+  const proposalId = toUint(proposal.ref.proposalId);
+  const storedWord = toUint256Hex(evidence.storageWord);
+  const slots =
+    proposalId === null
+      ? null
+      : deriveDaoVotingThresholdStorageSlots(proposalId);
+  if (
+    !propose ||
+    proposalId === null ||
+    storedWord === null ||
+    slots === null ||
+    !sameAddress(evidence.votingAddress, proposal.ref.votingAddress) ||
+    evidence.proposalId !== proposal.ref.proposalId ||
+    evidence.blockNumber !== propose.log.blockNumber ||
+    evidence.blockHash !== propose.log.blockHash ||
+    evidence.storageLayout.mappingKey !== proposal.ref.proposalId ||
+    evidence.storageLayout.proposalStorageBaseSlot !==
+      slots.proposalStorageBaseSlot ||
+    evidence.storageLayout.resolvedStorageSlot !== slots.resolvedStorageSlot ||
+    evidence.storageWord !== encodeUint256Word(storedWord) ||
+    storedWord > BigInt(DAO_BPS) ||
+    Number(storedWord) !== evidence.decodedThresholdBps ||
+    evidence.decodedThresholdBps !== proposal.thresholdBps ||
+    evidence.decodedThresholdBps !== proposal.rules.approvalThresholdBps
+  ) {
+    issue(
+      context,
+      path,
+      "Stored proposal-threshold evidence must bind the exact Voting address, Propose block, Vyper slot-then-key mapping base plus threshold offset, canonical storage word, and both threshold copies."
+    );
+  }
+  validateRpcOrSyntheticEvidence(
+    evidence,
+    {
+      archiveKind: "archive_rpc",
+      syntheticKind: "committed_synthetic_fixture",
+      rpcMethod: "eth_getStorageAt",
+      projectionType: "proposal_threshold_eth_getStorageAt_projection",
+      projection: {
+        votingAddress: evidence.votingAddress,
+        proposalId: evidence.proposalId,
+        blockNumber: evidence.blockNumber,
+        blockHash: evidence.blockHash,
+        resolvedStorageSlot: evidence.storageLayout.resolvedStorageSlot,
+        storageWord: evidence.storageWord,
+      },
+    },
+    context,
+    path
+  );
 }
 
 function validateContent(
@@ -4476,7 +7789,7 @@ function validateProposeBindings(
     );
   }
   const observation = proposal.rules.mutableConfiguration.observedAt;
-  if (comparePositions(observation, event.log) > 0) {
+  if (compareConfigurationToEventPosition(observation, event.log) > 0) {
     issue(
       context,
       [...path, "rules", "mutableConfiguration", "observedAt"],
@@ -4814,7 +8127,7 @@ function validateStatus(
   ) {
     const postVoteEpochEndsAt = Number(postVoteEpochEnd);
     const statusConfiguration = contract
-      ? getSnapshotConfiguration(contract)
+      ? getSnapshotConfiguration(contract, feed.canonicalBlock.number)
       : null;
     const expectedProtocolStatus =
       statusConfiguration?.votingPeriodSeconds === 0 && contract
@@ -5561,6 +8874,289 @@ function validateAnalysis(
       );
     }
 
+    const operatorAuthorization =
+      simulation.frameContext.executorOperatorAuthorization;
+    const operatorStorage = operatorAuthorization.blockEndEvidence;
+    const operatorReplay = operatorAuthorization.positionReplay;
+    const expectedOperatorStorageSlot =
+      deriveDaoExecutorOperatorStorageSlot(
+        proposal.ref.votingAddress as Address
+      );
+    const operatorStorageWord = toUint256Hex(operatorStorage.storageWord);
+    const expectedOperatorAuthorized = operatorStorageWord === 1n;
+    const operatorManifest =
+      canonicalizeDaoExecutorOperatorSetterManifest({
+        executorAddress: simulation.executorAddress as Address,
+        votingAddress: proposal.ref.votingAddress as Address,
+        blockNumber: propose.log.blockNumber,
+        blockHash: propose.log.blockHash as Hex,
+        relevantSetterLogs: operatorReplay.relevantSetterLogs,
+      });
+    const operatorManifestBytes = toBytes(operatorManifest);
+    const expectedOperatorManifestSha256 = sha256(operatorManifestBytes);
+    let appliedOperatorSetterLogCount = 0;
+    let laterOperatorSetterLogCount = 0;
+    let replayedOperatorAuthorizationAtPropose: boolean | null = null;
+    let previousOperatorSetterPosition: {
+      transactionIndex: number;
+      logIndex: number;
+    } | null = null;
+    for (const [setterIndex, setterLog] of
+      operatorReplay.relevantSetterLogs.entries()) {
+      const expectedOperatorTopic = encodeAbiParameters(
+        [{ name: "operator", type: "address" }],
+        [proposal.ref.votingAddress as Address]
+      );
+      const expectedAuthorizedData = encodeAbiParameters(
+        [{ name: "authorized", type: "bool" }],
+        [setterLog.authorized]
+      );
+      if (
+        setterLog.blockNumber !== propose.log.blockNumber ||
+        setterLog.blockHash !== propose.log.blockHash ||
+        !sameAddress(setterLog.emitter, simulation.executorAddress) ||
+        setterLog.topics[0] !== EXECUTOR_SET_OPERATOR_EVENT_TOPIC ||
+        setterLog.topics[1] !== expectedOperatorTopic ||
+        setterLog.data !== expectedAuthorizedData ||
+        !sameAddress(
+          setterLog.operatorAddress,
+          proposal.ref.votingAddress
+        )
+      ) {
+        issue(
+          context,
+          [
+            ...path,
+            "proposalSimulation",
+            "frameContext",
+            "executorOperatorAuthorization",
+            "positionReplay",
+            "relevantSetterLogs",
+            setterIndex,
+          ],
+          "Every retained same-block Executor SetOperator log must bind the effective Executor, Voting operator, exact canonical topic/data re-encoding, block, and position."
+        );
+      }
+      if (
+        previousOperatorSetterPosition !== null &&
+        (setterLog.transactionIndex <
+          previousOperatorSetterPosition.transactionIndex ||
+          (setterLog.transactionIndex ===
+            previousOperatorSetterPosition.transactionIndex &&
+            setterLog.logIndex <= previousOperatorSetterPosition.logIndex))
+      ) {
+        issue(
+          context,
+          [
+            ...path,
+            "proposalSimulation",
+            "frameContext",
+            "executorOperatorAuthorization",
+            "positionReplay",
+            "relevantSetterLogs",
+            setterIndex,
+          ],
+          "Retained same-block Executor SetOperator logs must be in strict canonical transaction/log order."
+        );
+      }
+      previousOperatorSetterPosition = {
+        transactionIndex: setterLog.transactionIndex,
+        logIndex: setterLog.logIndex,
+      };
+      if (
+        setterLog.transactionIndex < propose.log.transactionIndex ||
+        (setterLog.transactionIndex === propose.log.transactionIndex &&
+          setterLog.logIndex < propose.log.logIndex)
+      ) {
+        appliedOperatorSetterLogCount += 1;
+        replayedOperatorAuthorizationAtPropose = setterLog.authorized;
+      } else {
+        laterOperatorSetterLogCount += 1;
+      }
+    }
+    const expectedOperatorStorageProjection =
+      deriveDaoExecutorOperatorStorageProjectionSha256({
+        executorAddress: simulation.executorAddress as Address,
+        votingAddress: proposal.ref.votingAddress as Address,
+        blockNumber: propose.log.blockNumber,
+        blockHash: propose.log.blockHash as Hex,
+        resolvedStorageSlot: expectedOperatorStorageSlot,
+        storageWord: operatorStorage.storageWord as Hex,
+      });
+    const expectedOperatorReplayProjection =
+      deriveDaoExecutorOperatorReplayProjectionSha256({
+        executorAddress: simulation.executorAddress as Address,
+        votingAddress: proposal.ref.votingAddress as Address,
+        blockNumber: propose.log.blockNumber,
+        blockHash: propose.log.blockHash as Hex,
+        proposeTransactionIndex: propose.log.transactionIndex,
+        proposeLogIndex: propose.log.logIndex,
+        relevantSetterLogCount: operatorReplay.relevantSetterLogs.length,
+        appliedThroughProposeLogCount: appliedOperatorSetterLogCount,
+        laterSetterLogCount: 0,
+        canonicalManifestSha256: expectedOperatorManifestSha256,
+      });
+    if (
+      !sameAddress(
+        operatorAuthorization.executorAddress,
+        simulation.executorAddress
+      ) ||
+      !sameAddress(
+        operatorAuthorization.votingAddress,
+        proposal.ref.votingAddress
+      ) ||
+      operatorAuthorization.blockNumber !== propose.log.blockNumber ||
+      operatorAuthorization.blockHash !== propose.log.blockHash ||
+      !sameAddress(
+        operatorStorage.storageLayout.mappingKey,
+        proposal.ref.votingAddress
+      ) ||
+      operatorStorage.storageLayout.resolvedStorageSlot !==
+        expectedOperatorStorageSlot ||
+      operatorStorageWord === null ||
+      operatorStorageWord > 1n ||
+      operatorStorage.decodedAuthorized !== expectedOperatorAuthorized ||
+      operatorAuthorization.authorizedAtPropose !==
+        expectedOperatorAuthorized ||
+      operatorReplay.proposeTransactionIndex !==
+        propose.log.transactionIndex ||
+      operatorReplay.proposeLogIndex !== propose.log.logIndex ||
+      operatorReplay.relevantSetterLogCount !==
+        operatorReplay.relevantSetterLogs.length ||
+      operatorReplay.appliedThroughProposeLogCount !==
+        appliedOperatorSetterLogCount ||
+      (replayedOperatorAuthorizationAtPropose !== null &&
+        replayedOperatorAuthorizationAtPropose !==
+          expectedOperatorAuthorized) ||
+      laterOperatorSetterLogCount !== 0 ||
+      operatorReplay.canonicalManifestByteLength !==
+        operatorManifestBytes.length ||
+      operatorReplay.canonicalManifestSha256 !==
+        expectedOperatorManifestSha256
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "executorOperatorAuthorization",
+        ],
+        "Completed simulation must prove Executor.operators[Voting] at the exact Propose position from the pinned Vyper slot, canonical block-end word, the last applied SetOperator value, and a complete same-block manifest with no later relevant log."
+      );
+    }
+    if (operatorStorage.evidenceKind === "committed_synthetic_fixture") {
+      if (
+        operatorStorage.rpcMethod !== null ||
+        operatorStorage.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
+        operatorStorage.fixtureProjectionSha256 !==
+          expectedOperatorStorageProjection
+      ) {
+        issue(
+          context,
+          [
+            ...path,
+            "proposalSimulation",
+            "frameContext",
+            "executorOperatorAuthorization",
+            "blockEndEvidence",
+          ],
+          "Synthetic Executor authorization storage evidence must reproduce the exact committed projection without archive claims."
+        );
+      }
+    } else if (
+      operatorStorage.rpcMethod !== "eth_getStorageAt" ||
+      operatorStorage.fixturePath !== null ||
+      operatorStorage.fixtureProjectionSha256 !== null
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "executorOperatorAuthorization",
+          "blockEndEvidence",
+        ],
+        "Live Executor authorization storage evidence must use eth_getStorageAt and omit synthetic fixture fields."
+      );
+    }
+    if (operatorReplay.evidenceKind === "committed_synthetic_fixture") {
+      if (
+        operatorReplay.rpcMethod !== null ||
+        operatorReplay.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
+        operatorReplay.fixtureProjectionSha256 !==
+          expectedOperatorReplayProjection ||
+        operatorReplay.rawLogsSha256 !== null
+      ) {
+        issue(
+          context,
+          [
+            ...path,
+            "proposalSimulation",
+            "frameContext",
+            "executorOperatorAuthorization",
+            "positionReplay",
+          ],
+          "Synthetic Executor authorization replay evidence must reproduce the complete canonical SetOperator projection without archive claims."
+        );
+      }
+    } else if (
+      operatorReplay.rpcMethod !== "eth_getLogs" ||
+      operatorReplay.fixturePath !== null ||
+      operatorReplay.fixtureProjectionSha256 !== null ||
+      operatorReplay.rawLogsSha256 === null
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "executorOperatorAuthorization",
+          "positionReplay",
+        ],
+        "Live Executor authorization replay evidence must retain the exact eth_getLogs response-byte digest and omit synthetic fixture fields."
+      );
+    }
+    if (
+      (simulation.state === "succeeded" &&
+        (!operatorAuthorization.authorizedAtPropose ||
+          simulation.frameContext.operatorCheckOutcome !== "passed" ||
+          !simulation.frameContext.scriptEntered ||
+          simulation.frameContext.executionResultStage !==
+            "script_completed")) ||
+      (simulation.state === "failed" &&
+        simulation.frameContext.executionResultStage ===
+          "script_completed") ||
+      (simulation.state === "failed" &&
+        simulation.frameContext.executionResultStage ===
+          "executor_operator_check_revert" &&
+        (operatorAuthorization.authorizedAtPropose ||
+          simulation.frameContext.operatorCheckOutcome !== "reverted" ||
+          simulation.frameContext.scriptEntered ||
+          simulation.error.code !==
+            "EXECUTOR_OPERATOR_CHECK_REVERTED")) ||
+      (simulation.state === "failed" &&
+        simulation.frameContext.executionResultStage ===
+          "executor_script_revert" &&
+        (!operatorAuthorization.authorizedAtPropose ||
+          simulation.frameContext.operatorCheckOutcome !== "passed" ||
+          !simulation.frameContext.scriptEntered ||
+          simulation.error.code !== "TARGET_CALL_REVERTED"))
+    ) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "executionResultStage",
+        ],
+        "Simulation result stages must distinguish a false Executor operator-gate revert before script entry from an authorized script result after the gate passes."
+      );
+    }
+
     const override = simulation.stateOverrides[0];
     validateRpcOrSyntheticEvidence(
       override.proof.bytecode,
@@ -5658,6 +9254,28 @@ function validateAnalysis(
               simulationExecutor.bytecode.fixtureProjectionSha256 as
                 | Hex
                 | null,
+            executorOperatorStorageSlot:
+              operatorStorage.storageLayout.resolvedStorageSlot as Hex,
+            executorOperatorBlockEndStorageWord:
+              operatorStorage.storageWord as Hex,
+            executorOperatorAuthorizedAtPropose:
+              operatorAuthorization.authorizedAtPropose,
+            executorOperatorBlockEndEvidenceKind:
+              operatorStorage.evidenceKind,
+            executorOperatorBlockEndFixtureProjectionSha256:
+              operatorStorage.fixtureProjectionSha256 as Hex | null,
+            executorOperatorReplayManifestSha256:
+              operatorReplay.canonicalManifestSha256 as Hex,
+            executorOperatorReplayRelevantSetterLogCount:
+              operatorReplay.relevantSetterLogCount,
+            executorOperatorReplayAppliedSetterLogCount:
+              operatorReplay.appliedThroughProposeLogCount,
+            executorOperatorReplayEvidenceKind:
+              operatorReplay.evidenceKind,
+            executorOperatorReplayFixtureProjectionSha256:
+              operatorReplay.fixtureProjectionSha256 as Hex | null,
+            executorOperatorReplayRawLogsSha256:
+              operatorReplay.rawLogsSha256 as Hex | null,
             executorFrameInitialGas:
               gasContext.executorFrameInitialGas,
             effectiveGasPriceWei: gasContext.effectiveGasPriceWei,
@@ -5945,7 +9563,7 @@ function validateEvent(
         event.data.classification.voterAddress,
         effectiveConfiguration.voterAddress
       ) ||
-      comparePositions(
+      compareConfigurationEffectivePositions(
         event.data.classification.observedAt,
         effectiveConfiguration.effectiveAt
       ) !== 0 ||
@@ -6041,7 +9659,12 @@ function validateEvent(
         "Trace-unavailable pinned Voter evidence must retain the exact effective aggregate addresses while leaving the raw Vote unclassified."
       );
     }
-    if (comparePositions(event.data.classification.observedAt, event.log) > 0) {
+    if (
+      compareConfigurationToEventPosition(
+        event.data.classification.observedAt,
+        event.log
+      ) > 0
+    ) {
       issue(context, [...path, "data", "classification", "observedAt"], "Vote actor classification must be observed no later than the event log.");
     }
     if (
@@ -6213,13 +9836,13 @@ function validateActorEvidence(
       !sameAddress(actor.address, actor.evidence.configuredRoleAddress) ||
       expectedRoleAddress === undefined ||
       !sameAddress(actor.address, expectedRoleAddress) ||
-      comparePositions(
+      compareConfigurationEffectivePositions(
         actor.evidence.observedAt,
         effectiveConfiguration.effectiveAt
       ) !== 0 ||
       actor.evidence.observedAt.blockHash !==
         effectiveConfiguration.effectiveAt.blockHash ||
-      comparePositions(actor.evidence.observedAt, event.log) > 0 ||
+      compareConfigurationToEventPosition(actor.evidence.observedAt, event.log) > 0 ||
       (actor.evidence.observedAt.blockNumber === event.log.blockNumber &&
         actor.evidence.observedAt.blockHash !== event.log.blockHash)
     ) {
@@ -6733,6 +10356,17 @@ function validateConfigurationSemantics(
   path: readonly PropertyKey[]
 ): void {
   const zero = ZERO_ADDRESS;
+  const implementationEvidencePosition =
+    configuration.boundary.kind ===
+    "producer_start_state_snapshot_sentinel"
+      ? {
+          blockNumber: configuration.boundary.stateSnapshot.parentBlockNumber,
+          blockHash: configuration.boundary.stateSnapshot.parentBlockHash,
+        }
+      : {
+          blockNumber: configuration.effectiveAt.blockNumber,
+          blockHash: configuration.effectiveAt.blockHash,
+        };
   if (
     configuration.votingWindowState !==
     (configuration.votingPeriodSeconds === 0
@@ -6828,8 +10462,8 @@ function validateConfigurationSemantics(
         PINNED_VOTER_GENESIS_TIMESTAMP ||
       !sameAddress(implementation.bytecode.address, configuration.voterAddress) ||
       implementation.bytecode.blockNumber !==
-        configuration.effectiveAt.blockNumber ||
-      implementation.bytecode.blockHash !== configuration.effectiveAt.blockHash ||
+        implementationEvidencePosition.blockNumber ||
+      implementation.bytecode.blockHash !== implementationEvidencePosition.blockHash ||
       implementation.compiledRuntimeBytecodeHash !==
         implementation.bytecode.deployedBytecodeHash ||
       implementation.bytecode.immutableGenesisWord !==
@@ -6904,9 +10538,9 @@ function validateConfigurationSemantics(
         configuration.executorAddress
       ) ||
       executorImplementation.bytecode.blockNumber !==
-        configuration.effectiveAt.blockNumber ||
+        implementationEvidencePosition.blockNumber ||
       executorImplementation.bytecode.blockHash !==
-        configuration.effectiveAt.blockHash ||
+        implementationEvidencePosition.blockHash ||
       executorImplementation.bytecode.codeByteLength !==
         executorImplementation.compiledRuntimeByteLength ||
       executorImplementation.bytecode.deployedBytecodeHash !==
@@ -6941,16 +10575,68 @@ function getEffectiveConfiguration(
 ): z.infer<typeof HistoricalConfigurationSchema> | null {
   let effective: z.infer<typeof HistoricalConfigurationSchema> | null = null;
   for (const candidate of contract.configurationHistory) {
-    if (comparePositions(candidate.effectiveAt, position) > 0) break;
+    if (compareConfigurationToEventPosition(candidate.effectiveAt, position) > 0)
+      break;
     effective = candidate;
   }
   return effective;
 }
 
+function compareConfigurationEffectivePositions(
+  left: z.infer<typeof ConfigurationEffectivePositionSchema>,
+  right: z.infer<typeof ConfigurationEffectivePositionSchema>
+): number {
+  const blockComparison = compareUintStrings(
+    left.blockNumber,
+    right.blockNumber
+  );
+  if (blockComparison !== 0) return blockComparison;
+  if (left.kind === "start_of_block") {
+    return right.kind === "start_of_block" ? 0 : -1;
+  }
+  if (right.kind === "start_of_block") return 1;
+  if (left.transactionIndex !== right.transactionIndex) {
+    return left.transactionIndex < right.transactionIndex ? -1 : 1;
+  }
+  if (left.logIndex === right.logIndex) return 0;
+  return left.logIndex < right.logIndex ? -1 : 1;
+}
+
+function compareConfigurationToEventPosition(
+  left: z.infer<typeof ConfigurationEffectivePositionSchema>,
+  right: Pick<
+    z.infer<typeof EventPositionSchema>,
+    "blockNumber" | "transactionIndex" | "logIndex"
+  >
+): number {
+  const blockComparison = compareUintStrings(
+    left.blockNumber,
+    right.blockNumber
+  );
+  if (blockComparison !== 0) return blockComparison;
+  if (left.kind === "start_of_block") return -1;
+  if (left.transactionIndex !== right.transactionIndex) {
+    return left.transactionIndex < right.transactionIndex ? -1 : 1;
+  }
+  if (left.logIndex === right.logIndex) return 0;
+  return left.logIndex < right.logIndex ? -1 : 1;
+}
+
+function compareUintStrings(left: string, right: string): number {
+  const leftValue = BigInt(left);
+  const rightValue = BigInt(right);
+  return leftValue === rightValue ? 0 : leftValue < rightValue ? -1 : 1;
+}
+
 function getSnapshotConfiguration(
-  contract: z.infer<typeof FeedContractSchema>
+  contract: z.infer<typeof FeedContractSchema>,
+  canonicalBlockNumber: string
 ): z.infer<typeof HistoricalConfigurationSchema> | null {
-  return contract.configurationHistory.at(-1) ?? null;
+  return getEffectiveConfiguration(contract, {
+    blockNumber: canonicalBlockNumber,
+    transactionIndex: Number.MAX_SAFE_INTEGER,
+    logIndex: Number.MAX_SAFE_INTEGER,
+  });
 }
 
 function getProposalEpochBoundary(
@@ -6981,6 +10667,7 @@ function configurationValuesMatch(
     observed.votingWindowState === historical.votingWindowState &&
     observed.executionDelaySeconds === historical.executionDelaySeconds &&
     observed.executionGuard === historical.executionGuard &&
+    observed.voterDecayLengthSeconds === historical.voterDecayLengthSeconds &&
     sameAddress(observed.voterAddress, historical.voterAddress) &&
     observed.voterState === historical.voterState &&
     JSON.stringify(observed.voterImplementation) ===
@@ -7032,6 +10719,16 @@ function comparePositions(
 
 function toUint(value: string): bigint | null {
   if (!UINT_PATTERN.test(value)) return null;
+  try {
+    const parsed = BigInt(value);
+    return parsed <= UINT256_MAX ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function toUint256Hex(value: string): bigint | null {
+  if (!/^0x[0-9a-f]{64}$/.test(value)) return null;
   try {
     const parsed = BigInt(value);
     return parsed <= UINT256_MAX ? parsed : null;

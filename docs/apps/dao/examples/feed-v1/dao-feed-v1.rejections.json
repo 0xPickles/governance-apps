@@ -188,7 +188,7 @@
   {
     "name": "cursor skips earliest contract start",
     "path": ["publication", "cursor", "startBlockNumber"],
-    "value": "23900001",
+    "value": "23900002",
     "expectedMessage": "earliest configured contract start block"
   },
   {
@@ -512,9 +512,9 @@
   },
   {
     "name": "later configuration boundary disagrees with effective log index",
-    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "firstEffectiveLogIndex"],
+    "path": ["contracts", 0, "configurationHistory", 1, "effectiveAt", "logIndex"],
     "value": 1,
-    "expectedMessage": "Setter trace evidence"
+    "expectedMessage": "configuration effective position"
   },
   {
     "name": "pinned Voter event predates its immutable genesis",
@@ -557,5 +557,89 @@
     "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "gasContext", "outerTransactionValidation"],
     "value": "executed",
     "expectedMessage": "Invalid input: expected"
+  },
+  {
+    "name": "bootstrap setter manifest encoding mislabel",
+    "path": ["contracts", 0, "configurationHistory", 0, "boundary", "scanManifest", "canonicalManifestEncoding"],
+    "value": "canonical_json_utf8_fixed_order_no_whitespace_one_final_lf",
+    "expectedMessage": "Invalid input: expected"
+  },
+  {
+    "name": "configuration receipt omits one retained setter",
+    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "receipt", "retainedBoundarySetterLogCount"],
+    "value": 9,
+    "expectedMessage": "configuration effective position"
+  },
+  {
+    "name": "configuration transaction total claims an omitted setter",
+    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "receipt", "totalMatchingSetterLogCount"],
+    "value": 11,
+    "expectedMessage": "collectively retain every matching tracked setter log"
+  },
+  {
+    "name": "configuration Voter setter targets unrelated contract",
+    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "setterCalls", 6, "target"],
+    "value": "0x7676767676767676767676767676767676767676",
+    "expectedMessage": "Each tracked setter call"
+  },
+  {
+    "name": "configuration setter emitter differs from target",
+    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "setterCalls", 2, "log", "emitter"],
+    "value": "0x7676767676767676767676767676767676767676",
+    "expectedMessage": "Each tracked setter call"
+  },
+  {
+    "name": "stored threshold mapping base substitution",
+    "path": ["proposals", 0, "rules", "thresholdEvidence", "storageLayout", "mappingBaseSlot"],
+    "value": "18",
+    "expectedMessage": "Invalid input: expected \"17\""
+  },
+  {
+    "name": "stored threshold raw word substitution",
+    "path": ["proposals", 0, "rules", "thresholdEvidence", "storageWord"],
+    "value": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "expectedMessage": "Stored proposal-threshold evidence"
+  },
+  {
+    "name": "Executor authorization storage slot substitution",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executorOperatorAuthorization", "blockEndEvidence", "storageLayout", "resolvedStorageSlot"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "Completed simulation must prove Executor.operators"
+  },
+  {
+    "name": "Executor authorization raw word contradiction",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executorOperatorAuthorization", "blockEndEvidence", "storageWord"],
+    "value": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "expectedMessage": "Completed simulation must prove Executor.operators"
+  },
+  {
+    "name": "successful simulation claims script revert stage",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executionResultStage"],
+    "value": "executor_script_revert",
+    "expectedMessage": "Simulation result stages must distinguish"
+  },
+  {
+    "name": "bootstrap setter transaction evidence omitted",
+    "path": ["contracts", 0, "configurationHistory", 0, "boundary", "scanManifest", "transactionEvidence"],
+    "value": [],
+    "expectedMessage": "Every unique retained setter transaction must carry authenticated transaction"
+  },
+  {
+    "name": "bootstrap setter transaction trace projection substitution",
+    "path": ["contracts", 0, "configurationHistory", 0, "boundary", "scanManifest", "transactionEvidence", 0, "fixtureProjectionSha256"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "Synthetic setter transaction evidence"
+  },
+  {
+    "name": "configuration setter transaction trace path reuse",
+    "path": ["contracts", 0, "configurationHistory", 1, "boundary", "setterCalls", 1, "traceAddress"],
+    "value": [0],
+    "expectedMessage": "trace paths"
+  },
+  {
+    "name": "Executor authorization replay raw digest injected into synthetic evidence",
+    "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executorOperatorAuthorization", "positionReplay", "rawLogsSha256"],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "Synthetic Executor authorization replay evidence"
   }
 ]

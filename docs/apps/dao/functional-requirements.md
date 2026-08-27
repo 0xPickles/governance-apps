@@ -130,10 +130,18 @@ normal fixture uses 5,000 basis points and an alternate fixture retains 6,000.
 That proposal-rule configuration remains the historical disclosure effective at
 Propose. Feed admission checks each Vote against its event-effective live
 window, while raw snapshot status and timing use the configuration effective at
-the end of the canonical block. The initial configuration is a fixed
-deployment/start sentinel; every later configuration binds the successful
-setter transaction, calldata, trace path, and first log position at which the
-new values are effective.
+the end of the canonical block. The initial configuration is a logical
+`start_of_block` reducer boundary, ordered before transaction zero/log zero. It
+authenticates end-of-parent-block state and replays every tracked setter from
+contract creation through that parent while proving no lifecycle log was
+skipped. Each later row binds a successful setter transaction, sender, exact
+calldata, unfiltered trace path, canonical Set* log, and becomes effective at
+its final real Set* log. Same-transaction lifecycle logs on opposite sides of a
+setter use old and new rows; an intervening lifecycle log forces split rows.
+The feed also authenticates the stored proposal threshold at Propose from the
+pinned Vyper slot-then-key mapping layout, exact 32-byte word, and archive or
+committed-synthetic evidence. Both displayed threshold copies must equal that
+decoded word.
 
 ### DAO-FR-013: signal display
 
@@ -161,16 +169,44 @@ source, reproducible bytecode, and one transaction-and-trace-path invocation.
 Pinned code without a usable trace and custom Voter code preserve the raw Vote
 as unclassified, with a provenance failure and lower-bound human participation.
 A Voter constructor genesis is proved from that Voter build and may differ from
-the Voting contract genesis, but cannot follow a Vote it could emit. The v2
-build-evidence commitment binds that constructor input to the exact official
-compiler distribution, source-integrity preimage, build commands/output,
-runtime template/immutable, deployed code, and artifact hashes. Full geth
+the Voting contract genesis, but cannot follow a Vote it could emit. The
+`yearn.dao.voter-build-evidence.v2` commitment binds that constructor input to
+the exact official compiler distribution, source-integrity preimage, build
+commands/output, runtime template/immutable, deployed code, and artifact
+hashes. Full geth
 call-trace paths are unfiltered: root is `[]`, and direct-root pinned Voter
 human/delegated/YBC calls use child paths `[1]`, `[4]`, and `[5]`. Complete
 invocation identities are feed-wide, ordinals follow canonical log order, and
 one pinned caller submits at most once per proposal. The consumer replays
 cumulative pinned `ybc_votes` with checked uint256 arithmetic and derives the
 shared aggregate basis points from cumulative Yea and weight.
+The exact public methods are `vote_yea(address,uint256)` / `0x69586e2e` and
+`vote_nay(address,uint256)` / `0xff855dde`. Compiler distribution,
+source-integrity preimages, commands, stdout/raw-byte hashes, immutable layout,
+and final Voter/Executor runtime pins are normative in
+`contract-reference.md`, `feed-schema-v1.md`, and the generated JSON Schema.
+
+Configuration history also records Voter decay. A pointer to a preconfigured
+Voter requires direct code-birth evidence, complete authenticated Voter-setter
+history from birth through the pointer boundary, exact replay of decay,
+delegated-staking, YBC, and aggregator values, strict post-birth setter order,
+and zero later same-block relevant setters when block-end state is used. The
+logical producer-start boundary similarly retains every pre-start setter and
+authenticates each unique transaction with a receipt and full geth
+`callTracer`. Exact physical Set* logs can be shared by proofs only when the
+feed-wide transaction sender, caller, trace path, calldata, decoded mutation,
+and log bytes match.
+
+For an arbitrary outer Voter trace path `P`, the three emitted pinned Vote
+frames are `P+[1]`, `P+[4]`, and `P+[5]`; `[1]/[4]/[5]` alone applies only to
+the direct-root fixture. Live `rawTraceSha256` hashes the exact retained UTF-8
+bytes of the successful top-level JSON-RPC result object from opening `{` to
+matching `}`, excluding the envelope, ID, and surrounding whitespace, before
+decoding or reserialization. Synthetic examples use a separate projection.
+Every other live transaction, receipt, code, and log-result hash uses the same
+exact JSON-RPC result-token byte rule from `feed-schema-v1.md`; synthetic
+records keep exposed live hash/key fields null. Object or manifest keys are
+required only where the selected union branch exposes them.
 
 Only a verified pinned Executor permits pinned script framing, decoded calls,
 or a completed proposal-time simulation. Exact bytes and hash comparison remain
@@ -191,7 +227,13 @@ The feed uses one canonical block registry across deployment, configuration,
 event, receipt, bytecode, simulation, cursor, and finality evidence. One chain
 height has one hash and one value for every known timestamp; one hash maps to
 one height. Within a block, `logIndex` is unique and rises strictly as
-transaction order advances across proposals and Voting generations.
+transaction order advances across proposals and Voting generations. Real
+bootstrap, configuration, preconfigured-Voter, and Executor-authorization logs
+occupy that same namespace. Repeated references to one physical setter log are
+ordered once and retain identical position, transaction hash, emitter, topics,
+and data. Configuration and preconfigured-Voter references additionally retain
+one feed-wide authenticated transaction sender and exact call identity per full
+trace path; Executor authorization does not invent sender or trace fields.
 
 ### DAO-FR-016: execution integrity readiness
 
@@ -415,9 +457,23 @@ receipt effective price cannot be below it. Exact mainnet timestamp-schedule
 evidence selects REVM `SpecId::OSAKA` and BPO2, whose authenticated excess blob
 gas determines the blob base fee. The frame binds block beneficiary, zero
 difficulty, PREVRANDAO, exact `execute(bytes)` calldata, and the Osaka warm set
-including coinbase and all Osaka precompiles. The v3 commitment also binds the
+including coinbase and all Osaka precompiles.
+
+Completed simulation separately proves `Executor.operators[Voting]` at the
+Propose position from pinned mapping base slot `2`, exact zero/one storage word,
+and canonical replay of every same-block `SetOperator(Voting,bool)` log through
+Propose, with zero later relevant setters. Success requires authorization,
+operator-check pass, script entry, and `script_completed`. A false gate failure
+does not enter the script and differs from an authorized target/script revert.
+The `yearn.dao.simulation-context-inputs.v4` commitment also binds the
 chain-spec and REVM 34.0.0 artifacts, source/build/code and synthetic-or-archive
-evidence, envelope, empty access list, and warm-set inputs.
+evidence, Executor-authorization storage/replay evidence kind and raw or
+projection digest, envelope, empty access list, and warm-set inputs. Version 3
+is rejected.
+The exact Osaka/BPO2 activation values, Prague-fraction rejection,
+initialization order, REVM crate URI/hash, fixture blob-fee comparison, and six
+gas-disclosure literals are normative in `feed-schema-v1.md` and the generated
+JSON Schema.
 
 The 30,000,000 frame cap is explicitly a non-transactional gas
 overapproximation: outer transaction validation is bypassed, Osaka's

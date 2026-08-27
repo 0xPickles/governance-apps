@@ -36,7 +36,7 @@ try {
       "explicit chain-time availability, exact arbitrary invalid bytes with reproduced typed failure codes, canonical available content, SHA-256/CIDv1 identity, attachment provenance, manifest and asset records",
       "feed-wide complete pinned-Voter full-call-trace invocation identities with canonical ordinal order and one caller submission per proposal, checked cumulative ybc_votes replay, trace-unavailable lower bounds, unclassified custom-Voter events, independent Voter genesis, and reproducible v2 source/compiler/template/immutable/runtime evidence",
       "verified, unverified, and constructor-zero Executor evidence; official compiler and source-integrity pins; pinned-only framing; exact script retention/type/hash binding; and unavailable analysis and simulation for unproven implementations",
-      "conditional revm 34.0.0 OSAKA/BPO2 engine-injected simulation chronology and a v3 commitment binding synthetic-or-archive projections, block opcode context, exact warm set/calldata, and the disclosed non-transactional 30000000-gas overapproximation",
+      "conditional revm 34.0.0 OSAKA/BPO2 engine-injected simulation chronology and a v4 commitment binding synthetic-or-archive projections, block opcode context, exact warm set/calldata, proposal-position Executor authorization, and the disclosed non-transactional 30000000-gas overapproximation",
       "total nonthrowing safe admission across structural, semantic, and raw-JSON consumer boundaries",
     ],
   };

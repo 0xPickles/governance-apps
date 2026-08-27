@@ -28,13 +28,27 @@ import {
   DAO_FEED_EPOCH_LENGTH_SECONDS,
   DAO_FEED_SCHEMA_NAME,
   DAO_FEED_SCHEMA_VERSION,
+  canonicalizeDaoExecutorOperatorSetterManifest,
+  canonicalizeDaoConfigurationBootstrapSetterManifest,
+  canonicalizeDaoConfigurationSetterHistoryManifest,
   createDaoFeedEventId,
+  deriveDaoConfigurationBootstrapProjectionSha256,
+  deriveDaoConfigurationBootstrapScanProjectionSha256,
+  deriveDaoConfigurationSetterTraceProjectionSha256,
+  deriveDaoConfigurationSetterStateProjectionSha256,
+  deriveDaoConfigurationValuesSha256,
   deriveDaoExecutorExecuteCalldata,
+  deriveDaoExecutorOperatorReplayProjectionSha256,
+  deriveDaoExecutorOperatorStorageProjectionSha256,
+  deriveDaoExecutorOperatorStorageSlot,
+  deriveDaoProposalThresholdProjectionSha256,
   deriveDaoSimulationContextInputsSha256,
   deriveDaoSyntheticEvidenceSha256,
   deriveDaoVoterTraceProjectionSha256,
   deriveDaoVoterBuildEvidenceSha256,
   deriveDaoVotingExecutedStorageSlots,
+  deriveDaoVotingThresholdStorageSlots,
+  encodeDaoFeedConfigurationSetterAbi,
   encodeDaoFeedLifecycleEventAbi,
   parseDaoCreationIdentityStageV1,
   parseDaoFeedV1,
@@ -133,8 +147,6 @@ const CHANGED_VOTING_HOOK_ADDRESS =
   "0xdddddddddddddddddddddddddddddddddddddddd";
 const CHANGED_OPERATOR_ADDRESS =
   "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-const CHANGED_GUARDIAN_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
 const YBC_WEIGHT_AGGREGATOR_ADDRESS =
   "0x1212121212121212121212121212121212121212";
 const CHANGED_YBC_WEIGHT_AGGREGATOR_ADDRESS =
@@ -151,6 +163,13 @@ const DAO_GENESIS_TIMESTAMP = 1_543_946_400;
 const VOTER_GENESIS_TIMESTAMP =
   DAO_GENESIS_TIMESTAMP - DAO_FEED_EPOCH_LENGTH_SECONDS;
 const CONFIGURATION_CHANGE_BLOCK = 23_902_000n;
+const PRODUCER_START_BLOCK = 23_900_001n;
+const DEPLOYMENT_BLOCK = 23_900_000n;
+const CONFIGURATION_CHANGE_TRANSACTION_HASH =
+  "0x00000000000000000000000000000000000000000000000000000000016cda58" as const;
+const CONFIGURATION_SETTER_SENDER =
+  "0x1919191919191919191919191919191919191919" as const;
+const CHANGED_VOTER_DECAY_LENGTH_SECONDS = 86_400;
 const SNAPSHOT_ID = "dao-mainnet-24000000-39c219e2";
 const GENERATED_AT = "2026-08-18T12:02:00Z";
 const EVENT_BLOCK_TIMESTAMPS = new Map<bigint, number | null>();
@@ -202,76 +221,86 @@ const FIXTURE_VARIANTS = [
 
 type Variant = (typeof FIXTURE_VARIANTS)[number];
 
-type FixtureConfiguration = {
-  contractGeneration: "1";
-  configurationId: "config-1" | "config-2";
-  voteStartOffsetSeconds: number;
-  votingPeriodSeconds: number;
-  votingWindowState: "enabled" | "disabled_zero_length";
-  executionDelaySeconds: number;
-  executionGuard: "guarded" | "permissionless";
-  voterAddress: string;
-  voterState: "configured" | "disabled_zero_address";
-  voterImplementation: ReturnType<typeof pinnedVoterImplementation>;
-  delegatedStakingAddress: string;
-  delegatedStakingState: "configured" | "zero_address";
-  ybcAddress: string;
-  ybcState: "configured" | "zero_address";
-  ybcWeightAggregatorAddress: string;
-  ybcWeightAggregatorState: "configured" | "zero_address";
-  executorAddress: string;
-  executorState: "configured" | "uninitialized_zero_address";
-  executorImplementation: ReturnType<typeof pinnedExecutorImplementation>;
-  votingHookAddress: string;
-  votingHookState: "configured" | "zero_address";
-  weightMeasureAddress: string;
-  weightMeasureState: "configured" | "zero_address";
-  proposalBlacklistAddress: string;
-  proposalBlacklistState: "configured" | "uninitialized_zero_address";
-  operatorAddress: string;
-  operatorState: "configured" | "zero_address";
-  guardianAddress: string;
-  effectiveAt: {
-    blockNumber: string;
-    blockHash: Hex;
-    transactionIndex: number;
-    logIndex: number;
-  };
-  boundary:
-    | {
-        kind: "deployment_start_sentinel";
-        positionSemantics: "start_of_block_before_transaction_zero_log_zero";
-        transactionHash: null;
-        rpcMethod: null;
-        tracer: null;
-        transactionIndex: null;
-        firstEffectiveLogIndex: null;
-        effectiveness: "effective_for_all_positions_at_or_after_start_block";
-        setterCalls: [];
-      }
-    | {
-        kind: "setter_trace_observation";
-        positionSemantics: "first_lifecycle_log_position_after_successful_setter_calls";
-        transactionHash: Hex;
-        rpcMethod: "debug_traceTransaction";
-        tracer: "callTracer";
-        transactionIndex: number;
-        firstEffectiveLogIndex: number;
-        effectiveness: "after_successful_setter_calls_before_first_effective_log";
-        setterCalls: Array<{
-          target: string;
-          sourceContract: "Voting" | "Voter" | "Executor";
-          traceAddress: number[];
-          selector: Hex;
-          calldata: Hex;
-          result: "success";
-        }>;
+type FixtureConfiguration =
+  DaoFeedV1["contracts"][number]["configurationHistory"][number];
+type FixtureSetterBoundary = Extract<
+  FixtureConfiguration["boundary"],
+  { kind: "setter_trace_observation" }
+>;
+type FixtureSetterCall = FixtureSetterBoundary["setterCalls"][number];
+
+function configurationSetterCall(input: {
+  abi: Parameters<typeof encodeDaoFeedConfigurationSetterAbi>[0];
+  target: Address;
+  sourceContract: "Voting" | "Voter";
+  caller?: Address;
+  traceAddress: number[];
+  logIndex: number;
+}): FixtureSetterCall {
+  const encoded = encodeDaoFeedConfigurationSetterAbi(input.abi);
+  const { setter } = input.abi;
+  const values = (() => {
+    if (input.abi.setter === "set_propose_parameters") {
+      return {
+        minWeight: input.abi.minWeight.toString(),
+        cooldownSeconds: input.abi.cooldownSeconds.toString(),
+        blacklistAddress: input.abi.blacklistAddress,
       };
-};
+    }
+    if (input.abi.setter === "set_vote_parameters") {
+      return {
+        votingPeriodSeconds: Number(input.abi.votingPeriodSeconds),
+        voterAddress: input.abi.voterAddress,
+      };
+    }
+    if (input.abi.setter === "set_execute_parameters") {
+      return {
+        executionDelaySeconds: Number(input.abi.executionDelaySeconds),
+        executionGuard: input.abi.executionGuard,
+        executorAddress: input.abi.executorAddress,
+      };
+    }
+    if (input.abi.setter === "set_decay_length") {
+      return {
+        voterDecayLengthSeconds: Number(
+          input.abi.voterDecayLengthSeconds
+        ),
+      };
+    }
+    const { setter: ignoredSetter, ...rest } = input.abi;
+    void ignoredSetter;
+    return rest;
+  })();
+  const args = setter === "accept_guardian" ? {} : values;
+  const decoded =
+    setter === "accept_guardian"
+      ? { guardianAddress: input.abi.guardianAddress }
+      : values;
+  return {
+    target: input.target,
+    sourceContract: input.sourceContract,
+    caller: input.caller ?? CONFIGURATION_SETTER_SENDER,
+    traceAddress: input.traceAddress,
+    setter,
+    selector: encoded.selector,
+    calldata: encoded.calldata,
+    result: "success",
+    arguments: args,
+    log: {
+      emitter: input.target,
+      logIndex: input.logIndex,
+      topics: encoded.topics,
+      data: encoded.data,
+      matchingLogCount: 1,
+      canonicalReencodingMatched: true,
+      decoded,
+    },
+  } as FixtureSetterCall;
+}
 
 function pinnedVoterImplementation(
   address: string,
-  effectiveAt: FixtureConfiguration["effectiveAt"]
+  effectiveAt: { blockNumber: string; blockHash: Hex }
 ) {
   const sourceSha256 =
     "0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab" as const;
@@ -379,12 +408,12 @@ function pinnedVoterImplementation(
     classificationSemantics:
       "pinned_voter_trace_required_for_human_and_aggregate_labels" as const,
     error: null,
-  };
+  } as const;
 }
 
 function pinnedExecutorImplementation(
   address: string,
-  effectiveAt: FixtureConfiguration["effectiveAt"]
+  effectiveAt: { blockNumber: string; blockHash: Hex }
 ) {
   const executorCodeProjection = {
     address,
@@ -457,150 +486,538 @@ function pinnedExecutorImplementation(
     executionSemantics:
       "pinned_executor_32_byte_header_96_bit_length_max_64_calls" as const,
     error: null,
-  };
+  } as const;
 }
+
+const BOOTSTRAP_SETTER_TRANSACTION_HASH = fixedHex32(23_900_901n);
+const BOOTSTRAP_SETTER_CALLS = [
+  configurationSetterCall({
+    abi: {
+      setter: "set_vote_parameters",
+      votingPeriodSeconds: 604_800n,
+      voterAddress: DAO_MOCK_VOTER_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [0],
+    logIndex: 0,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_execute_parameters",
+      executionDelaySeconds: 86_400n,
+      executionGuard: "guarded",
+      executorAddress: DAO_MOCK_EXECUTOR_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [1],
+    logIndex: 1,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_hooks", hooksAddress: VOTING_HOOK_ADDRESS },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [2],
+    logIndex: 2,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_weight_measure", measureAddress: WEIGHT_MEASURE_ADDRESS },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [3],
+    logIndex: 3,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_propose_parameters",
+      minWeight: 1_000_000_000_000_000_000n,
+      cooldownSeconds: 86_400n,
+      blacklistAddress: PROPOSAL_BLACKLIST_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [4],
+    logIndex: 4,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_operator", operatorAddress: DAO_MOCK_OPERATOR_ADDRESS },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [5],
+    logIndex: 5,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_delegated_staking",
+      delegatedStakingAddress: DAO_MOCK_STYFIX_AGGREGATE_ADDRESS,
+    },
+    target: DAO_MOCK_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [6],
+    logIndex: 6,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_ybc", ybcAddress: DAO_MOCK_YBC_AGGREGATE_ADDRESS },
+    target: DAO_MOCK_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [7],
+    logIndex: 7,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_ybc_weight_aggregator",
+      ybcWeightAggregatorAddress: YBC_WEIGHT_AGGREGATOR_ADDRESS,
+    },
+    target: DAO_MOCK_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [8],
+    logIndex: 8,
+  }),
+] satisfies FixtureSetterCall[];
+
+const BOOTSTRAP_TRACKED_SETTER_LOGS = BOOTSTRAP_SETTER_CALLS.map((call) => ({
+  blockNumber: DEPLOYMENT_BLOCK.toString(),
+  blockHash: fixedHex32(DEPLOYMENT_BLOCK),
+  blockTimestamp: null,
+  transactionHash: BOOTSTRAP_SETTER_TRANSACTION_HASH,
+  transactionSender: CONFIGURATION_SETTER_SENDER,
+  transactionIndex: 1,
+  receiptStatus: "success" as const,
+  call,
+}));
+
+const BOOTSTRAP_TRANSACTION_EVIDENCE = [
+  {
+    sourceKind: "committed_synthetic_fixture" as const,
+    projectionKind: "bootstrap_configuration_setter_transaction" as const,
+    transactionHash: BOOTSTRAP_SETTER_TRANSACTION_HASH,
+    transactionSender: CONFIGURATION_SETTER_SENDER,
+    blockNumber: DEPLOYMENT_BLOCK.toString(),
+    blockHash: fixedHex32(DEPLOYMENT_BLOCK),
+    transactionIndex: 1,
+    receiptStatus: "success" as const,
+    retainedSetterCallCount: BOOTSTRAP_SETTER_CALLS.length,
+    retainedSetterLogIndices: BOOTSTRAP_SETTER_CALLS.map(
+      (call) => call.log.logIndex
+    ),
+    transactionRpcMethod: "eth_getTransactionByHash" as const,
+    receiptRpcMethod: "eth_getTransactionReceipt" as const,
+    traceRpcMethod: "debug_traceTransaction" as const,
+    tracer: "callTracer" as const,
+    tracerConfig: { onlyTopCall: false as const, withLog: true as const },
+    reexec: 0 as const,
+    normalization:
+      "root_empty_array_then_zero_based_full_call_tree_child_indices" as const,
+    fixtureMethod:
+      "committed_synthetic_configuration_setter_transaction_fixture_v1" as const,
+    fixturePath: "tests/fixtures/dao-feed-v1.ts" as const,
+    fixtureProjectionSha256:
+      "0xc1ac723dbddea514bfbec3b27df45f697829dbfd3e783cefbda5c784f7fbe7db" as const,
+    clientVersion: null,
+    rawTransactionSha256: null,
+    rawReceiptSha256: null,
+    rawTraceSha256: null,
+    transactionObjectKey: null,
+    receiptObjectKey: null,
+    traceObjectKey: null,
+  },
+];
+
+const CONFIGURATION_SETTER_CALLS = [
+  configurationSetterCall({
+    abi: {
+      setter: "set_vote_parameters",
+      votingPeriodSeconds: 604_900n,
+      voterAddress: CHANGED_VOTER_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [0],
+    logIndex: 0,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_execute_parameters",
+      executionDelaySeconds: 172_800n,
+      executionGuard: "permissionless",
+      executorAddress: CHANGED_EXECUTOR_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [1],
+    logIndex: 1,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_hooks", hooksAddress: CHANGED_VOTING_HOOK_ADDRESS },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [2],
+    logIndex: 2,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_weight_measure",
+      measureAddress: CHANGED_WEIGHT_MEASURE_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [3],
+    logIndex: 3,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_propose_parameters",
+      minWeight: 1_000_000_000_000_000_000n,
+      cooldownSeconds: 86_400n,
+      blacklistAddress: CHANGED_PROPOSAL_BLACKLIST_ADDRESS,
+    },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [4],
+    logIndex: 4,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_operator", operatorAddress: CHANGED_OPERATOR_ADDRESS },
+    target: DAO_MOCK_VOTING_ADDRESS,
+    sourceContract: "Voting",
+    traceAddress: [5],
+    logIndex: 5,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_decay_length",
+      voterDecayLengthSeconds: BigInt(CHANGED_VOTER_DECAY_LENGTH_SECONDS),
+    },
+    target: CHANGED_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [6],
+    logIndex: 6,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_delegated_staking",
+      delegatedStakingAddress: CHANGED_STYFIX_AGGREGATE_ADDRESS,
+    },
+    target: CHANGED_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [7],
+    logIndex: 7,
+  }),
+  configurationSetterCall({
+    abi: { setter: "set_ybc", ybcAddress: CHANGED_YBC_AGGREGATE_ADDRESS },
+    target: CHANGED_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [8],
+    logIndex: 8,
+  }),
+  configurationSetterCall({
+    abi: {
+      setter: "set_ybc_weight_aggregator",
+      ybcWeightAggregatorAddress: CHANGED_YBC_WEIGHT_AGGREGATOR_ADDRESS,
+    },
+    target: CHANGED_VOTER_ADDRESS,
+    sourceContract: "Voter",
+    traceAddress: [9],
+    logIndex: 9,
+  }),
+] satisfies FixtureSetterCall[];
+
+const CONFIGURATION_SETTER_RECEIPT = {
+  status: "success" as const,
+  transactionHash: CONFIGURATION_CHANGE_TRANSACTION_HASH,
+  transactionSender: DAO_MOCK_OPERATOR_ADDRESS,
+  blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
+  blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
+  blockTimestamp: null,
+  transactionIndex: 0,
+  totalMatchingSetterLogCount: CONFIGURATION_SETTER_CALLS.length,
+  retainedBoundarySetterLogCount: CONFIGURATION_SETTER_CALLS.length,
+};
+
+const CONFIGURATION_SETTER_TRACE_PROJECTION =
+  deriveDaoConfigurationSetterTraceProjectionSha256({
+    receipt: {
+      transactionHash: CONFIGURATION_SETTER_RECEIPT.transactionHash,
+      transactionSender: CONFIGURATION_SETTER_RECEIPT.transactionSender,
+      blockNumber: CONFIGURATION_SETTER_RECEIPT.blockNumber,
+      blockHash: CONFIGURATION_SETTER_RECEIPT.blockHash,
+      transactionIndex: CONFIGURATION_SETTER_RECEIPT.transactionIndex,
+    },
+    setterCalls: CONFIGURATION_SETTER_CALLS,
+  });
+
+const INITIAL_CONFIGURATION_EFFECTIVE_AT = {
+  kind: "start_of_block" as const,
+  blockNumber: PRODUCER_START_BLOCK.toString(),
+  blockHash: fixedHex32(PRODUCER_START_BLOCK),
+} as const;
+const INITIAL_CODE_EVIDENCE_POSITION = {
+  blockNumber: DEPLOYMENT_BLOCK.toString(),
+  blockHash: fixedHex32(DEPLOYMENT_BLOCK),
+  transactionIndex: 1,
+  logIndex: 8,
+} as const;
+const INITIAL_CONFIGURATION_VALUES = {
+  contractGeneration: "1",
+  configurationId: "config-1",
+  voteStartOffsetSeconds: 604_800,
+  votingPeriodSeconds: 604_800,
+  votingWindowState: "enabled" as const,
+  executionDelaySeconds: 86_400,
+  executionGuard: "guarded" as const,
+  voterDecayLengthSeconds: 0,
+  voterAddress: DAO_MOCK_VOTER_ADDRESS,
+  voterState: "configured" as const,
+  voterImplementation: pinnedVoterImplementation(
+    DAO_MOCK_VOTER_ADDRESS,
+    INITIAL_CODE_EVIDENCE_POSITION
+  ),
+  delegatedStakingAddress: DAO_MOCK_STYFIX_AGGREGATE_ADDRESS,
+  delegatedStakingState: "configured" as const,
+  ybcAddress: DAO_MOCK_YBC_AGGREGATE_ADDRESS,
+  ybcState: "configured" as const,
+  ybcWeightAggregatorAddress: YBC_WEIGHT_AGGREGATOR_ADDRESS,
+  ybcWeightAggregatorState: "configured" as const,
+  executorAddress: DAO_MOCK_EXECUTOR_ADDRESS,
+  executorState: "configured" as const,
+  executorImplementation: pinnedExecutorImplementation(
+    DAO_MOCK_EXECUTOR_ADDRESS,
+    INITIAL_CODE_EVIDENCE_POSITION
+  ),
+  votingHookAddress: VOTING_HOOK_ADDRESS,
+  votingHookState: "configured" as const,
+  weightMeasureAddress: WEIGHT_MEASURE_ADDRESS,
+  weightMeasureState: "configured" as const,
+  proposalBlacklistAddress: PROPOSAL_BLACKLIST_ADDRESS,
+  proposalBlacklistState: "configured" as const,
+  operatorAddress: DAO_MOCK_OPERATOR_ADDRESS,
+  operatorState: "configured" as const,
+  guardianAddress: DAO_MOCK_GUARDIAN_ADDRESS,
+};
+const INITIAL_CONFIGURATION_VALUES_SHA256 =
+  deriveDaoConfigurationValuesSha256(INITIAL_CONFIGURATION_VALUES);
+const BOOTSTRAP_COVERED_BLOCKS = [
+  {
+    number: DEPLOYMENT_BLOCK.toString(),
+    hash: fixedHex32(DEPLOYMENT_BLOCK),
+    timestamp: null,
+  },
+];
+const BOOTSTRAP_MANIFEST = canonicalizeDaoConfigurationBootstrapSetterManifest({
+  chainId: 1,
+  votingAddress: DAO_MOCK_VOTING_ADDRESS,
+  fromBlockNumber: DEPLOYMENT_BLOCK.toString(),
+  toBlockNumber: DEPLOYMENT_BLOCK.toString(),
+  coveredBlocks: BOOTSTRAP_COVERED_BLOCKS,
+  trackedSetterLogs: BOOTSTRAP_TRACKED_SETTER_LOGS,
+  transactionEvidence: BOOTSTRAP_TRANSACTION_EVIDENCE,
+});
+const BOOTSTRAP_MANIFEST_BYTES = toBytes(BOOTSTRAP_MANIFEST);
+const BOOTSTRAP_MANIFEST_SHA256 = sha256(BOOTSTRAP_MANIFEST_BYTES);
+const BOOTSTRAP_SCAN_PROJECTION =
+  deriveDaoConfigurationBootstrapScanProjectionSha256({
+    fromBlockNumber: DEPLOYMENT_BLOCK.toString(),
+    toBlockNumber: DEPLOYMENT_BLOCK.toString(),
+    toBlockHash: fixedHex32(DEPLOYMENT_BLOCK),
+    coveredBlocks: BOOTSTRAP_COVERED_BLOCKS,
+    votingAddress: DAO_MOCK_VOTING_ADDRESS,
+    lifecycleLogCount: 0,
+    trackedSetterLogCount: BOOTSTRAP_TRACKED_SETTER_LOGS.length,
+    canonicalManifestByteLength: BOOTSTRAP_MANIFEST_BYTES.length,
+    canonicalManifestSha256: BOOTSTRAP_MANIFEST_SHA256,
+    replayedConfigurationValuesSha256:
+      INITIAL_CONFIGURATION_VALUES_SHA256,
+  });
+
+const CHANGED_CONFIGURATION_EFFECTIVE_AT = {
+  kind: "canonical_setter_log" as const,
+  blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
+  blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
+  transactionIndex: 0,
+  logIndex: 9,
+} as const;
+const CHANGED_CONFIGURATION_VALUES = {
+  contractGeneration: "1",
+  configurationId: "config-2",
+  voteStartOffsetSeconds: 604_700,
+  votingPeriodSeconds: 604_900,
+  votingWindowState: "enabled" as const,
+  executionDelaySeconds: 172_800,
+  executionGuard: "permissionless" as const,
+  voterDecayLengthSeconds: CHANGED_VOTER_DECAY_LENGTH_SECONDS,
+  voterAddress: CHANGED_VOTER_ADDRESS,
+  voterState: "configured" as const,
+  voterImplementation: pinnedVoterImplementation(
+    CHANGED_VOTER_ADDRESS,
+    CHANGED_CONFIGURATION_EFFECTIVE_AT
+  ),
+  delegatedStakingAddress: CHANGED_STYFIX_AGGREGATE_ADDRESS,
+  delegatedStakingState: "configured" as const,
+  ybcAddress: CHANGED_YBC_AGGREGATE_ADDRESS,
+  ybcState: "configured" as const,
+  ybcWeightAggregatorAddress: CHANGED_YBC_WEIGHT_AGGREGATOR_ADDRESS,
+  ybcWeightAggregatorState: "configured" as const,
+  executorAddress: CHANGED_EXECUTOR_ADDRESS,
+  executorState: "configured" as const,
+  executorImplementation: pinnedExecutorImplementation(
+    CHANGED_EXECUTOR_ADDRESS,
+    CHANGED_CONFIGURATION_EFFECTIVE_AT
+  ),
+  votingHookAddress: CHANGED_VOTING_HOOK_ADDRESS,
+  votingHookState: "configured" as const,
+  weightMeasureAddress: CHANGED_WEIGHT_MEASURE_ADDRESS,
+  weightMeasureState: "configured" as const,
+  proposalBlacklistAddress: CHANGED_PROPOSAL_BLACKLIST_ADDRESS,
+  proposalBlacklistState: "configured" as const,
+  operatorAddress: CHANGED_OPERATOR_ADDRESS,
+  operatorState: "configured" as const,
+  guardianAddress: DAO_MOCK_GUARDIAN_ADDRESS,
+};
+const CHANGED_CONFIGURATION_VALUES_SHA256 =
+  deriveDaoConfigurationValuesSha256(CHANGED_CONFIGURATION_VALUES);
+const CHANGED_CONFIGURATION_HISTORY_MANIFEST_SHA256 = sha256(
+  toBytes(
+    canonicalizeDaoConfigurationSetterHistoryManifest({
+      priorTrackedSetterHistoryLogCount:
+        BOOTSTRAP_TRACKED_SETTER_LOGS.length,
+      priorTrackedSetterHistoryManifestSha256: BOOTSTRAP_MANIFEST_SHA256,
+      receipt: CONFIGURATION_SETTER_RECEIPT,
+      setterCalls: CONFIGURATION_SETTER_CALLS,
+    })
+  )
+);
+const CHANGED_CONFIGURATION_STATE_PROJECTION =
+  deriveDaoConfigurationSetterStateProjectionSha256({
+    votingAddress: DAO_MOCK_VOTING_ADDRESS,
+    blockNumber: CHANGED_CONFIGURATION_EFFECTIVE_AT.blockNumber,
+    blockHash: CHANGED_CONFIGURATION_EFFECTIVE_AT.blockHash,
+    transactionIndex: CHANGED_CONFIGURATION_EFFECTIVE_AT.transactionIndex,
+    logIndex: CHANGED_CONFIGURATION_EFFECTIVE_AT.logIndex,
+    configurationValuesSha256: CHANGED_CONFIGURATION_VALUES_SHA256,
+    trackedSetterHistoryLogCount:
+      BOOTSTRAP_TRACKED_SETTER_LOGS.length + CONFIGURATION_SETTER_CALLS.length,
+    trackedSetterHistoryManifestSha256:
+      CHANGED_CONFIGURATION_HISTORY_MANIFEST_SHA256,
+  });
 
 const FIXTURE_CONFIGURATIONS: readonly FixtureConfiguration[] = [
   {
-    contractGeneration: "1",
-    configurationId: "config-1",
-    voteStartOffsetSeconds: 604_800,
-    votingPeriodSeconds: 604_800,
-    votingWindowState: "enabled",
-    executionDelaySeconds: 86_400,
-    executionGuard: "guarded",
-    voterAddress: DAO_MOCK_VOTER_ADDRESS,
-    voterState: "configured",
-    voterImplementation: pinnedVoterImplementation(
-      DAO_MOCK_VOTER_ADDRESS,
-      {
-        blockNumber: "23900000",
-        blockHash: fixedHex32(23_900_000n),
-        transactionIndex: 0,
-        logIndex: 0,
-      }
-    ),
-    delegatedStakingAddress: DAO_MOCK_STYFIX_AGGREGATE_ADDRESS,
-    delegatedStakingState: "configured",
-    ybcAddress: DAO_MOCK_YBC_AGGREGATE_ADDRESS,
-    ybcState: "configured",
-    ybcWeightAggregatorAddress: YBC_WEIGHT_AGGREGATOR_ADDRESS,
-    ybcWeightAggregatorState: "configured",
-    executorAddress: DAO_MOCK_EXECUTOR_ADDRESS,
-    executorState: "configured",
-    executorImplementation: pinnedExecutorImplementation(
-      DAO_MOCK_EXECUTOR_ADDRESS,
-      {
-        blockNumber: "23900000",
-        blockHash: fixedHex32(23_900_000n),
-        transactionIndex: 0,
-        logIndex: 0,
-      }
-    ),
-    votingHookAddress: VOTING_HOOK_ADDRESS,
-    votingHookState: "configured",
-    weightMeasureAddress: WEIGHT_MEASURE_ADDRESS,
-    weightMeasureState: "configured",
-    proposalBlacklistAddress: PROPOSAL_BLACKLIST_ADDRESS,
-    proposalBlacklistState: "configured",
-    operatorAddress: DAO_MOCK_OPERATOR_ADDRESS,
-    operatorState: "configured",
-    guardianAddress: DAO_MOCK_GUARDIAN_ADDRESS,
-    effectiveAt: {
-      blockNumber: "23900000",
-      blockHash: fixedHex32(23_900_000n),
-      transactionIndex: 0,
-      logIndex: 0,
-    },
+    ...INITIAL_CONFIGURATION_VALUES,
+    effectiveAt: INITIAL_CONFIGURATION_EFFECTIVE_AT,
+    source: PINNED_SOURCE,
     boundary: {
-      kind: "deployment_start_sentinel",
-      positionSemantics: "start_of_block_before_transaction_zero_log_zero",
-      transactionHash: null,
-      rpcMethod: null,
-      tracer: null,
-      transactionIndex: null,
-      firstEffectiveLogIndex: null,
-      effectiveness: "effective_for_all_positions_at_or_after_start_block",
+      kind: "producer_start_state_snapshot_sentinel",
+      positionSemantics:
+        "logical_start_of_scan_after_authenticated_prestart_setter_replay",
+      stateSnapshot: {
+        evidenceKind: "committed_synthetic_fixture",
+        rpcMethods: null,
+        fixturePath: "tests/fixtures/dao-feed-v1.ts",
+        fixtureProjectionSha256:
+          deriveDaoConfigurationBootstrapProjectionSha256({
+            startBlockNumber: PRODUCER_START_BLOCK.toString(),
+            startBlockHash: fixedHex32(PRODUCER_START_BLOCK),
+            parentBlockNumber: DEPLOYMENT_BLOCK.toString(),
+            parentBlockHash: fixedHex32(DEPLOYMENT_BLOCK),
+            votingAddress: DAO_MOCK_VOTING_ADDRESS,
+            configurationValuesSha256:
+              INITIAL_CONFIGURATION_VALUES_SHA256,
+          }),
+        parentBlockNumber: DEPLOYMENT_BLOCK.toString(),
+        parentBlockHash: fixedHex32(DEPLOYMENT_BLOCK),
+        statePosition: "end_of_parent_block_for_start_of_next_block",
+        configurationValuesSha256: INITIAL_CONFIGURATION_VALUES_SHA256,
+      },
+      scanManifest: {
+        evidenceKind: "committed_synthetic_fixture",
+        rpcMethod: null,
+        fixturePath: "tests/fixtures/dao-feed-v1.ts",
+        fixtureProjectionSha256: BOOTSTRAP_SCAN_PROJECTION,
+        manifestObjectKey: null,
+        fromBlockNumber: DEPLOYMENT_BLOCK.toString(),
+        toBlockNumber: DEPLOYMENT_BLOCK.toString(),
+        toBlockHash: fixedHex32(DEPLOYMENT_BLOCK),
+        coveredBlocks: BOOTSTRAP_COVERED_BLOCKS,
+        votingAddress: DAO_MOCK_VOTING_ADDRESS,
+        lifecycleLogCount: 0,
+        trackedSetterLogCount: BOOTSTRAP_TRACKED_SETTER_LOGS.length,
+        trackedSetterLogs: BOOTSTRAP_TRACKED_SETTER_LOGS,
+        transactionEvidence: BOOTSTRAP_TRANSACTION_EVIDENCE,
+        canonicalManifestEncoding:
+          "canonical_json_utf8_lexicographic_keys_no_whitespace_one_final_lf",
+        canonicalManifestByteLength: BOOTSTRAP_MANIFEST_BYTES.length,
+        canonicalManifestSha256: BOOTSTRAP_MANIFEST_SHA256,
+        replayedConfigurationValuesSha256:
+          INITIAL_CONFIGURATION_VALUES_SHA256,
+        coverage: "contract_creation_through_end_of_parent_block_inclusive",
+        replaySemantics:
+          "canonical_tracked_setter_log_replay_equals_start_state_snapshot",
+      },
+      effectiveness:
+        "effective_for_all_included_positions_at_or_after_producer_start",
       setterCalls: [],
     },
   },
   {
-    contractGeneration: "1",
-    configurationId: "config-2",
-    voteStartOffsetSeconds: 604_700,
-    votingPeriodSeconds: 604_900,
-    votingWindowState: "enabled",
-    executionDelaySeconds: 172_800,
-    executionGuard: "permissionless",
-    voterAddress: CHANGED_VOTER_ADDRESS,
-    voterState: "configured",
-    voterImplementation: pinnedVoterImplementation(CHANGED_VOTER_ADDRESS, {
-      blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
-      blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
-      transactionIndex: 0,
-      logIndex: 0,
-    }),
-    delegatedStakingAddress: CHANGED_STYFIX_AGGREGATE_ADDRESS,
-    delegatedStakingState: "configured",
-    ybcAddress: CHANGED_YBC_AGGREGATE_ADDRESS,
-    ybcState: "configured",
-    ybcWeightAggregatorAddress: CHANGED_YBC_WEIGHT_AGGREGATOR_ADDRESS,
-    ybcWeightAggregatorState: "configured",
-    executorAddress: CHANGED_EXECUTOR_ADDRESS,
-    executorState: "configured",
-    executorImplementation: pinnedExecutorImplementation(
-      CHANGED_EXECUTOR_ADDRESS,
-      {
-        blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
-        blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
-        transactionIndex: 0,
-        logIndex: 0,
-      }
-    ),
-    votingHookAddress: CHANGED_VOTING_HOOK_ADDRESS,
-    votingHookState: "configured",
-    weightMeasureAddress: CHANGED_WEIGHT_MEASURE_ADDRESS,
-    weightMeasureState: "configured",
-    proposalBlacklistAddress: CHANGED_PROPOSAL_BLACKLIST_ADDRESS,
-    proposalBlacklistState: "configured",
-    operatorAddress: CHANGED_OPERATOR_ADDRESS,
-    operatorState: "configured",
-    guardianAddress: CHANGED_GUARDIAN_ADDRESS,
-    effectiveAt: {
-      blockNumber: CONFIGURATION_CHANGE_BLOCK.toString(),
-      blockHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK),
-      transactionIndex: 0,
-      logIndex: 0,
-    },
+    ...CHANGED_CONFIGURATION_VALUES,
+    effectiveAt: CHANGED_CONFIGURATION_EFFECTIVE_AT,
+    source: PINNED_SOURCE,
     boundary: {
       kind: "setter_trace_observation",
       positionSemantics:
-        "first_lifecycle_log_position_after_successful_setter_calls",
-      transactionHash: fixedHex32(CONFIGURATION_CHANGE_BLOCK + 9_000n),
-      rpcMethod: "debug_traceTransaction",
-      tracer: "callTracer",
-      transactionIndex: 0,
-      firstEffectiveLogIndex: 0,
-      effectiveness:
-        "after_successful_setter_calls_before_first_effective_log",
-      setterCalls: [
-        {
-          target: DAO_MOCK_VOTING_ADDRESS,
-          sourceContract: "Voting",
-          traceAddress: [0],
-          selector: "0x12345678",
-          calldata: "0x12345678",
-          result: "success",
+        "last_canonical_setter_log_after_successful_setter_calls",
+      receipt: CONFIGURATION_SETTER_RECEIPT,
+      traceEvidence: {
+        sourceKind: "committed_synthetic_fixture",
+        rpcMethod: "debug_traceTransaction",
+        tracer: "callTracer",
+        fixtureMethod:
+          "committed_synthetic_configuration_setter_trace_fixture_v1",
+        fixturePath: "tests/fixtures/dao-feed-v1.ts",
+        fixtureProjectionSha256: CONFIGURATION_SETTER_TRACE_PROJECTION,
+        clientVersion: null,
+        rawTraceSha256: null,
+        tracerConfig: { onlyTopCall: false, withLog: true },
+        reexec: 0,
+        normalization:
+          "root_empty_array_then_zero_based_full_call_tree_child_indices",
+      },
+      stateSnapshot: {
+        evidenceKind: "committed_synthetic_fixture",
+        rpcMethods: null,
+        fixturePath: "tests/fixtures/dao-feed-v1.ts",
+        fixtureProjectionSha256: CHANGED_CONFIGURATION_STATE_PROJECTION,
+        manifestObjectKey: null,
+        blockNumber: CHANGED_CONFIGURATION_EFFECTIVE_AT.blockNumber,
+        blockHash: CHANGED_CONFIGURATION_EFFECTIVE_AT.blockHash,
+        transactionIndex: CHANGED_CONFIGURATION_EFFECTIVE_AT.transactionIndex,
+        logIndex: CHANGED_CONFIGURATION_EFFECTIVE_AT.logIndex,
+        statePosition: "immediately_after_final_canonical_setter_log",
+        configurationValuesSha256: CHANGED_CONFIGURATION_VALUES_SHA256,
+        trackedSetterHistoryLogCount:
+          BOOTSTRAP_TRACKED_SETTER_LOGS.length +
+          CONFIGURATION_SETTER_CALLS.length,
+        trackedSetterHistoryManifestSha256:
+          CHANGED_CONFIGURATION_HISTORY_MANIFEST_SHA256,
+        voterTargetStateEvidence: {
+          state: "established_by_post_pointer_setters",
+          voterAddress: CHANGED_VOTER_ADDRESS,
+          pointerSetterLogIndex: 0,
+          decayLengthSetterLogIndex: 6,
+          delegatedStakingSetterLogIndex: 7,
+          ybcSetterLogIndex: 8,
+          ybcWeightAggregatorSetterLogIndex: 9,
+          semantics:
+            "all_nested_voter_values_established_after_pointer_setter",
         },
-        {
-          target: CHANGED_VOTER_ADDRESS,
-          sourceContract: "Voter",
-          traceAddress: [1],
-          selector: "0xabcdef01",
-          calldata: "0xabcdef01",
-          result: "success",
-        },
-      ],
+        replayCoverage:
+          "voting_creation_and_effective_voter_history_through_final_setter_log",
+        replaySemantics:
+          "canonical_voting_and_effective_voter_setter_replay_equals_configuration",
+      },
+      effectiveness: "effective_at_and_after_last_canonical_setter_log",
+      setterCalls: CONFIGURATION_SETTER_CALLS,
     },
   },
 ];
@@ -669,7 +1086,7 @@ export function createDaoFeedV1Example(): DaoFeedV1 {
       },
       cursor: {
         chainId: DAO_MOCK_FEED.chainId,
-        startBlockNumber: "23900000",
+        startBlockNumber: PRODUCER_START_BLOCK.toString(),
         lastBlockNumber: canonicalBlock.number,
         lastBlockHash: canonicalBlock.hash,
         nextBlockNumber: "24000001",
@@ -733,7 +1150,7 @@ export function createDaoFeedV1Example(): DaoFeedV1 {
           timestamp: null,
         },
         deployedBytecodeHash: fixedHex32(99_999n),
-        startBlock: "23900000",
+        startBlock: PRODUCER_START_BLOCK.toString(),
         genesisTimestamp: DAO_GENESIS_TIMESTAMP,
         epochLengthSeconds: DAO_FEED_EPOCH_LENGTH_SECONDS,
         configurationHistory: FIXTURE_CONFIGURATIONS.map((configuration) => ({
@@ -894,6 +1311,9 @@ function createProposal(
       event.type === "vote" && event.data.actorKind === "unclassified"
   ).length;
   const wireTotals = calculateWireVoteTotals(events);
+  const thresholdStorageSlots =
+    deriveDaoVotingThresholdStorageSlots(proposalId);
+  const thresholdStorageWord = fixedHex32(BigInt(source.thresholdBps));
 
   return {
     ref,
@@ -963,6 +1383,45 @@ function createProposal(
     rules: {
       approvalThresholdBps: source.thresholdBps,
       thresholdSnapshottedAtCreation: true,
+      thresholdEvidence: {
+        state: "verified_stored_proposal_threshold",
+        source: PINNED_SOURCE,
+        evidenceKind: "committed_synthetic_fixture",
+        rpcMethod: null,
+        fixturePath: "tests/fixtures/dao-feed-v1.ts",
+        fixtureProjectionSha256:
+          deriveDaoProposalThresholdProjectionSha256({
+            votingAddress: source.ref.votingAddress,
+            proposalId: proposalId.toString(),
+            blockNumber: propose.log.blockNumber,
+            blockHash: propose.log.blockHash,
+            resolvedStorageSlot: thresholdStorageSlots.resolvedStorageSlot,
+            storageWord: thresholdStorageWord,
+          }),
+        votingAddress: source.ref.votingAddress,
+        proposalId: proposalId.toString(),
+        blockNumber: propose.log.blockNumber,
+        blockHash: propose.log.blockHash,
+        blockHashVerification: "canonical_hash_at_height",
+        storageLayout: {
+          compiler: "vyper@0.4.2",
+          sourceSha256:
+            "0x6c9899bdfc5f51e965a0f35bfb2008a29f3dcde07decbc81a265b17e64ce709e",
+          layoutArtifactSha256:
+            "0x0f963a37d02adeb6a34fabb98ab37b118031ac9b7380e4ad65ac2765b4b6db26",
+          derivation:
+            "keccak256(bytes32(mapping_base_slot) || bytes32(proposal_id)) + threshold_field_slot_offset",
+          mappingBaseSlot: "17",
+          mappingKey: proposalId.toString(),
+          mappingHashInputOrder: "slot_then_key",
+          proposalStorageBaseSlot:
+            thresholdStorageSlots.proposalStorageBaseSlot,
+          thresholdFieldSlotOffset: 4,
+          resolvedStorageSlot: thresholdStorageSlots.resolvedStorageSlot,
+        },
+        storageWord: thresholdStorageWord,
+        decodedThresholdBps: source.thresholdBps,
+      },
       minimumTurnout: null,
       passageRequiresPositiveTotal: true,
       proposalType: source.type,
@@ -1315,6 +1774,14 @@ function createAnalysis(
   if (exactScript === null) {
     throw new Error("Completed simulation requires exact retained script bytes.");
   }
+  if (
+    configuration.executorImplementation.state !== "verified_pinned" ||
+    configuration.executorImplementation.bytecode === null
+  ) {
+    throw new Error(
+      "Completed simulation fixtures require a verified pinned Executor implementation."
+    );
+  }
   const storageSlots = deriveDaoVotingExecutedStorageSlots(proposalId);
   const harnessRevision = "dao-feed-v1-fixture";
   const harnessArtifactSha256 = fixedHex32(77_777n);
@@ -1391,6 +1858,47 @@ function createAnalysis(
     .map((address) => address.toLowerCase() as Address)
     .filter((address, index, values) => values.indexOf(address) === index)
     .sort();
+  const executorOperatorStorageSlot =
+    deriveDaoExecutorOperatorStorageSlot(DAO_MOCK_VOTING_ADDRESS);
+  const executorOperatorStorageWord = fixedHex32(1n);
+  const executorOperatorRelevantSetterLogs = [] as const;
+  const executorOperatorReplayManifest =
+    canonicalizeDaoExecutorOperatorSetterManifest({
+      executorAddress: configuration.executorAddress as Address,
+      votingAddress: DAO_MOCK_VOTING_ADDRESS,
+      blockNumber: proposeLog.blockNumber,
+      blockHash: proposeLog.blockHash,
+      relevantSetterLogs: executorOperatorRelevantSetterLogs,
+    });
+  const executorOperatorReplayManifestBytes = toBytes(
+    executorOperatorReplayManifest
+  );
+  const executorOperatorReplayManifestSha256 = sha256(
+    executorOperatorReplayManifestBytes
+  );
+  const executorOperatorBlockEndProjectionSha256 =
+    deriveDaoExecutorOperatorStorageProjectionSha256({
+      executorAddress: configuration.executorAddress as Address,
+      votingAddress: DAO_MOCK_VOTING_ADDRESS,
+      blockNumber: proposeLog.blockNumber,
+      blockHash: proposeLog.blockHash,
+      resolvedStorageSlot: executorOperatorStorageSlot,
+      storageWord: executorOperatorStorageWord,
+    });
+  const executorOperatorReplayProjectionSha256 =
+    deriveDaoExecutorOperatorReplayProjectionSha256({
+      executorAddress: configuration.executorAddress as Address,
+      votingAddress: DAO_MOCK_VOTING_ADDRESS,
+      blockNumber: proposeLog.blockNumber,
+      blockHash: proposeLog.blockHash,
+      proposeTransactionIndex: proposeLog.transactionIndex,
+      proposeLogIndex: proposeLog.logIndex,
+      relevantSetterLogCount: 0,
+      appliedThroughProposeLogCount: 0,
+      laterSetterLogCount: 0,
+      canonicalManifestSha256:
+        executorOperatorReplayManifestSha256,
+    });
   const contextInputsSha256 = deriveDaoSimulationContextInputsSha256({
     chainId: 1,
     blockNumber: proposeLog.blockNumber,
@@ -1450,6 +1958,19 @@ function createAnalysis(
       "committed_synthetic_fixture_and_reproducible_build",
     executorEvidenceFixtureProjectionSha256:
       executorImplementation.bytecode.fixtureProjectionSha256,
+    executorOperatorStorageSlot,
+    executorOperatorBlockEndStorageWord: executorOperatorStorageWord,
+    executorOperatorAuthorizedAtPropose: true,
+    executorOperatorBlockEndEvidenceKind: "committed_synthetic_fixture",
+    executorOperatorBlockEndFixtureProjectionSha256:
+      executorOperatorBlockEndProjectionSha256,
+    executorOperatorReplayManifestSha256,
+    executorOperatorReplayRelevantSetterLogCount: 0,
+    executorOperatorReplayAppliedSetterLogCount: 0,
+    executorOperatorReplayEvidenceKind: "committed_synthetic_fixture",
+    executorOperatorReplayFixtureProjectionSha256:
+      executorOperatorReplayProjectionSha256,
+    executorOperatorReplayRawLogsSha256: null,
     executorFrameInitialGas,
     effectiveGasPriceWei,
     overrideVotingAddress: DAO_MOCK_VOTING_ADDRESS,
@@ -1498,7 +2019,64 @@ function createAnalysis(
         targetCaller: configuration.executorAddress,
         callValue: "0",
         noCodeOverrides: true,
-        operatorCheckExecuted: true,
+        operatorCheckOutcome: "passed",
+        scriptEntered: true,
+        executionResultStage: failed
+          ? "executor_script_revert"
+          : "script_completed",
+        executorOperatorAuthorization: {
+          state: "verified_at_propose_position",
+          executorAddress: configuration.executorAddress,
+          votingAddress: DAO_MOCK_VOTING_ADDRESS,
+          blockNumber: proposeLog.blockNumber,
+          blockHash: proposeLog.blockHash,
+          blockHashVerification: "canonical_hash_at_height",
+          getterSelector: "0x13e7c9d8",
+          blockEndEvidence: {
+            evidenceKind: "committed_synthetic_fixture",
+            rpcMethod: null,
+            fixturePath: "tests/fixtures/dao-feed-v1.ts",
+            fixtureProjectionSha256:
+              executorOperatorBlockEndProjectionSha256,
+            storageLayout: {
+              compiler: "vyper@0.4.2",
+              sourceSha256: PINNED_EXECUTOR_SOURCE_SHA256,
+              derivation:
+                "keccak256(bytes32(mapping_base_slot) || bytes32(uint256(voting_address)))",
+              mappingBaseSlot: "2",
+              mappingKey: DAO_MOCK_VOTING_ADDRESS,
+              mappingHashInputOrder: "slot_then_key",
+              resolvedStorageSlot: executorOperatorStorageSlot,
+            },
+            storageWord: executorOperatorStorageWord,
+            decodedAuthorized: true,
+          },
+          positionReplay: {
+            method:
+              "canonical_executor_set_operator_log_replay_to_propose_position",
+            proposeTransactionIndex: proposeLog.transactionIndex,
+            proposeLogIndex: proposeLog.logIndex,
+            relevantSetterLogCount: 0,
+            appliedThroughProposeLogCount: 0,
+            laterSetterLogCount: 0,
+            relevantSetterLogs: executorOperatorRelevantSetterLogs,
+            canonicalManifestEncoding:
+              "canonical_json_utf8_lexicographic_keys_no_whitespace_one_final_lf",
+            canonicalManifestByteLength:
+              executorOperatorReplayManifestBytes.length,
+            canonicalManifestSha256:
+              executorOperatorReplayManifestSha256,
+            evidenceKind: "committed_synthetic_fixture",
+            rpcMethod: null,
+            fixturePath: "tests/fixtures/dao-feed-v1.ts",
+            fixtureProjectionSha256:
+              executorOperatorReplayProjectionSha256,
+            rawLogsSha256: null,
+            semantics:
+              "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs",
+          },
+          authorizedAtPropose: true,
+        },
         executionInput: {
           functionSignature: "execute(bytes)",
           calldata: executeCalldata,
@@ -2503,7 +3081,8 @@ function configurationForPosition(
     if (
       BigInt(configuration.effectiveAt.blockNumber) < BigInt(position.blockNumber) ||
       (configuration.effectiveAt.blockNumber === position.blockNumber &&
-        (configuration.effectiveAt.transactionIndex < position.transactionIndex ||
+        (configuration.effectiveAt.kind === "start_of_block" ||
+          configuration.effectiveAt.transactionIndex < position.transactionIndex ||
           (configuration.effectiveAt.transactionIndex === position.transactionIndex &&
             configuration.effectiveAt.logIndex <= position.logIndex)))
     ) {
@@ -2522,6 +3101,7 @@ function configurationValues(configuration: FixtureConfiguration) {
     votingWindowState: configuration.votingWindowState,
     executionDelaySeconds: configuration.executionDelaySeconds,
     executionGuard: configuration.executionGuard,
+    voterDecayLengthSeconds: configuration.voterDecayLengthSeconds,
     voterAddress: configuration.voterAddress,
     voterState: configuration.voterState,
     voterImplementation: configuration.voterImplementation,

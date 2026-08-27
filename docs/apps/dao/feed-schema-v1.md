@@ -97,7 +97,8 @@ known, pinned Voting construction requires
 The root canonical block owns the snapshot time and hash. All block-bearing
 evidence enters one feed-wide canonical registry. At one chain height,
 deployment records, configuration observations, lifecycle logs, creation
-receipts, archive-code proofs, simulation headers and receipts,
+receipts, archive-RPC or committed-synthetic code proofs, simulation headers
+and receipts,
 state-transition proofs, cursors, and finality records use one block hash and
 one value for every known timestamp. A block hash maps back to one height.
 Unknown timestamps remain `null`; they do not license a conflicting known
@@ -116,13 +117,100 @@ maps to one canonical block hash and transaction position. Ethereum `logIndex`
 is block-global: `(chainId, blockHash, logIndex)` cannot repeat across
 transactions, proposals, or Voting generations. After events in one block are
 ordered by nondecreasing `transactionIndex`, `logIndex` must rise strictly;
-uniqueness alone is not enough. The first configuration uses the exact
-`deployment_start_sentinel` at transaction/log zero, meaning the state at the
-start of the deployment/start block. Every later configuration uses
-`setter_trace_observation`: it binds the successful setter transaction, raw
-calldata and full call-trace path, and becomes effective immediately after those
-setter calls and before `firstEffectiveLogIndex`. That observation boundary is
-not itself a lifecycle event and is not enrolled in the lifecycle-log namespace.
+uniqueness alone is not enough.
+
+The first configuration uses `effectiveAt.kind: start_of_block`; this logical
+position sorts before every real log in the producer start block and therefore
+does not reserve transaction zero/log zero. Version 1 requires the producer
+start to be exactly one block after deployment. Its
+`producer_start_state_snapshot_sentinel` authenticates end-of-parent-block
+state and scans from contract creation through that parent block inclusive. The
+scan must prove zero omitted lifecycle logs, retain every tracked Voting and
+effective-Voter setter log, authenticate each unique setter transaction with a
+successful receipt plus full geth `callTracer` evidence, and replay the ordered
+manifest to the exact start-state projection. Pre-start setters are retained;
+they are not claimed absent. If lifecycle activity occurred before that strict
+start, version 1 cannot silently skip it and the producer must report the
+deployment as incompatible with this bootstrap contract.
+
+Every later configuration uses `effectiveAt.kind: canonical_setter_log` and
+`boundary.kind: setter_trace_observation`. The boundary retains exact full ABI
+calldata, caller, target, unfiltered trace path, canonical Set* topics/data and
+decoded mutation for every included successful setter. It becomes effective at
+and after the final retained Set* log. A lifecycle log earlier in the same
+transaction uses the old row; one after the setter log uses the new row. If a
+lifecycle log lies between tracked setters, the history uses separate rows.
+`effectiveAt` is the final real setter log itself and occupies the same
+feed-wide block-global log namespace as lifecycle, bootstrap, Voter-history,
+and Executor-authorization logs. The committed fixture starts at block
+`23900001` from deployment block `23900000`; `config-1` replays nine bootstrap
+setter logs, while `config-2` retains ten setters and becomes effective at
+block `23902000`, transaction `0`, global log index `9`.
+
+Configuration replay includes `voterDecayLengthSeconds` in `0..604799`; zero
+disables decay. It also includes every address/state field. An unchanged Voter
+pointer either inherits prior nested state or replays same-pointer setters. A
+changed pointer is zero-disabled, establishes
+all four nested Voter fields with post-pointer setters, or supplies an
+authenticated preconfigured-Voter proof. That proof starts at direct code
+birth, proves zero code in the preceding block and the pinned runtime after a
+successful creation receipt, retains and authenticates every tracked
+nested-state Voter setter from code birth through the boundary, and replays
+decay, delegated-staking, YBC, and aggregator values. Management transitions
+are not part of that four-setter projection. Every retained setter must be
+strictly after code birth and code birth must precede the pointer boundary.
+Block-end state is usable only with zero later same-block relevant setters.
+Exact physical Set* logs may be
+referenced by more than one configuration/history proof, but the feed-wide
+registry admits the reference once and requires identical transaction sender,
+caller, target, trace path, calldata, decoded mutation, topics, and data.
+Those call-evidence requirements apply to configuration and preconfigured-Voter
+records. Executor authorization shares canonical block/transaction/log order
+and exact emitter/topics/data, but its schema does not assert a sender or call
+trace.
+
+All live raw JSON-RPC hashes are byte commitments, not reserialized JSON.
+`rawTransactionSha256`, `rawReceiptSha256`, `rawTraceSha256`,
+`rawPreviousCodeSha256`, `rawDeployedCodeSha256`, and `rawLogsSha256` are
+SHA-256 over the exact UTF-8 bytes of the successful, non-null, top-level
+JSON-RPC `result` token before JSON decoding or reserialization. Transaction,
+receipt, and trace results hash the complete object token from opening `{` to
+matching `}`. Log results hash the complete array token from `[` to matching
+`]`. `eth_getCode` results hash the complete JSON string token, including the
+quotes around `"0x…"`. Every hash excludes the JSON-RPC envelope, ID, and
+whitespace outside that result token. Producers retain those exact bytes under
+the named object or manifest key where the applicable union branch exposes one;
+the direct Voter and configuration-setter trace branches commit the raw trace
+digest without an in-record object key. Synthetic examples instead bind their
+committed projection and leave every live raw hash, object key, and client field
+that their branch exposes `null`.
+
+The tracked setter ABI is exact:
+
+| Contract / setter | Selector | Canonical event topic 0 | Tracked result |
+| --- | --- | --- | --- |
+| Voting `set_propose_parameters(uint256,uint256,address)` | `0xff6df1ac` | `0xfab3227f78255cd593ef6859519102d5fb7ad8f773deb32a3464ce696f0020fa` | call/log retains minimum weight and cooldown; configuration projects blacklist |
+| Voting `set_vote_parameters(uint256,address)` | `0xf182b394` | `0x559116557c3a62b0f633fca41b82c45045bd81575f2ffdb29b3b6a8a6ecb34bb` | period and Voter; offset is `L-period` |
+| Voting `set_execute_parameters(uint256,bool,address)` | `0xdcfec72c` | `0xbcd64841ac721e268f925c3209cfd0b682bf2586bf932242b82c33df319a8ed6` | delay, guard, Executor |
+| Voting `set_hooks(address)` | `0x0c360521` | `0xdb0670e174c4203280e70166db52920a0ddc53923128a7e0e964c5350de54f1f` | hook |
+| Voting `set_weight_measure(address)` | `0x80ad61a3` | `0x89f0256426a7eb0b05f11201574bca64c364ad351205803c24ace8d86da8798f` | weight measure |
+| Voting `set_operator(address)` | `0x30c7be72` | `0xdbebfba65bd6398fb722063efc10c99f624f9cd8ba657201056af918a676d5ee` | Voting operator |
+| Voting `accept_guardian()` | `0x831352f4` | `0x31845eceb9cde510c7e8b37f76301c688feb70bc9653aa4c28a3734999840fd8` | effective guardian from immediate caller |
+| Voter `set_decay_length(uint256)` | `0xe4c341fa` | `0xbe2521cc0bf1d6a1506707fc3ab6beef8f2762765d9f3225eb6a0b5d5deca60f` | decay length |
+| Voter `set_delegated_staking(address)` | `0xa1275ce1` | `0x4496eefeccfc48b5cd0fa817b69dec275ec2bbb52c30814103e57e1b8912b8f8` | delegated staking |
+| Voter `set_ybc(address)` | `0x58007401` | `0xa2db453907b40a335339c283751d2fec56404ede4a7afb005cc5db2dfeb35c71` | YBC |
+| Voter `set_ybc_weight_aggregator(address)` | `0x6265d619` | `0x3469dc7f2a84fbbd6baa33558d5887880fa272c9b35ba89f97e8831dd677f2de` | YBC weight aggregator |
+
+`set_guardian(address)` only stages a pending guardian and cannot change the
+effective row; only `accept_guardian()` plus `SetGuardian` does. The audited
+Voting inventory also contains `set_threshold(uint256)` selector `0x4c8f8206`
+and event topic
+`0x46e8115bf463f9c29a9424fe152addef1bfaf2b43180d19bb7c2c78cc0ff1ebf`,
+but v1 does not retain that setter in configuration history. It proves each
+proposal's stored threshold independently from proposal-mapping storage.
+Executor authorization replay recognizes `set_operator(address,bool)` selector
+`0x0fe42159` / `SetOperator` topic
+`0x1618a22a3b00b9ac70fd5a82f1f5cdd8cb272bd0f1b740ddf7c26ab05881dd5b`.
 
 ## Lifecycle ABI
 
@@ -190,9 +278,17 @@ wrong-contract, malformed, or noncanonical logs produce no accepted identity.
 
 Only `approvalThresholdBps` is a proposal snapshot. The normal and alternate
 vectors retain 5,000 and 6,000 bps. Passage requires a positive vote total and
-has no minimum turnout.
+has no minimum turnout. The two copied threshold fields are not self-evidence:
+`rules.thresholdEvidence` authenticates the stored proposal word at the Propose
+block/hash. For pinned Voting, `proposals` is Vyper mapping base slot `17`, the
+mapping preimage is `bytes32(17) || bytes32(proposalId)` in slot-then-key order,
+and threshold is struct word offset `4`. The exact 32-byte word, derived storage
+slot, decoded value, source/layout pins, and archive-RPC or committed-synthetic
+evidence must agree with both `proposal.thresholdBps` and
+`rules.approvalThresholdBps`.
 
-Vote-start offset, vote duration, execution delay and guard, Voter,
+Vote-start offset, vote duration, execution delay and guard, Voter decay,
+Voter address,
 delegated-staking, YBC and YBC-weight-aggregator addresses, Executor, hook,
 weight measure, proposal blacklist, operator, and guardian are ordered
 historical observations. Each configuration has a stable ID and exact
@@ -267,26 +363,43 @@ Each configuration records the effective Voter implementation as one of
 and Vyper integrity digest
 `0x90d458df8321d2c845ad1a153b21fea3eeb6fa746feecc57d15beec3ae5f192d`.
 That digest is Vyper 0.4.2's SHA-256 import-tree integrity value; for this
-import-free source its preimage is the lowercase ASCII source digest without
-`0x`, not compiler bytes. Compilation uses the official Linux x86-64 Vyper
-`v0.4.2` release asset `vyper.0.4.2+commit.c216787f.linux`, release commit
+import-free source its preimage is the exact lowercase ASCII string
+`32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
+without `0x` or LF, not compiler bytes. Compilation uses the official Linux
+x86-64 Vyper `v0.4.2` release asset
+`vyper.0.4.2+commit.c216787f.linux`, long version
+`0.4.2+commit.c216787f`, platform `linux-x86_64-gnu`, built by the official
+GitHub Actions Ubuntu 22.04 workflow at release commit
 `c216787f5e355478733a05fa5f0fce93fa9a7126`, byte length `23,495,192`, and
 SHA-256 `0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
 Its exact URI is
 `https://github.com/vyperlang/vyper/releases/download/v0.4.2/vyper.0.4.2%2Bcommit.c216787f.linux`;
 the hash preimage is the unchanged downloaded asset bytes.
 
-The exact Voter build uses `-Werror -O gas --evm-version cancun`. Its creation
-stdout is 4,123 bytes with SHA-256 `0x25ca8e7899a40c5ae221fa5d8075816f7b36650b3ef6ef285b60fc5dcce362cc`;
-the decoded creation bytecode is 2,060 bytes with SHA-256
+The exact Voter build command is
+`./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f bytecode contracts/governance/Voter.vy`.
+Its creation stdout is 4,123 bytes with SHA-256
+`0x25ca8e7899a40c5ae221fa5d8075816f7b36650b3ef6ef285b60fc5dcce362cc`;
+its exact byte encoding is
+`utf8_lowercase_0x_hex_with_final_lf`. Stripping the exact `0x` prefix and one
+final LF, then strictly decoding lowercase hex, produces 2,060 creation bytes
+with SHA-256
 `0xbcb72ccd8fec2d904ecd867503481abc4d841d4b1ef7d5104b6017ff15a93839`.
-The runtime-template stdout is 3,917 bytes with SHA-256
+Appending the ABI uint256 constructor word produces 2,092 initcode bytes with
+SHA-256 `0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4`.
+The exact runtime command replaces `-f bytecode` with
+`-f bytecode_runtime`. Its stdout is 3,917 bytes with SHA-256
 `0x461f3f38e239d707be52a4c89d57d887c4c8e60b42b2032ebe6ed99b41e9cd54`;
-the decoded template is 1,957 bytes with SHA-256
+its `compilerStdoutDecoding` is exactly
+`strip_exact_0x_prefix_and_one_final_lf_then_lowercase_hex_decode`. The decoded
+template is 1,957 bytes with SHA-256
 `0x452dcaf7aa5c7d647c694a424121737e691ab229ee33744e0773d8581d9eea8b`
 and Keccak-256 `0xdfc74b9ef65aba002169200841461f60261aa1e66380e0b867b085266f16acaf`.
-The pinned layout output proves a 32-byte `genesis` immutable at code offset
-zero. The committed fixture genesis `1542736800` appends word
+The exact layout command replaces the output with `-f layout`; its stdout is
+578 bytes with SHA-256
+`0x6486152f25f1fa13ac03681a2b2779d035577906cee90f6ebba302a28b460681`.
+It proves a 32-byte `genesis` immutable at code offset zero. The committed
+fixture genesis `1542736800` appends word
 `0x000000000000000000000000000000000000000000000000000000005bf44ba0`,
 yielding 1,989 deployed runtime bytes with SHA-256
 `0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b`
@@ -296,6 +409,13 @@ Vote the Voter could emit, and must match its own code/build evidence.
 `yearn.dao.voter-build-evidence.v2` binds every source, compiler-distribution,
 command, stdout, template, immutable, final-runtime, archive/synthetic-code, and
 constructor fact. A timestamp-only rewrite is invalid.
+
+Archive code is mandatory for live production, while committed examples use a
+strict synthetic code projection. A pointer to an already configured pinned
+Voter additionally uses the code-birth and complete setter-history proof above;
+source/runtime identity alone cannot justify its mutable nested state. The
+direct top-level creation restriction and strict post-birth chronology are part
+of the frozen v1 producer contract.
 
 A complete pinned classification groups events by this invocation identity:
 
@@ -323,10 +443,12 @@ Trace evidence uses
 {onlyTopCall:false, withLog:true}, reexec:0})`. Paths are unfiltered zero-based
 full call-tree child indices with root `[]`. For a direct root Voter call, the
 human, delegated, and YBC `Voting.vote` frames are exact children `[1]`, `[4]`,
-and `[5]`; intervening `voted`, membership, and aggregator calls are not erased.
+and `[5]`; for an arbitrary outer path `P` they are `P+[1]`, `P+[4]`, and
+`P+[5]`. Intervening `voted`, membership, and aggregator calls are not erased.
 Committed examples use an explicit `committed_synthetic_fixture` projection;
 live output uses the separate `archive_rpc` branch and binds client version and
-raw trace hash. Synthetic and RPC fields cannot be mixed.
+the exact `rawTraceSha256` byte preimage defined in the configuration section.
+Synthetic and RPC fields cannot be mixed.
 
 For every pinned Voter/Voting/proposal, the consumer replays `ybc_votes` in
 canonical invocation order. The recorded Yea/Nay selector and aggregator-return
@@ -418,15 +540,20 @@ proof binds `contracts/governance/Executor.vy` at revision
 `vyper@0.4.2`, Vyper source-integrity SHA-256
 `0x18bd5aadcc7847a329623ccf6bf05edf661a4d4c5ec6aeb13e8fdcc44df0917b`,
 gas optimization, Cancun, and experimental code generation disabled. The
-integrity preimage is the lowercase ASCII source digest without `0x`; it is not
-a compiler artifact hash. The compiler distribution is the same pinned official
+integrity preimage is the exact lowercase ASCII string
+`fd93c2a50050d63d3ca32be1404a1152e9a3fbaa7c558cfac4253e3ca63fbdd1`
+without `0x` or LF; it is not a compiler artifact hash. The compiler distribution is the same pinned official
 Linux x86-64 Vyper release asset described above. Exact `-Werror -O gas
---evm-version cancun` creation stdout is 2,483 bytes with SHA-256
+--evm-version cancun` commands compile
+`contracts/governance/Executor.vy` with `-f bytecode` and
+`-f bytecode_runtime`. Creation stdout is 2,483 bytes with SHA-256
 `0x48dbf262a5e31ccdb52119174854e136d8070bbd67140e8b11f72d7b7b169f23`;
 the decoded 1,240-byte creation code has SHA-256
 `0xccb991a4222b9576e42f6d0da4e655069a4882532bf088e22c8a95b629862a60`.
 Runtime stdout is 2,317 bytes with SHA-256
 `0x9c50f7eb47e09e8349e896e0843f41c96a6b15c48c53c2855e4db709510e021b`.
+Both outputs are UTF-8 lowercase `0x`-prefixed hex with one final LF; decoding
+strips exactly that prefix and LF before strict lowercase hex decoding.
 The decoded runtime is 1,157 bytes, with Keccak-256
 `0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
 and raw-byte SHA-256
@@ -476,7 +603,8 @@ custom Executors are unavailable. The method uses the Propose block number,
 hash, and timestamp, freezes the authenticated Propose transaction sender as the
 hypothetical `tx.origin`, and injects a nested Executor frame at engine level.
 That frame uses the proposal-effective verified-pinned Executor proof and exact
-archive code at the Propose block. It sets `CALLER = Voting`, runs the
+archive-RPC or committed-synthetic code evidence at the Propose block. It sets
+`CALLER = Voting`, runs the
 `operators[Voting]` check, uses zero value and the exact retained script, and
 ensures each target sees `CALLER = Executor`. There is no ordinary deployed
 harness, top-level caller substitution, or code override. A zero, custom, or
@@ -502,15 +630,29 @@ cannot be lower than that base fee. The pinned mainnet schedule comes from
 `ethereum/go-ethereum` revision
 `9621c6ad10934a01b5514886fb6fbd87640b6c05`, path `params/config.go`, source
 SHA-256 `0xbd6759b0b0d4e4f8191f25870e40abad46ef5fb70aacdd31bdf220b5212de361`.
-The Propose timestamp selects `SpecId::OSAKA` at activation `1764798551` and
-BPO2 at `1767747671`, not REVM's Prague default. BPO2 uses target/max blobs
-`14/21` and update fraction `11684671`; `blobBaseFeeWei` must equal REVM's
-`fake_exponential(1, excessBlobGas, 11684671)` result.
+That pinned mainnet config has `OsakaTime = 1764798551`,
+`BPO1Time = 1765290071`, `BPO2Time = 1767747671`, and `BogotaTime = null`; it
+contains no later mainnet timestamp transition. The authenticated Propose
+timestamp is compared with that schedule and explicitly selects
+`SpecId::OSAKA` plus BPO2, not REVM's Prague default. BPO2 uses target/max blobs
+`14/21`. The exact engine literals are
+`implicitPragueBlobFractionRejected = 5007716`,
+`bpo2FractionOverride = 11684671`, and
+`blobEnvironmentInitialization = cfg_blob_base_fee_update_fraction_then_block_set_blob_excess_gas_and_price`.
+The engine rejects the implicit Prague blob fraction, sets
+`CfgEnv.blob_base_fee_update_fraction = Some(11684671)`, and only then calls
+`BlockEnv::set_blob_excess_gas_and_price(excessBlobGas, 11684671)`. The resulting
+`blobBaseFeeWei` must equal REVM's
+`fake_exponential(1, excessBlobGas, 11684671)` result. The accepted synthetic
+vector uses `excessBlobGas = 50331648` and derives `74` wei; applying the rejected
+Prague fraction would derive `23174` wei.
 
 The engine proof pins `revm@34.0.0`, producer `Cargo.lock` SHA-256
 `0x6edd1b9a62f867205f9fb59aef137aa0fb0d08def83a0932fc84f67efe32de19`,
-and crates.io artifact SHA-256
-`0xc2aabdebaa535b3575231a88d72b642897ae8106cf6b0d12eafc6bfdf50abfc7`.
+and the `revm-34.0.0.crate` artifact at
+`https://crates.io/api/v1/crates/revm/34.0.0/download`. Its SHA-256 is
+`0xc2aabdebaa535b3575231a88d72b642897ae8106cf6b0d12eafc6bfdf50abfc7`,
+derived from the unchanged downloaded bytes.
 The injector enters Executor at frame depth 1 before its first opcode, with the
 omitted Voting parent at depth 0 and script targets at depth 2. It binds exact
 ABI `execute(bytes)` calldata, a synthetic legacy no-blobs envelope, empty
@@ -520,19 +662,47 @@ prewarmed storage.
 
 Osaka EIP-7825 caps an outer transaction gas limit at `16,777,216`, while this
 conditional injector deliberately permits
-`min(block.gasLimit, 30,000,000)`. The record therefore says
-`non_transactional_gas_overapproximation`, bypasses outer-transaction
-validation, does not model parent EIP-150 forwarding, and scopes the result only
-to recorded injected-frame script behavior. It is not evidence of future
-execution feasibility.
+`min(block.gasLimit, 30,000,000)`. The six exact disclosure fields are:
 
-`yearn.dao.simulation-context-inputs.v3` is a fixed-order SHA-256 commitment to
+```text
+outerTransactionValidation = bypassed
+osakaTransactionGasLimitCap = 16777216
+gasScenario = non_transactional_gas_overapproximation
+resultScope = recorded_injected_frame_script_behavior_not_future_execution_feasibility
+parentEip150GasDeductionApplied = false
+parentEip150Forwarding = not_modeled
+```
+
+The scenario is not evidence of future execution feasibility.
+
+Every completed simulation also proves `Executor.operators[Voting]` at the
+exact Propose position. Pinned Executor mapping base slot `2` uses
+`keccak256(bytes32(2) || bytes32(uint256(Voting)))`; the getter selector is
+`0x13e7c9d8` and the word is exactly `0` or `1`. Block-end storage evidence is
+accepted only with a canonical replay of every same-block
+`SetOperator(Voting,bool)` log through the Propose log and a proof that zero
+relevant setters follow it in that block. The last applied setter, storage word,
+decoded Boolean, and `authorizedAtPropose` must agree. `succeeded` requires
+`script_completed`, a passed operator check, and script entry. A failed false
+authorization uses `executor_operator_check_revert`, does not enter the script,
+and carries `EXECUTOR_OPERATOR_CHECK_REVERTED`; an authorized target/script
+revert uses `executor_script_revert` and `TARGET_CALL_REVERTED`.
+
+`yearn.dao.simulation-context-inputs.v4` is a fixed-order SHA-256 commitment to
 the chain-spec and engine pins, block/header and receipt facts, synthetic/RPC
 projection digests, runtime fork/blob context, exact warm set and calldata,
 origin and caller chain, script, injector, Executor source/build/code proof,
-Voting state override, gas formula/disclosures, envelope, and access list. If
-the producer lacks or cannot reproduce any required fact, it emits a fully
-`unavailable` simulation instead of partial frame claims.
+Voting state override, exact Executor-authorization storage/replay evidence
+kind and raw-log/projection digest, gas formula/disclosures, envelope, and
+access list. A v3 digest is invalid. If the producer lacks or cannot reproduce
+any required fact, or cannot prove there are zero later same-block relevant
+Executor setters, it emits a fully `unavailable` simulation instead of partial
+frame claims.
+For archive authorization replay, `rawLogsSha256` uses the exact JSON-RPC
+result-array token rule above; the record also retains the canonical manifest
+encoding, byte length, digest, and decoded logs. This union has no manifest-key
+field. The synthetic branch binds only its fixture projection and keeps the live
+raw hash and RPC method `null`.
 
 Before entering the Executor frame, the method applies one typed
 proposal-specific override proving `executed: false -> true`. That proof
@@ -599,6 +769,9 @@ tests cross-record block identity, Voter invocation grouping, Executor
 provenance, content-failure reproduction, event-effective capabilities,
 running vote totals, chronology, cryptographic and ABI bindings, block-global
 log order, bounds, retry, reorg, cursor, and publication invariants.
+The committed accepted example contains exactly 27 proposals and 81 lifecycle
+events. The rejection artifact contains 103 vectors, and the focused schema
+suite currently contains 136 passing tests.
 
 ## Producer assumptions still open
 
@@ -606,7 +779,8 @@ WP8 does not claim that live production is ready. WP9 must resolve and report:
 
 - archive RPC access;
 - exact live Voting generation addresses, deployment blocks, and producer start
-  blocks, genesis timestamp, deployed bytecode hashes, and configuration
+  blocks, strict bootstrap compatibility, genesis timestamp, deployed bytecode
+  hashes, authenticated setter-transaction traces, and complete configuration
   histories;
 - historical Voter, delegated-staking, YBC, YBC aggregator, Executor, proposal
   blacklist, vote timing, execution delay/guard, hook, weight measure, operator,
@@ -617,9 +791,11 @@ WP8 does not claim that live production is ready. WP9 must resolve and report:
 - producer support for DAO event ABIs, nullable transaction hashes, reverse
   transaction identity, a feed-wide canonical block registry, block-global log
   order, CID and blob handling, pinned Voter reproducible-code and invocation
-  traces, pinned Executor reproducible-build/archive evidence, authenticated
-  Propose headers and receipts, and the pinned layout/bytecode/frame proof for
-  the conditional REVM transition.
+  traces and preconfigured-Voter code-birth histories, pinned Executor
+  reproducible-build/archive evidence, authenticated Propose headers and
+  receipts, threshold storage proofs, exact-position Executor authorization
+  replay with zero later same-block setters, and the pinned
+  layout/bytecode/frame proof for the conditional REVM transition.
 
 Those are producer tasks and assumptions. WP8 adds no producer code and no
 frontend feed-backed reads.

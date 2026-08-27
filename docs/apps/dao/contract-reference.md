@@ -95,15 +95,32 @@ There is no minimum turnout or quorum. The threshold is copied into the proposal
 at creation, so later global threshold changes do not affect existing proposals.
 The pinned Voting constructor default is 5,000 basis points. Normal deterministic
 fixtures use that 50% default; one historical fixture retains a 6,000-basis-point
-snapshot. A live deployment's mutable threshold, vote duration, execution delay,
-and guard remain observed configuration and must carry the observation block.
-The first configuration is an exact start-of-deployment sentinel at transaction
-and log zero. Every later entry binds one successful setter transaction, raw
-calldata, and full trace path, and becomes effective before the first stated
-subsequent log index. This makes same-block and same-transaction comparisons
-deterministic without pretending the observation is a lifecycle log. When a
-Voting deployment timestamp is known, it must satisfy the pinned constructor
-precondition `deploymentTimestamp >= genesisTimestamp + EPOCH_LENGTH`.
+snapshot. Vote duration, execution delay, guard, Voter decay, and address roles
+remain observed configuration. Version 1 does not retain `SetThreshold` or
+global-threshold history; it proves each proposal's stored threshold separately.
+
+The stored threshold is independently authenticated at the Propose block. The
+pinned Vyper layout puts `proposals` at mapping slot `17`; its struct base is
+`keccak256(bytes32(17) || bytes32(proposalId))` in slot-then-key order and the
+threshold word is offset `4`. The exact resolved slot, 32-byte word, decoded
+basis points, source/layout pins, and archive-RPC or committed-synthetic
+evidence must agree with both threshold copies in the feed.
+
+The first configuration is a logical `start_of_block` boundary, ordered before
+transaction zero/log zero. Version 1 requires producer start exactly one block
+after deployment. It authenticates end-of-parent-block state, proves zero
+omitted lifecycle logs, and retains/replays every tracked setter from creation
+through the parent block. Each unique setter transaction carries a successful
+receipt, sender, exact calldata, and unfiltered geth `callTracer` evidence. Every
+later row is anchored to its final real canonical Set* log and is effective at
+and after that log. Lifecycle logs before and after a same-transaction setter
+therefore select old and new rows respectively; an intervening lifecycle log
+forces split rows. All retained setter logs occupy the feed-wide block-global
+log namespace. The fixture uses deployment `23900000`, producer start
+`23900001`, and `config-2` at block `23902000`, transaction `0`, log index `9`.
+When a Voting deployment timestamp is known, it must satisfy the pinned
+constructor precondition
+`deploymentTimestamp >= genesisTimestamp + EPOCH_LENGTH`.
 
 ## 4. Voting
 
@@ -111,6 +128,8 @@ Users submit Yea or Nay through `Voter`, not directly to `Voting`.
 
 - The public Voter permits one user submission per proposal.
 - The effective weight can decay near the end of the voting epoch.
+- `voterDecayLengthSeconds` is mutable from `0` through `604799`; zero disables
+  decay.
 - A zero effective weight reverts.
 - A YBC member vote also updates blended YBC and delegated stYFIx aggregate votes.
 - Each proposal vote counts toward vote-boost participation regardless of Yea or
@@ -156,24 +175,57 @@ a transaction-bound call trace. The exact Voter source is
 `9395d5e6fffdfe21fda32af94d32fca1a4f7840b`, SHA-256
 `0x32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
 compiled with `vyper@0.4.2`, gas optimization, and Cancun. Archive code evidence
+for live output, or committed-synthetic code evidence for the accepted fixture,
 and a reproducible build must match at the effective configuration position.
 Custom or unverified Voters preserve raw Vote data as unclassified; they do not
 inherit pinned-Voter binary-human or aggregate semantics.
 
-The compiler is the official Linux x86-64 Vyper `v0.4.2` release asset at commit
-`c216787f5e355478733a05fa5f0fce93fa9a7126`, 23,495,192 bytes, SHA-256
+The compiler is the official Linux x86-64 Vyper `v0.4.2` release asset
+`vyper.0.4.2+commit.c216787f.linux`, tag `v0.4.2`, long version
+`0.4.2+commit.c216787f`, platform `linux-x86_64-gnu`, built by the official
+GitHub Actions Ubuntu 22.04 workflow at commit
+`c216787f5e355478733a05fa5f0fce93fa9a7126`. Its exact URI is
+`https://github.com/vyperlang/vyper/releases/download/v0.4.2/vyper.0.4.2%2Bcommit.c216787f.linux`.
+It is 23,495,192 unchanged download bytes with SHA-256
 `0x7cc4214671dc78db8a3962f103bead22dd76b55ee370d6d333122e7f3368f4fa`.
 The Voter source-integrity digest is
 `0x90d458df8321d2c845ad1a153b21fea3eeb6fa746feecc57d15beec3ae5f192d`;
-it hashes the Vyper import tree and is not a compiler-distribution hash.
+it hashes the Vyper import tree and is not a compiler-distribution hash. For
+this import-free source its exact preimage is the 64 lowercase ASCII characters
+`32b1b32ee87e34b23c7bfcefc1b6b191bd84fe38b1f377e114d0b77d1a7f3aab`,
+with no `0x` and no LF.
 
 The Voter's immutable genesis is a constructor input proved by its own build and
-archive evidence. It does not have to equal the Voting contract generation's
-genesis timestamp, but it must not follow any Vote event that implementation
-could emit. The feed's `yearn.dao.voter-build-evidence.v2` commitment binds that
+archive or committed-synthetic code evidence. It does not have to equal the
+Voting contract generation's genesis timestamp, but it must not follow any Vote
+event that implementation could emit. The feed's
+`yearn.dao.voter-build-evidence.v2` commitment binds that
 constructor value to the pinned source/compiler distribution, exact commands
 and stdout, runtime template and layout, immutable word, final runtime, code
 evidence, and build artifacts; a timestamp-only rewrite is invalid.
+
+The Voter commands use `-Werror -O gas --evm-version cancun` and request exact
+creation, runtime-template, and layout outputs. Creation stdout is 4,123 bytes
+(`0x25ca8e…62cc`), decoding to 2,060 bytes (`0xbcb72c…839` SHA-256).
+Runtime stdout is 3,917 bytes (`0x461f3f…cd54`), decoding to a 1,957-byte
+template (`0x452dca…a8b` SHA-256; `0xdfc74b…caf` Keccak-256). Layout stdout is
+578 bytes (`0x648615…681`) and proves one 32-byte `genesis` immutable at offset
+zero. Fixture genesis `1542736800` appends word
+`0x000000000000000000000000000000000000000000000000000000005bf44ba0`,
+producing 1,989 runtime bytes (`0xb5de90…e0b` SHA-256;
+`0xef209e…26e` Keccak-256). The full hashes and exact command strings are
+normative in `feed-schema-v1.md` and the generated JSON Schema.
+
+A pointer to a preconfigured Voter cannot guess its four mutable nested values.
+It proves direct code birth (zero code in the prior block and pinned runtime
+after the successful creation receipt), retains every tracked nested-state Voter
+setter from birth through the pointer boundary, authenticates every setter
+transaction/trace, and replays decay, delegated staking, YBC, and aggregator.
+Every setter is strictly after code birth, code birth precedes the pointer, and
+block-end evidence requires zero later same-block relevant setters. Exact
+physical setter logs may be reused by another history proof only when the
+feed-wide sender, caller, trace path, calldata, decoded mutation, and log bytes
+are identical.
 
 Complete pinned classification groups logs by chain ID, Voting address,
 transaction hash, and outer Voter call trace address. `vote_yea(address,uint256)`
@@ -191,13 +243,26 @@ caller unique per proposal.
 
 Trace paths are unfiltered geth `callTracer` child indices from
 `debug_traceTransaction` with `onlyTopCall:false`, `withLog:true`, and `reexec:0`.
-Root is `[]`; direct-root Voter calls bind human/delegated/YBC frames at `[1]`,
-`[4]`, and `[5]`. Live trace evidence binds client version and raw trace hash;
-committed examples use a separate synthetic fixture projection. The consumer
+For an arbitrary outer Voter path `P`, the emitted human, delegated, and YBC
+`Voting.vote` frames are `P+[1]`, `P+[4]`, and `P+[5]`; child indices count the
+unfiltered `voted`, human vote, membership, aggregator, delegated vote, and YBC
+vote calls. Only the direct-root fixture has `P=[]`, hence `[1]`, `[4]`, and
+`[5]`. Live trace evidence binds client version and
+`rawTraceSha256 = SHA-256` of the exact UTF-8 byte range encoding the successful
+non-null top-level JSON-RPC `result` object, opening `{` through matching `}`,
+before decoding or reserialization and excluding envelope, ID, and surrounding
+whitespace. Committed examples use a separate synthetic fixture projection and
+leave live fields null. The consumer
 also replays pinned Voter `ybc_votes` cumulatively: each positive aggregator
 return updates checked cumulative weight/Yea, and both aggregate Vote logs use
 `floor(10000*cumulativeYea/cumulativeWeight)`. All intermediate products and
 sums, including passage multiplication, must fit uint256.
+
+All live transaction, receipt, trace, code, and log-result hashes use the exact
+top-level JSON-RPC result-token byte preimage defined in `feed-schema-v1.md`;
+named object or manifest keys retain those bytes where the branch exposes such
+a key. Synthetic records bind only their fixture projection and keep exposed
+live hash/key fields null.
 
 Pinned code without a usable trace uses `pinned_voter_trace_unavailable` and
 keeps the raw Vote unclassified. Custom code uses
@@ -339,11 +404,14 @@ Creation/runtime stdout SHA-256 values are
 and `0x9c50f7eb47e09e8349e896e0843f41c96a6b15c48c53c2855e4db709510e021b`.
 The decoded runtime is 1,157 bytes, with Keccak-256
 `0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151`
-and raw-byte SHA-256
+and decoded raw-runtime SHA-256
 `0x6515450d29d132991c615f1679eea39f8c095b3f71cc0e7a3ba3c446c8312f4c`.
-Live archive code at the configuration position must match the same address,
-length, hash, and build artifact. Synthetic examples use an explicit fixture
-projection and do not claim archive RPC.
+The decoded creation code is 1,240 bytes with SHA-256
+`0xccb991a4222b9576e42f6d0da4e655069a4882532bf088e22c8a95b629862a60`;
+Executor has no immutables. Live archive code at the configuration position must
+match the same address, 1,157-byte runtime, Keccak-256, and raw-runtime SHA-256.
+Synthetic examples use an explicit fixture projection and do not claim archive
+RPC; neither branch confuses creation/runtime stdout hashes with decoded code.
 
 A custom nonzero Executor remains `unverified`; constructor zero remains
 `uninitialized_zero_address`. Exact script retention and hash comparison still
@@ -418,15 +486,30 @@ The record binds beneficiary, zero difficulty, PREVRANDAO, exact ABI
 list, and the Osaka warm set including coinbase and precompiles `0x01` through
 `0x11` plus `0x0100`.
 
+Every completed result independently proves `Executor.operators[Voting]` at the
+Propose position. The pinned mapping uses base slot `2`, slot-then-key order,
+getter selector `0x13e7c9d8`, and an exact zero/one word. Block-end storage is
+reconciled with every same-block `SetOperator(Voting,bool)` log through Propose
+and requires zero later relevant logs. A successful simulation requires true
+authorization, a passed gate, script entry, and `script_completed`. A false
+gate failure is `executor_operator_check_revert` with
+`EXECUTOR_OPERATOR_CHECK_REVERTED` and no script entry; an authorized script
+failure is `executor_script_revert` with `TARGET_CALL_REVERTED`.
+
 The 30,000,000 frame cap is a conditional non-transactional gas
 overapproximation: outer transaction validation is bypassed, Osaka's
 16,777,216 EIP-7825 transaction cap is disclosed, and parent EIP-150 forwarding
 is not modeled. It proves recorded injected-frame behavior, not future
-execution feasibility. The `yearn.dao.simulation-context-inputs.v3` SHA-256
+execution feasibility. The `yearn.dao.simulation-context-inputs.v4` SHA-256
 commitment binds chain-spec/engine pins, header/receipt and synthetic/RPC
 projection evidence, fork/blob/opcode context, caller chain, calldata, script,
-injector, Executor source/build/code proof, Voting override, gas disclosures,
-envelope, access list, and warm set.
+injector, Executor source/build/code proof, Voting override, exact
+Executor-authorization storage/replay evidence kind and raw/projection digest,
+gas disclosures, envelope, access list, and warm set. Version 3 is rejected.
+The exact Osaka/BPO2 activation values, Prague-fraction rejection, engine
+initialization order, fixture blob-fee comparison, REVM crate URI/hash, and six
+non-transactional gas-disclosure literals are normative in
+`feed-schema-v1.md` and the generated JSON Schema.
 Success or revert is conditional on that exact recorded scenario, not a promise
 about the unknown future execution origin. If the origin, frame, code, state,
 time, authenticated header/receipt, gas/access context, pinned Executor, or
@@ -465,10 +548,18 @@ historical record. Technical details retain every available identity field.
 
 The consumer maintains one canonical registry for every block-bearing record,
 not only lifecycle logs. At one chain height, deployments, configurations,
-events, receipts, archive-code proofs, simulation evidence, cursors, and
-finality data use one hash and one value for each known timestamp. One hash maps
-to one height. Ethereum `logIndex` is block-global and rises strictly with
-transaction order across proposals and Voting generations.
+events, receipts, archive-or-committed-synthetic code proofs, simulation
+evidence, cursors, and finality data use one hash and one value for each known
+timestamp. One hash maps to one height. Ethereum `logIndex` is block-global and
+rises strictly with
+transaction order across proposals and Voting generations. Bootstrap,
+configuration-boundary, preconfigured-Voter-history, and Executor-authorization
+Set* logs share that namespace. One exact physical Set* log may be referenced by
+several proofs and is ordered once; its block/transaction position, transaction
+hash, emitter, topics, and data remain identical. Configuration and
+preconfigured-Voter call evidence additionally shares one authenticated sender,
+caller, target, full trace path, calldata, and decoded mutation. Executor
+authorization retains no sender or call-trace assertion.
 
 Known-call decoding uses an exact GitHub record: source kind, repository, label,
 canonical blob URL, 40-hex revision, and normalized source path. WP7B pins the
