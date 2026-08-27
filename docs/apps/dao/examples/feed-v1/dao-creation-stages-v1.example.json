@@ -10,7 +10,18 @@
     "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
     "receipt": {
       "status": "success",
-      "matchingProposeLogCount": 1
+      "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+      "transactionSender": "0x4444444444444444444444444444444444444444",
+      "blockNumber": "23901150",
+      "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+      "transactionIndex": 1,
+      "matchingProposeLogCount": 1,
+      "evidenceKind": "committed_synthetic_fixture",
+      "rpcMethod": null,
+      "fixturePath": "tests/fixtures/dao-feed-v1.ts",
+      "fixtureProjectionSha256": "0x5868dd541d61e4ff17005ef5d7e70950d7db8507366388b61b7b36ad177d91c5",
+      "rawResultSha256": null,
+      "rawResultObjectKey": null
     },
     "identity": {
       "proposer": "0x4444444444444444444444444444444444444444",
@@ -18,11 +29,11 @@
       "contentDigest": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c668",
       "script": "0x",
       "log": {
-        "blockNumber": "23900010",
-        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016caf6a",
+        "blockNumber": "23901150",
+        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
         "transactionIndex": 1,
         "logIndex": 0,
-        "timestamp": 1787054400,
+        "timestamp": null,
         "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2"
       },
       "abi": {
@@ -51,7 +62,18 @@
     "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
     "receipt": {
       "status": "success",
-      "matchingProposeLogCount": 1
+      "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+      "transactionSender": "0x4444444444444444444444444444444444444444",
+      "blockNumber": "23901150",
+      "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+      "transactionIndex": 1,
+      "matchingProposeLogCount": 1,
+      "evidenceKind": "committed_synthetic_fixture",
+      "rpcMethod": null,
+      "fixturePath": "tests/fixtures/dao-feed-v1.ts",
+      "fixtureProjectionSha256": "0x5868dd541d61e4ff17005ef5d7e70950d7db8507366388b61b7b36ad177d91c5",
+      "rawResultSha256": null,
+      "rawResultObjectKey": null
     },
     "identity": {
       "proposer": "0x4444444444444444444444444444444444444444",
@@ -59,11 +81,11 @@
       "contentDigest": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c668",
       "script": "0x",
       "log": {
-        "blockNumber": "23900010",
-        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016caf6a",
+        "blockNumber": "23901150",
+        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
         "transactionIndex": 1,
         "logIndex": 0,
-        "timestamp": 1787054400,
+        "timestamp": null,
         "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2"
       },
       "abi": {
@@ -92,7 +114,18 @@
     "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
     "receipt": {
       "status": "success",
-      "matchingProposeLogCount": 1
+      "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2",
+      "transactionSender": "0x4444444444444444444444444444444444444444",
+      "blockNumber": "23901150",
+      "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
+      "transactionIndex": 1,
+      "matchingProposeLogCount": 1,
+      "evidenceKind": "committed_synthetic_fixture",
+      "rpcMethod": null,
+      "fixturePath": "tests/fixtures/dao-feed-v1.ts",
+      "fixtureProjectionSha256": "0x5868dd541d61e4ff17005ef5d7e70950d7db8507366388b61b7b36ad177d91c5",
+      "rawResultSha256": null,
+      "rawResultObjectKey": null
     },
     "identity": {
       "proposer": "0x4444444444444444444444444444444444444444",
@@ -100,11 +133,11 @@
       "contentDigest": "0x96b2d61caddac83896b4997df04f58acb08cdeb0c7870117f298f534bcc0c668",
       "script": "0x",
       "log": {
-        "blockNumber": "23900010",
-        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016caf6a",
+        "blockNumber": "23901150",
+        "blockHash": "0x00000000000000000000000000000000000000000000000000000000016cb3de",
         "transactionIndex": 1,
         "logIndex": 0,
-        "timestamp": 1787054400,
+        "timestamp": null,
         "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003f2"
       },
       "abi": {

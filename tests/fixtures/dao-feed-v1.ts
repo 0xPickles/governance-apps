@@ -37,6 +37,7 @@ import {
   deriveDaoConfigurationSetterTraceProjectionSha256,
   deriveDaoConfigurationSetterStateProjectionSha256,
   deriveDaoConfigurationValuesSha256,
+  deriveDaoCreationStageReceiptProjectionSha256,
   deriveDaoExecutorExecuteCalldata,
   deriveDaoExecutorOperatorReplayProjectionSha256,
   deriveDaoExecutorOperatorStorageProjectionSha256,
@@ -221,6 +222,11 @@ const FIXTURE_VARIANTS = [
 
 type Variant = (typeof FIXTURE_VARIANTS)[number];
 
+type FixtureBlockAllocation = {
+  blockNumber: bigint;
+  timestamp: number | null;
+};
+
 type FixtureConfiguration =
   DaoFeedV1["contracts"][number]["configurationHistory"][number];
 type FixtureSetterBoundary = Extract<
@@ -382,6 +388,8 @@ function pinnedVoterImplementation(
         "voter_eth_getCode_projection",
         voterCodeProjection
       ),
+      rawResultSha256: null,
+      rawResultObjectKey: null,
       hashMethod: "keccak256" as const,
       address,
       blockNumber: effectiveAt.blockNumber,
@@ -474,6 +482,8 @@ function pinnedExecutorImplementation(
         "executor_eth_getCode_projection",
         executorCodeProjection
       ),
+      rawResultSha256: null,
+      rawResultObjectKey: null,
       hashMethod: "keccak256" as const,
       address,
       blockNumber: effectiveAt.blockNumber,
@@ -1022,6 +1032,197 @@ const FIXTURE_CONFIGURATIONS: readonly FixtureConfiguration[] = [
   },
 ];
 
+const FIXTURE_BLOCK_ALLOCATION_STEP = 50n;
+const FIXTURE_FINAL_LIFECYCLE_BLOCK = 23_906_043n;
+
+const FIXTURE_BLOCK_ALLOCATIONS = createFixtureBlockAllocations();
+
+function createFixtureBlockAllocations(): Map<
+  string,
+  FixtureBlockAllocation
+> {
+  type PlannedBlock = {
+    key: string;
+    orderTimestamp: number;
+    timestamp: number | null;
+    postConfigurationTimestamp: number | null;
+    stableOrder: number;
+  };
+
+  const instances: Array<{
+    source: DaoProposal;
+    blockOffset: bigint;
+    variant: Variant | null;
+  }> = DAO_MOCK_FEED.proposals.map((source) => ({
+    source,
+    blockOffset: 0n,
+    variant: null,
+  }));
+  for (const variant of FIXTURE_VARIANTS) {
+    const source = DAO_MOCK_FEED.proposals.find(
+      (proposal) => proposal.ref.proposalId === variant.sourceId
+    );
+    if (!source) {
+      throw new Error(`Missing fixture source ${variant.sourceId}.`);
+    }
+    instances.push({ source, blockOffset: variant.blockOffset, variant });
+  }
+
+  const planned: PlannedBlock[] = [];
+  let stableOrder = 0;
+  for (const { source, blockOffset, variant } of instances) {
+    const sourceBlocks = new Set<bigint>();
+    for (const event of source.events) {
+      if (sourceBlocks.has(event.log.blockNumber)) continue;
+      sourceBlocks.add(event.log.blockNumber);
+      const keepDiscussionOnlyCreationTimeUnknown =
+        variant === null && source.ref.proposalId === 1n;
+      const timestamp = keepDiscussionOnlyCreationTimeUnknown
+        ? null
+        : EVENT_BLOCK_TIMESTAMPS.get(event.log.blockNumber) ?? null;
+      const containsExecute = source.events.some(
+        (candidate) =>
+          candidate.log.blockNumber === event.log.blockNumber &&
+          candidate.type === "execute"
+      );
+      planned.push({
+        key: fixtureBlockKey(blockOffset, event.log.blockNumber),
+        orderTimestamp: keepDiscussionOnlyCreationTimeUnknown
+          ? DAO_GENESIS_TIMESTAMP - 1
+          : timestamp ?? fixtureUnknownBlockOrderTimestamp(source),
+        timestamp,
+        postConfigurationTimestamp: containsExecute
+          ? DAO_GENESIS_TIMESTAMP +
+            (Number(source.votingEpoch) + 1) *
+              DAO_FEED_EPOCH_LENGTH_SECONDS +
+            CHANGED_CONFIGURATION_VALUES.executionDelaySeconds +
+            3_600
+          : null,
+        stableOrder: stableOrder++,
+      });
+    }
+
+    if (variant?.name === "signal-explicit-execute") {
+      const blockNumber = fixtureSignalExecuteSourceBlock(source);
+      const timestamp =
+        DAO_GENESIS_TIMESTAMP +
+        (Number(source.votingEpoch) + 1) * DAO_FEED_EPOCH_LENGTH_SECONDS +
+        CHANGED_CONFIGURATION_VALUES.executionDelaySeconds;
+      planned.push({
+        key: fixtureBlockKey(blockOffset, blockNumber),
+        orderTimestamp: timestamp,
+        timestamp,
+        postConfigurationTimestamp: timestamp,
+        stableOrder: stableOrder++,
+      });
+    }
+  }
+
+  planned.sort(
+    (left, right) =>
+      left.orderTimestamp - right.orderTimestamp ||
+      left.stableOrder - right.stableOrder
+  );
+
+  const firstPostConfigurationVariant = FIXTURE_VARIANTS.find(
+    (variant) => variant.name === "malformed-script"
+  );
+  const firstPostConfigurationSource =
+    firstPostConfigurationVariant === undefined
+      ? undefined
+      : DAO_MOCK_FEED.proposals.find(
+          (proposal) =>
+            proposal.ref.proposalId ===
+            firstPostConfigurationVariant.sourceId
+        );
+  const firstPostConfigurationBlock =
+    firstPostConfigurationSource?.events[0]?.log.blockNumber;
+  if (
+    firstPostConfigurationVariant === undefined ||
+    firstPostConfigurationBlock === undefined
+  ) {
+    throw new Error("Missing post-configuration fixture allocation anchor.");
+  }
+  const firstPostConfigurationKey = fixtureBlockKey(
+    firstPostConfigurationVariant.blockOffset,
+    firstPostConfigurationBlock
+  );
+  const postConfigurationIndex = planned.findIndex(
+    (entry) => entry.key === firstPostConfigurationKey
+  );
+  if (postConfigurationIndex <= 0) {
+    throw new Error("Invalid post-configuration fixture allocation anchor.");
+  }
+
+  let previousKnownTimestamp: number | null = null;
+  const latestLifecycleTimestamp =
+    DAO_MOCK_FEED.canonicalBlock.timestamp - 2;
+  for (const [index, entry] of planned.entries()) {
+    if (
+      index >= postConfigurationIndex &&
+      entry.postConfigurationTimestamp !== null
+    ) {
+      entry.timestamp = entry.postConfigurationTimestamp;
+    }
+    if (entry.timestamp === null) continue;
+    const timestamp = Math.max(
+      Math.min(entry.timestamp, latestLifecycleTimestamp),
+      previousKnownTimestamp === null ? 0 : previousKnownTimestamp + 1
+    );
+    if (timestamp > latestLifecycleTimestamp) {
+      throw new Error(
+        "Fixture lifecycle timestamps must leave room for a retirement cutover before the canonical block time."
+      );
+    }
+    entry.timestamp = timestamp;
+    previousKnownTimestamp = timestamp;
+  }
+
+  const allocations = new Map<string, FixtureBlockAllocation>();
+  for (const [index, entry] of planned.entries()) {
+    const isFinal = index === planned.length - 1;
+    const blockNumber = isFinal
+      ? FIXTURE_FINAL_LIFECYCLE_BLOCK
+      : index < postConfigurationIndex
+        ? CONFIGURATION_CHANGE_BLOCK -
+          BigInt(postConfigurationIndex - index) *
+            FIXTURE_BLOCK_ALLOCATION_STEP
+        : CONFIGURATION_CHANGE_BLOCK +
+          BigInt(index - postConfigurationIndex + 1) *
+            FIXTURE_BLOCK_ALLOCATION_STEP;
+    if (
+      blockNumber < PRODUCER_START_BLOCK ||
+      blockNumber >= 24_000_000n ||
+      (!isFinal && blockNumber >= FIXTURE_FINAL_LIFECYCLE_BLOCK)
+    ) {
+      throw new Error("Fixture lifecycle block allocation is out of range.");
+    }
+    allocations.set(entry.key, {
+      blockNumber,
+      timestamp: entry.timestamp,
+    });
+  }
+  return allocations;
+}
+
+function fixtureBlockKey(blockOffset: bigint, sourceBlock: bigint): string {
+  return `${blockOffset.toString()}:${sourceBlock.toString()}`;
+}
+
+function fixtureUnknownBlockOrderTimestamp(source: DaoProposal): number {
+  return (
+    DAO_GENESIS_TIMESTAMP +
+    Number(source.votingEpoch) * DAO_FEED_EPOCH_LENGTH_SECONDS -
+    1
+  );
+}
+
+function fixtureSignalExecuteSourceBlock(source: DaoProposal): bigint {
+  const last = source.events.at(-1);
+  if (!last) throw new Error("Signal Execute fixture requires source events.");
+  return last.log.blockNumber + 1n;
+}
+
 type WireLog = {
   blockNumber: string;
   blockHash: Hex;
@@ -1184,11 +1385,29 @@ function createDaoCreationIdentityStagesV1Example() {
   ) {
     throw new Error("The creation-stage fixture requires one complete Propose record.");
   }
+  const receiptProjection = {
+    transactionHash: propose.log.transactionHash as Hex,
+    transactionSender: propose.data.proposer as Address,
+    blockNumber: propose.log.blockNumber,
+    blockHash: propose.log.blockHash as Hex,
+    transactionIndex: propose.log.transactionIndex,
+    status: "success" as const,
+    matchingProposeLogCount: 1 as const,
+  };
   const common = {
     schemaVersion: DAO_FEED_SCHEMA_VERSION,
     ref: proposal.ref,
     transactionHash: propose.log.transactionHash,
-    receipt: { status: "success", matchingProposeLogCount: 1 },
+    receipt: {
+      ...receiptProjection,
+      evidenceKind: "committed_synthetic_fixture",
+      rpcMethod: null,
+      fixturePath: "tests/fixtures/dao-feed-v1.ts",
+      fixtureProjectionSha256:
+        deriveDaoCreationStageReceiptProjectionSha256(receiptProjection),
+      rawResultSha256: null,
+      rawResultObjectKey: null,
+    },
     identity: {
       proposer: propose.data.proposer,
       votingEpoch: propose.data.votingEpoch,
@@ -1251,7 +1470,7 @@ function createProposal(
   }
   repairPinnedAggregateBasisPoints(events, ref);
   if (variant?.name === "signal-explicit-execute") {
-    addSignalExecuteEvent(events, source, ref);
+    addSignalExecuteEvent(events, source, ref, variant);
   }
   decorateVetoEvidence(events);
   const propose = events.find((event) => event.type === "propose");
@@ -1394,10 +1613,12 @@ function createProposal(
             votingAddress: source.ref.votingAddress,
             proposalId: proposalId.toString(),
             blockNumber: propose.log.blockNumber,
-            blockHash: propose.log.blockHash,
+    blockHash: propose.log.blockHash as Hex,
             resolvedStorageSlot: thresholdStorageSlots.resolvedStorageSlot,
             storageWord: thresholdStorageWord,
           }),
+        rawResultSha256: null,
+        rawResultObjectKey: null,
         votingAddress: source.ref.votingAddress,
         proposalId: proposalId.toString(),
         blockNumber: propose.log.blockNumber,
@@ -1915,6 +2136,8 @@ function createAnalysis(
       "block_header_projection",
       blockHeaderProjection
     ),
+    blockHeaderRawResultSha256: null,
+    blockHeaderRawResultObjectKey: null,
     proposeTransactionHash: proposeLog.transactionHash,
     proposeTransactionSender: sourceProposal.proposer,
     proposeReceiptBlockNumber: proposeLog.blockNumber,
@@ -1926,6 +2149,8 @@ function createAnalysis(
         "propose_receipt_projection",
         receiptProjection
       ),
+    proposeReceiptRawResultSha256: null,
+    proposeReceiptRawResultObjectKey: null,
     transactionOrigin: sourceProposal.proposer,
     votingCaller: DAO_MOCK_VOTING_ADDRESS,
     executorAddress: configuration.executorAddress as Address,
@@ -1958,12 +2183,16 @@ function createAnalysis(
       "committed_synthetic_fixture_and_reproducible_build",
     executorEvidenceFixtureProjectionSha256:
       executorImplementation.bytecode.fixtureProjectionSha256,
+    executorEvidenceRawResultSha256: null,
+    executorEvidenceRawResultObjectKey: null,
     executorOperatorStorageSlot,
     executorOperatorBlockEndStorageWord: executorOperatorStorageWord,
     executorOperatorAuthorizedAtPropose: true,
     executorOperatorBlockEndEvidenceKind: "committed_synthetic_fixture",
     executorOperatorBlockEndFixtureProjectionSha256:
       executorOperatorBlockEndProjectionSha256,
+    executorOperatorBlockEndRawResultSha256: null,
+    executorOperatorBlockEndRawResultObjectKey: null,
     executorOperatorReplayManifestSha256,
     executorOperatorReplayRelevantSetterLogCount: 0,
     executorOperatorReplayAppliedSetterLogCount: 0,
@@ -1971,6 +2200,7 @@ function createAnalysis(
     executorOperatorReplayFixtureProjectionSha256:
       executorOperatorReplayProjectionSha256,
     executorOperatorReplayRawLogsSha256: null,
+    executorOperatorReplayRawLogsObjectKey: null,
     executorFrameInitialGas,
     effectiveGasPriceWei,
     overrideVotingAddress: DAO_MOCK_VOTING_ADDRESS,
@@ -1984,6 +2214,8 @@ function createAnalysis(
       "voting_eth_getCode_projection",
       votingCodeProjection
     ),
+    overrideVotingRawResultSha256: null,
+    overrideVotingRawResultObjectKey: null,
   });
   return {
     state: sourceAnalysis.state,
@@ -2038,6 +2270,8 @@ function createAnalysis(
             fixturePath: "tests/fixtures/dao-feed-v1.ts",
             fixtureProjectionSha256:
               executorOperatorBlockEndProjectionSha256,
+            rawResultSha256: null,
+            rawResultObjectKey: null,
             storageLayout: {
               compiler: "vyper@0.4.2",
               sourceSha256: PINNED_EXECUTOR_SOURCE_SHA256,
@@ -2072,6 +2306,7 @@ function createAnalysis(
             fixtureProjectionSha256:
               executorOperatorReplayProjectionSha256,
             rawLogsSha256: null,
+            rawLogsObjectKey: null,
             semantics:
               "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs",
           },
@@ -2169,6 +2404,8 @@ function createAnalysis(
               "block_header_projection",
               blockHeaderProjection
             ),
+            rawResultSha256: null,
+            rawResultObjectKey: null,
             ...blockHeaderProjection,
           },
           proposeReceipt: {
@@ -2179,6 +2416,8 @@ function createAnalysis(
               "propose_receipt_projection",
               receiptProjection
             ),
+            rawResultSha256: null,
+            rawResultObjectKey: null,
             ...receiptProjection,
           },
           transactionEnvelope: "synthetic_legacy_no_blobs",
@@ -2223,6 +2462,8 @@ function createAnalysis(
                 "voting_eth_getCode_projection",
                 votingCodeProjection
               ),
+              rawResultSha256: null,
+              rawResultObjectKey: null,
               hashMethod: "keccak256",
               address: DAO_MOCK_VOTING_ADDRESS,
               blockNumber: proposeLog.blockNumber,
@@ -2475,6 +2716,10 @@ function createEvent({
   }
   if (event.type === "flag" || event.type === "veto") {
     const reason = event.reason ?? "";
+    const authenticatedRoleActor =
+      event.type === "flag"
+        ? configuration.operatorAddress
+        : configuration.guardianAddress;
     const raw = encodeDaoFeedLifecycleEventAbi({
       type: event.type,
       votingAddress: source.ref.votingAddress,
@@ -2504,18 +2749,15 @@ function createEvent({
               },
             }
           : {
-              address: event.actor,
+              address: authenticatedRoleActor,
               role: event.type === "flag" ? "operator" : "guardian",
               evidence: {
                 state: "verified",
-              method: "historical_role_and_transaction_sender",
-              observedAt: configuration.effectiveAt,
-              configurationId: configuration.configurationId,
-              transactionSender: event.actor,
-              configuredRoleAddress:
-                event.type === "flag"
-                  ? configuration.operatorAddress
-                  : configuration.guardianAddress,
+                method: "historical_role_and_transaction_sender",
+                observedAt: configuration.effectiveAt,
+                configurationId: configuration.configurationId,
+                transactionSender: authenticatedRoleActor,
+                configuredRoleAddress: authenticatedRoleActor,
                 error: null,
               },
             },
@@ -3002,28 +3244,28 @@ function createPinnedSyntheticVoteEvent({
 function addSignalExecuteEvent(
   events: WireEventDraft[],
   source: DaoProposal,
-  ref: WireEventDraft["proposalRef"]
+  ref: WireEventDraft["proposalRef"],
+  variant: Variant
 ): void {
-  const last = events.at(-1);
-  if (!last) throw new Error("The signal fixture needs lifecycle history.");
-  const blockNumber = BigInt(last.log.blockNumber) + 1n;
-  const position = {
-    blockNumber: blockNumber.toString(),
-    transactionIndex: 1,
-    logIndex: 0,
-  };
-  const configuration = configurationForPosition(position);
-  const log: WireLog = {
-    blockNumber: position.blockNumber,
-    blockHash: fixedHex32(blockNumber),
-    timestamp:
-      DAO_GENESIS_TIMESTAMP +
-      (Number(source.votingEpoch) + 1) * DAO_FEED_EPOCH_LENGTH_SECONDS +
-      configuration.executionDelaySeconds,
-    transactionHash: fixedHex32(blockNumber * 100n + 93n),
-    transactionIndex: position.transactionIndex,
-    logIndex: position.logIndex,
-  };
+  if (!events.at(-1)) {
+    throw new Error("The signal fixture needs lifecycle history.");
+  }
+  const sourceBlockNumber = fixtureSignalExecuteSourceBlock(source);
+  const sourceTimestamp =
+    DAO_GENESIS_TIMESTAMP +
+    (Number(source.votingEpoch) + 1) * DAO_FEED_EPOCH_LENGTH_SECONDS +
+    CHANGED_CONFIGURATION_VALUES.executionDelaySeconds;
+  const log = shiftLog(
+    {
+      blockNumber: sourceBlockNumber,
+      blockHash: fixedHex32(sourceBlockNumber),
+      timestamp: sourceTimestamp,
+      transactionHash: fixedHex32(sourceBlockNumber * 100n + 93n),
+      transactionIndex: 1,
+      logIndex: 0,
+    },
+    variant.blockOffset
+  );
   const executionCaller = "0x7777777777777777777777777777777777777777";
   const raw = encodeDaoFeedLifecycleEventAbi({
     type: "execute",
@@ -3147,7 +3389,15 @@ function shiftLog(
   log: DaoProposalEvent["log"],
   blockOffset: bigint
 ): WireLog {
-  const blockNumber = log.blockNumber + blockOffset;
+  const allocation = FIXTURE_BLOCK_ALLOCATIONS.get(
+    fixtureBlockKey(blockOffset, log.blockNumber)
+  );
+  if (!allocation) {
+    throw new Error(
+      `Missing fixture block allocation for ${fixtureBlockKey(blockOffset, log.blockNumber)}.`
+    );
+  }
+  const blockNumber = allocation.blockNumber;
   const blockHash = fixedHex32(blockNumber);
   const transactionHash =
     log.transactionHash === null
@@ -3161,7 +3411,7 @@ function shiftLog(
   return {
     blockNumber: blockNumber.toString(),
     blockHash,
-    timestamp: EVENT_BLOCK_TIMESTAMPS.get(log.blockNumber) ?? null,
+    timestamp: allocation.timestamp,
     transactionHash,
     transactionIndex: log.transactionIndex,
     logIndex: log.logIndex,

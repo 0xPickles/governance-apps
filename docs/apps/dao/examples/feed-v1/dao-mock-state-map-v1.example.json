@@ -12,7 +12,7 @@
       "displayStatus": "discussion",
       "displayGroup": "upcoming",
       "proposalType": "signal",
-      "chainCreatedAtState": "available",
+      "chainCreatedAtState": "unavailable",
       "thresholdBps": 5000,
       "contentState": "available",
       "discussionState": "verified",
@@ -28,7 +28,7 @@
       "flagReason": null,
       "vetoReason": null,
       "hasUnavailableActorEvidence": false,
-      "hasNullableEventTimestamp": false,
+      "hasNullableEventTimestamp": true,
       "hasNullableTransactionHash": false
     },
     "consumerOverlay": null
@@ -55,7 +55,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -95,7 +95,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -171,7 +171,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -244,7 +244,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -280,7 +280,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose"
       ],
@@ -350,7 +350,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "retract"
@@ -385,7 +385,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "flag"
@@ -420,7 +420,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "veto"
@@ -455,7 +455,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -494,7 +494,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -530,7 +530,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -566,7 +566,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "valid",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose",
         "vote",
@@ -710,7 +710,7 @@
       "scriptRetentionState": "retained",
       "scriptStructureState": "empty",
       "scriptHashVerificationState": "verified",
-      "executionGuard": "guarded",
+      "executionGuard": "permissionless",
       "eventTypes": [
         "propose"
       ],
@@ -807,7 +807,7 @@
       "displayStatus": "discussion",
       "displayGroup": "upcoming",
       "proposalType": "signal",
-      "chainCreatedAtState": "available",
+      "chainCreatedAtState": "unavailable",
       "thresholdBps": 5000,
       "contentState": "available",
       "discussionState": "verified",
@@ -823,7 +823,7 @@
       "flagReason": null,
       "vetoReason": null,
       "hasUnavailableActorEvidence": false,
-      "hasNullableEventTimestamp": false,
+      "hasNullableEventTimestamp": true,
       "hasNullableTransactionHash": false
     },
     "consumerOverlay": {

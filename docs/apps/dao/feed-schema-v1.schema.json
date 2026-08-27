@@ -1019,7 +1019,7 @@
                             },
                             "initcodeWithArgumentSha256": {
                               "type": "string",
-                              "const": "0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4"
+                              "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                             }
                           },
                           "required": [
@@ -1136,7 +1136,7 @@
                         },
                         "compiledRuntimeBytecodeHash": {
                           "type": "string",
-                          "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                          "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                         },
                         "bytecode": {
                           "type": "object",
@@ -1181,6 +1181,29 @@
                                 }
                               ]
                             },
+                            "rawResultSha256": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "rawResultObjectKey": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1024
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
                             "hashMethod": {
                               "type": "string",
                               "const": "keccak256"
@@ -1204,11 +1227,11 @@
                             },
                             "deployedBytecodeHash": {
                               "type": "string",
-                              "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                              "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                             },
                             "deployedRuntimeSha256": {
                               "type": "string",
-                              "const": "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b"
+                              "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                             },
                             "buildArtifactSha256": {
                               "type": "string",
@@ -1237,6 +1260,8 @@
                             "rpcMethod",
                             "fixturePath",
                             "fixtureProjectionSha256",
+                            "rawResultSha256",
+                            "rawResultObjectKey",
                             "hashMethod",
                             "address",
                             "blockNumber",
@@ -1823,6 +1848,29 @@
                                 }
                               ]
                             },
+                            "rawResultSha256": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "rawResultObjectKey": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1024
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
                             "hashMethod": {
                               "type": "string",
                               "const": "keccak256"
@@ -1862,6 +1910,8 @@
                             "rpcMethod",
                             "fixturePath",
                             "fixtureProjectionSha256",
+                            "rawResultSha256",
+                            "rawResultObjectKey",
                             "hashMethod",
                             "address",
                             "blockNumber",
@@ -6993,11 +7043,11 @@
                                                 },
                                                 "deployedBytecodeHash": {
                                                   "type": "string",
-                                                  "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "deployedRuntimeSha256": {
                                                   "type": "string",
-                                                  "const": "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "rpcMethods": {
                                                   "type": "null"
@@ -7112,11 +7162,11 @@
                                                 },
                                                 "deployedBytecodeHash": {
                                                   "type": "string",
-                                                  "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "deployedRuntimeSha256": {
                                                   "type": "string",
-                                                  "const": "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "rpcMethods": {
                                                   "type": "array",
@@ -9587,11 +9637,11 @@
                                                 },
                                                 "deployedBytecodeHash": {
                                                   "type": "string",
-                                                  "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "deployedRuntimeSha256": {
                                                   "type": "string",
-                                                  "const": "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "rpcMethods": {
                                                   "type": "null"
@@ -9706,11 +9756,11 @@
                                                 },
                                                 "deployedBytecodeHash": {
                                                   "type": "string",
-                                                  "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "deployedRuntimeSha256": {
                                                   "type": "string",
-                                                  "const": "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b"
+                                                  "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                                                 },
                                                 "rpcMethods": {
                                                   "type": "array",
@@ -14150,6 +14200,29 @@
                       }
                     ]
                   },
+                  "rawResultSha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rawResultObjectKey": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1024
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "votingAddress": {
                     "type": "string",
                     "pattern": "^0x(?=[0-9a-f]{40}$)(?=.*[1-9a-f])[0-9a-f]{40}$"
@@ -14248,6 +14321,8 @@
                   "rpcMethod",
                   "fixturePath",
                   "fixtureProjectionSha256",
+                  "rawResultSha256",
+                  "rawResultObjectKey",
                   "votingAddress",
                   "proposalId",
                   "blockNumber",
@@ -14588,7 +14663,7 @@
                               },
                               "initcodeWithArgumentSha256": {
                                 "type": "string",
-                                "const": "0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4"
+                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                               }
                             },
                             "required": [
@@ -14705,7 +14780,7 @@
                           },
                           "compiledRuntimeBytecodeHash": {
                             "type": "string",
-                            "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                           },
                           "bytecode": {
                             "type": "object",
@@ -14750,6 +14825,29 @@
                                   }
                                 ]
                               },
+                              "rawResultSha256": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rawResultObjectKey": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
                               "hashMethod": {
                                 "type": "string",
                                 "const": "keccak256"
@@ -14773,11 +14871,11 @@
                               },
                               "deployedBytecodeHash": {
                                 "type": "string",
-                                "const": "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e"
+                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                               },
                               "deployedRuntimeSha256": {
                                 "type": "string",
-                                "const": "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b"
+                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
                               },
                               "buildArtifactSha256": {
                                 "type": "string",
@@ -14806,6 +14904,8 @@
                               "rpcMethod",
                               "fixturePath",
                               "fixtureProjectionSha256",
+                              "rawResultSha256",
+                              "rawResultObjectKey",
                               "hashMethod",
                               "address",
                               "blockNumber",
@@ -15392,6 +15492,29 @@
                                   }
                                 ]
                               },
+                              "rawResultSha256": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rawResultObjectKey": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
                               "hashMethod": {
                                 "type": "string",
                                 "const": "keccak256"
@@ -15431,6 +15554,8 @@
                               "rpcMethod",
                               "fixturePath",
                               "fixtureProjectionSha256",
+                              "rawResultSha256",
+                              "rawResultObjectKey",
                               "hashMethod",
                               "address",
                               "blockNumber",
@@ -18708,6 +18833,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -18764,6 +18912,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -18938,6 +19088,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -18959,6 +19121,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -19319,6 +19482,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -19358,6 +19544,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -19996,6 +20184,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -20043,6 +20254,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -20098,6 +20311,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -20130,6 +20366,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -20405,6 +20643,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -20445,6 +20706,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -20721,6 +20984,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -20777,6 +21063,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -20951,6 +21239,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -20972,6 +21272,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -21332,6 +21633,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -21371,6 +21695,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -22009,6 +22335,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -22056,6 +22405,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -22111,6 +22462,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -22143,6 +22517,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -22418,6 +22794,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -22458,6 +22857,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -23450,6 +23851,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -23506,6 +23930,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -23680,6 +24106,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -23701,6 +24139,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -24061,6 +24500,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -24100,6 +24562,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -24738,6 +25202,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -24785,6 +25272,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -24840,6 +25329,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -24872,6 +25384,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -25147,6 +25661,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -25187,6 +25724,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -25463,6 +26002,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -25519,6 +26081,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -25693,6 +26257,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -25714,6 +26290,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -26074,6 +26651,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -26113,6 +26713,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -26751,6 +27353,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -26798,6 +27423,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -26853,6 +27480,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -26885,6 +27535,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -27160,6 +27812,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -27200,6 +27875,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -28192,6 +28869,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -28248,6 +28948,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -28422,6 +29124,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -28443,6 +29157,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -28803,6 +29518,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -28842,6 +29580,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -29480,6 +30220,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -29527,6 +30290,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -29582,6 +30347,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -29614,6 +30402,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -29889,6 +30679,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -29929,6 +30742,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -30205,6 +31020,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -30261,6 +31099,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -30435,6 +31275,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -30456,6 +31308,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -30816,6 +31669,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -30855,6 +31731,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -31493,6 +32371,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -31540,6 +32441,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -31595,6 +32498,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -31627,6 +32553,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -31902,6 +32830,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -31942,6 +32893,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -32934,6 +33887,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -32990,6 +33966,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -33164,6 +34142,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -33185,6 +34175,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -33545,6 +34536,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -33584,6 +34598,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -34222,6 +35238,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -34269,6 +35308,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -34324,6 +35365,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -34356,6 +35420,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -34631,6 +35697,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -34671,6 +35760,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -34947,6 +36038,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -35003,6 +36117,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -35177,6 +36293,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -35198,6 +36326,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -35558,6 +36687,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -35597,6 +36749,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -36235,6 +37389,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -36282,6 +37459,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -36337,6 +37516,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -36369,6 +37571,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -36644,6 +37848,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -36684,6 +37911,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -37353,6 +38582,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -37409,6 +38661,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -37583,6 +38837,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -37604,6 +38870,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -37964,6 +39231,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -38003,6 +39293,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -38641,6 +39933,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -38688,6 +40003,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -38743,6 +40060,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -38775,6 +40115,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -39050,6 +40392,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -39090,6 +40455,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -39366,6 +40733,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "storageLayout": {
                                         "type": "object",
                                         "properties": {
@@ -39422,6 +40812,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "storageLayout",
                                       "storageWord",
                                       "decodedAuthorized"
@@ -39596,6 +40988,18 @@
                                           }
                                         ]
                                       },
+                                      "rawLogsObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "semantics": {
                                         "type": "string",
                                         "const": "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
@@ -39617,6 +41021,7 @@
                                       "fixturePath",
                                       "fixtureProjectionSha256",
                                       "rawLogsSha256",
+                                      "rawLogsObjectKey",
                                       "semantics"
                                     ],
                                     "additionalProperties": false
@@ -39977,6 +41382,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -40016,6 +41444,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -40654,6 +42084,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "blockNumber": {
                                         "type": "string",
                                         "maxLength": 78,
@@ -40701,6 +42154,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "blockNumber",
                                       "blockHash",
                                       "timestamp",
@@ -40756,6 +42211,29 @@
                                           }
                                         ]
                                       },
+                                      "rawResultSha256": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "rawResultObjectKey": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
                                       "transactionHash": {
                                         "type": "string",
                                         "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
@@ -40788,6 +42266,8 @@
                                       "rpcMethod",
                                       "fixturePath",
                                       "fixtureProjectionSha256",
+                                      "rawResultSha256",
+                                      "rawResultObjectKey",
                                       "transactionHash",
                                       "transactionSender",
                                       "blockNumber",
@@ -41063,6 +42543,29 @@
                                               }
                                             ]
                                           },
+                                          "rawResultSha256": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^0x(?=[0-9a-f]{64}$)(?=.*[1-9a-f])[0-9a-f]{64}$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "rawResultObjectKey": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1024
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
                                           "hashMethod": {
                                             "type": "string",
                                             "const": "keccak256"
@@ -41103,6 +42606,8 @@
                                           "rpcMethod",
                                           "fixturePath",
                                           "fixtureProjectionSha256",
+                                          "rawResultSha256",
+                                          "rawResultObjectKey",
                                           "hashMethod",
                                           "address",
                                           "blockNumber",
@@ -45524,11 +47029,11 @@
     "canonical uint256, nonzero provenance primitives, and composite identities",
     "atomic cursor, finality, retry, reorg, admission, and record counts",
     "proposal-time disclosure, event-effective admission, snapshot-effective status, zero-capable mutable configuration, and ordered same-Voting history",
-    "one global block-number/hash/timestamp registry, strict block-global log order, reverse transaction identity, canonical ABI, receipt identity, veto branches, and last-write running totals",
+    "one global block-number/hash registry with strictly increasing known timestamps across height, inclusive address-scoped Voting-generation cutovers, strict block-global log order, reverse transaction identity, canonical ABI, receipt identity, veto branches, and last-write running totals",
     "explicit chain-time availability, exact arbitrary invalid bytes with reproduced typed failure codes, canonical available content, SHA-256/CIDv1 identity, attachment provenance, manifest and asset records",
-    "feed-wide complete pinned-Voter full-call-trace invocation identities with canonical ordinal order and one caller submission per proposal, checked cumulative ybc_votes replay, trace-unavailable lower bounds, unclassified custom-Voter events, independent Voter genesis, and reproducible v2 source/compiler/template/immutable/runtime evidence",
+    "feed-wide complete pinned-Voter full-call-trace invocation identities with canonical ordinal order and one caller submission per proposal, checked cumulative ybc_votes replay with opaque-history cascade, trace-unavailable lower bounds, unclassified custom-Voter events, independent dynamic Voter constructor genesis, and reproducible v2 source/compiler/template/immutable/runtime evidence",
     "verified, unverified, and constructor-zero Executor evidence; official compiler and source-integrity pins; pinned-only framing; exact script retention/type/hash binding; and unavailable analysis and simulation for unproven implementations",
-    "conditional revm 34.0.0 OSAKA/BPO2 engine-injected simulation chronology and a v4 commitment binding synthetic-or-archive projections, block opcode context, exact warm set/calldata, proposal-position Executor authorization, and the disclosed non-transactional 30000000-gas overapproximation",
+    "mainnet-only conditional revm 34.0.0 OSAKA/BPO2 engine-injected simulation chronology and a v4 commitment binding synthetic projections or every archive raw digest/object-key pair, block opcode context, exact warm set/calldata, proposal-position Executor authorization, and the disclosed non-transactional 30000000-gas overapproximation",
     "total nonthrowing safe admission across structural, semantic, and raw-JSON consumer boundaries"
   ]
 }

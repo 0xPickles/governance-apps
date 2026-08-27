@@ -51,6 +51,10 @@ the accepted mock domain.
   Exact activation/fraction/initialization, REVM crate, fixture blob-fee
   comparison, and six gas-disclosure literals are normative in the canonical
   feed contract and generated JSON Schema.
+  Completed v1 records are mainnet-only (`chainId = 1`). The v4 commitment
+  binds the evidence kind and raw digest/object-key pair for the header,
+  receipt, Executor code, authorization storage/log replay, and Voting override;
+  synthetic branches bind projections and keep both live fields null.
 - Exact GitHub verified-source kind, repository, label, canonical authoritative
   blob URL, revision, and normalized source path. A source may prove decoder
   provenance but not a mock deployment; unknown calls have no verified source.
@@ -60,6 +64,8 @@ the accepted mock domain.
   configuration, events, receipts, bytecode proofs, simulation evidence,
   cursor, and finality. Block-global Ethereum `logIndex` values are unique and
   rise strictly with transaction order across proposals and Voting generations.
+  Known timestamps rise strictly with height; equal or decreasing time at a
+  higher retained block rejects, while a `null` timestamp remains `null`.
 - Proposal-owned rule snapshots: 5,000-basis-point normal default, retained
   6,000-basis-point alternate, positive-total requirement, no minimum turnout,
   proposal type, Propose-effective historical configuration, event-effective
@@ -77,6 +83,13 @@ the accepted mock domain.
   identity. The fixture uses deployment `23900000`, start
   `23900001`, nine bootstrap setters, and `config-2` at block `23902000`,
   transaction `0`, final global log index `9`, after ten retained setters.
+  Repeated setters use the last canonical mutation for each field. Adjacent
+  generations share one inclusive old-retirement/new-deployment block and hash,
+  the successor starts one block later, ranges cannot overlap, and bootstrap
+  lifecycle counts are scoped to the exact Voting emitter.
+  `set_propose_parameters` minimum-weight and cooldown values must fit uint256
+  before ABI re-encoding, and malformed values remain typed safe-parser
+  failures.
 - Typed zero/disabling configuration states, including proposal blacklist, and
   the exact event-effective call matrix. Retract and Flag use running
   last-write-per-account totals, so zero-weight Vote history is valid. Vote
@@ -94,6 +107,11 @@ the accepted mock domain.
   and every intermediate/passage multiplication with checked uint256 arithmetic.
   Pinned trace-unavailable and custom Voter records remain raw and unclassified;
   human participation becomes an explicit lower bound.
+  Constructor-bound initcode and deployed-runtime hashes are derived from the
+  recorded genesis and frozen creation/template bytes, not hardcoded to the
+  fixture genesis. A positive `pinned_voter_trace_unavailable` Vote makes
+  cumulative aggregate state opaque, so later aggregate-bearing events cascade
+  to raw/unclassified unless an authenticated seed is available.
 - Exact public selectors are `vote_yea(address,uint256)` / `0x69586e2e` and
   `vote_nay(address,uint256)` / `0xff855dde`. For outer Voter trace path `P`,
   human/delegated/YBC calls are `P+[1]`, `P+[4]`, and `P+[5]`; the direct-root
@@ -106,6 +124,9 @@ the accepted mock domain.
   preimage and retain named object or manifest keys where the branch exposes
   them. Synthetic branches bind only their fixture projection and keep exposed
   live hash/key fields null.
+  Generic archive branches retain `rawResultSha256` with
+  `rawResultObjectKey`; Executor log replay retains `rawLogsSha256` with
+  `rawLogsObjectKey`.
 - Pinned Voter and Executor proofs bind the official
   `vyper.0.4.2+commit.c216787f.linux` distribution, exact URI/size/SHA-256,
   source-integrity preimages, `-Werror -O gas --evm-version cancun` command
@@ -135,12 +156,18 @@ the accepted mock domain.
   receipt sender, voting epoch, content digest, and exact script. The receipt
   sender equals the Propose proposer. Awaiting-index and indexed records retain
   that same ref.
+  Every creation-stage receipt uses exact archive-RPC or committed-synthetic
+  provenance; live evidence retains its raw result-token digest/object key,
+  while synthetic evidence keeps both null and binds its fixture projection.
 - Proposal threshold evidence independently binds the stored threshold at the
   Propose block from pinned Vyper mapping slot `17`, slot-then-key order, struct
   offset `4`, exact storage word, and decoded basis points. Both copied
   threshold fields equal that proof.
 - Human vote versus YBC/delegated aggregate classification.
-- Authoritative forum root category `5` and exact allowed descendant ancestry.
+- Authoritative forum root category `5`, exact allowed descendant ancestry, and
+  canonical `/t/<slug>/<id>` URLs whose original serialization equals
+  `${url.origin}${url.pathname}`, excluding trailing slashes and terminal bare
+  `?`/`#` delimiters as well as ordinary queries/fragments.
 - Producer start blocks, exact eight-confirmation threshold (with greater
   observed depth allowed), fixed retry/backoff, bootstrap retry and reorg
   recovery without invented prior snapshot IDs, cursor, and atomic-publication
@@ -191,8 +218,8 @@ the accepted mock domain.
 
 ## Validation
 
-- Frozen artifact totals: 27 accepted proposals, 81 lifecycle events, 103
-  committed rejection vectors, and 136 focused schema tests.
+- Frozen artifact totals: 27 accepted proposals, 81 lifecycle events, 114
+  committed rejection vectors, and 152 focused schema tests.
 - Schema and example parsing tests.
 - Semantic fixtures for veto branches, signal status, aggregate votes, missing
   content, partial decode, failed simulation, hash mismatch, missing event time
@@ -212,6 +239,14 @@ the accepted mock domain.
   preconfigured-Voter code-birth/history, shared log/transaction/trace
   registries, exact-position Executor authorization/stages, and
   complete/unavailable simulation chronology.
+- Mutation coverage also rejects cross-height timestamp equality/reversal,
+  creation-stage sender/raw-receipt substitutions, generation overlap or
+  post-retirement history, dynamic Voter word/initcode/runtime substitutions,
+  stale repeated-setter outcomes, opaque aggregate replay restart, missing live
+  raw digests or object keys, non-mainnet completed frames, and discussion URLs
+  with trailing slashes or terminal bare query/fragment delimiters. Safe-parser
+  totality mutations also cover both uint256 arguments of
+  `set_propose_parameters`.
 - Standard repository checks.
 
 ## Review

@@ -301,7 +301,7 @@
   },
   {
     "name": "known chain creation timestamp substitution",
-    "path": ["proposals", 0, "chainCreatedAt", "timestamp"],
+    "path": ["proposals", 1, "chainCreatedAt", "timestamp"],
     "value": 1787054401,
     "expectedMessage": "Available chain creation time must equal"
   },
@@ -641,5 +641,153 @@
     "path": ["proposals", 4, "analysis", "proposalSimulation", "frameContext", "executorOperatorAuthorization", "positionReplay", "rawLogsSha256"],
     "value": "0xabababababababababababababababababababababababababababababababab",
     "expectedMessage": "Synthetic Executor authorization replay evidence"
+  },
+  {
+    "name": "confirmation head reuses the canonical block timestamp",
+    "path": [
+      "publication",
+      "finality",
+      "headBlock",
+      "timestamp"
+    ],
+    "value": 1787054400,
+    "expectedMessage": "Known canonical block timestamps must increase strictly"
+  },
+  {
+    "name": "completed simulation substitutes a non-mainnet chain",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "gasContext",
+      "chainId"
+    ],
+    "value": 2,
+    "expectedMessage": "require chainId 1"
+  },
+  {
+    "name": "pinned Voter constructor-bound runtime SHA substitution",
+    "path": [
+      "contracts",
+      0,
+      "configurationHistory",
+      0,
+      "voterImplementation",
+      "bytecode",
+      "deployedRuntimeSha256"
+    ],
+    "value": "0xabababababababababababababababababababababababababababababababab",
+    "expectedMessage": "Pinned Voter semantics require exact source/compiler settings"
+  },
+  {
+    "name": "simulation receipt archive claim omits raw result authentication",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "gasContext",
+      "proposeReceipt",
+      "evidenceKind"
+    ],
+    "value": "archive_rpc",
+    "expectedMessage": "Archive evidence must use exact eth_getTransactionReceipt provenance"
+  },
+  {
+    "name": "simulation Executor archive code claim omits raw result authentication",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "executorImplementation",
+      "bytecode",
+      "evidenceKind"
+    ],
+    "value": "archive_rpc_and_reproducible_build",
+    "expectedMessage": "Archive evidence must use exact eth_getCode provenance"
+  },
+  {
+    "name": "Executor authorization archive storage claim omits raw result authentication",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "executorOperatorAuthorization",
+      "blockEndEvidence",
+      "evidenceKind"
+    ],
+    "value": "archive_rpc",
+    "expectedMessage": "Archive evidence must use exact eth_getStorageAt provenance"
+  },
+  {
+    "name": "Voting override archive code claim omits raw result authentication",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "stateOverrides",
+      0,
+      "proof",
+      "bytecode",
+      "evidenceKind"
+    ],
+    "value": "archive_rpc",
+    "expectedMessage": "Archive evidence must use exact eth_getCode provenance"
+  },
+  {
+    "name": "synthetic Executor replay injects a live raw object key",
+    "path": [
+      "proposals",
+      4,
+      "analysis",
+      "proposalSimulation",
+      "frameContext",
+      "executorOperatorAuthorization",
+      "positionReplay",
+      "rawLogsObjectKey"
+    ],
+    "value": "dao/raw-rpc/forged-synthetic.json",
+    "expectedMessage": "Synthetic Executor authorization replay evidence"
+  },
+  {
+    "name": "verified discussion topic has a trailing slash",
+    "path": [
+      "proposals",
+      0,
+      "discussion",
+      "url"
+    ],
+    "value": "https://gov.yearn.fi/t/proposal-1/1001/",
+    "expectedMessage": "without query, fragment, port, trailing slash"
+  },
+  {
+    "name": "verified discussion topic has a terminal bare query delimiter",
+    "path": [
+      "proposals",
+      0,
+      "discussion",
+      "url"
+    ],
+    "value": "https://gov.yearn.fi/t/proposal-1/1001?",
+    "expectedMessage": "without query, fragment, port, trailing slash"
+  },
+  {
+    "name": "verified discussion topic has a terminal bare fragment delimiter",
+    "path": [
+      "proposals",
+      0,
+      "discussion",
+      "url"
+    ],
+    "value": "https://gov.yearn.fi/t/proposal-1/1001#",
+    "expectedMessage": "without query, fragment, port, trailing slash"
   }
 ]

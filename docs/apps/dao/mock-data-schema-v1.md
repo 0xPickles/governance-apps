@@ -222,6 +222,11 @@ Exact Osaka/BPO2 activation and blob-initialization literals, the REVM crate
 identity, the rejected Prague comparison, and all six gas-disclosure fields are
 normative in `feed-schema-v1.md` and the generated JSON Schema.
 Missing evidence produces a fully unavailable simulation.
+Completed v1 simulation is mainnet-only and requires `chainId = 1` in the feed
+and frame. V4 binds the evidence kind plus raw digest/object-key pair for the
+header, Propose receipt, Executor code, authorization storage, authorization
+log replay, and Voting override code. Synthetic branches instead bind their
+fixture projection and keep both live fields null.
 
 That Executor proof is per configuration. `verified_pinned` binds
 `contracts/governance/Executor.vy` at revision
@@ -311,6 +316,9 @@ actors are never counted as additional human participation.
 The frozen feed expands this small mock event view without changing it. Every
 block-bearing record joins one canonical registry: one chain height has one
 hash and one value for every known timestamp, and one hash maps to one height.
+Known timestamps also increase strictly with height; equality or reversal at a
+higher retained block is invalid. A record whose timestamp is `null` remains
+`null` even if another record authenticates that block time.
 Within a block, `logIndex` is unique and rises strictly with transaction order
 across proposals and Voting generations.
 
@@ -334,6 +342,13 @@ could emit. Invocation identity is feed-wide, binds one proposal, and each
 complete pinned caller appears only once per proposal. The consumer replays
 cumulative pinned `ybc_votes` with checked uint256 arithmetic and derives the
 shared aggregate bps from cumulative Yea and weight.
+For any constructor genesis, the immutable ABI word, creation-code-plus-word
+initcode, and runtime-template-plus-word deployed runtime are derived and
+hashed coherently; the fixture genesis and its hashes are examples, not schema
+literals. A positive `pinned_voter_trace_unavailable` Vote also makes cumulative
+aggregate state unknown. Later aggregate-bearing events must cascade to
+raw/unclassified unless an authenticated cumulative seed is available; they
+cannot restart at zero.
 
 The trace request is `debug_traceTransaction` with geth `callTracer`,
 `onlyTopCall:false`, `withLog:true`, and `reexec:0`. Live
@@ -344,10 +359,12 @@ surrounding whitespace. Synthetic records use a committed projection and leave
 live client/raw fields null. Public Voter selectors are
 `vote_yea(address,uint256)` / `0x69586e2e` and
 `vote_nay(address,uint256)` / `0xff855dde`.
-Transaction, receipt, code, and log-result raw hashes follow the same exact
+Transaction, receipt, code, storage, header, and log-result raw hashes follow the same exact
 top-level JSON-RPC result-token byte rule defined in `feed-schema-v1.md`, with
 named retained keys where the selected branch exposes them and null exposed
-live hash/key fields for synthetic projections.
+live hash/key fields for synthetic projections. Generic archive branches use
+`rawResultSha256` plus `rawResultObjectKey`; Executor log replay uses
+`rawLogsSha256` plus `rawLogsObjectKey`.
 
 ## 6. Proposal view model
 
@@ -486,6 +503,15 @@ on opposite sides of a same-transaction setter select old and new rows.
 The committed fixture deploys at block `23900000`, starts the producer reducer
 at `23900001`, replays nine bootstrap setters, and anchors `config-2` after ten
 setters at block `23902000`, transaction `0`, global log index `9`.
+Repeated setters for one tracked field replay in canonical call/log order and
+the row equals the last mutation. A retired generation remains valid through
+its inclusive retirement block; its successor deploys at the same block/hash,
+starts one block later, and is the only active generation. Old events and
+configurations stop at retirement, new events begin at successor start, and
+bootstrap lifecycle counts are scoped to the exact Voting emitter so an old
+log in the shared cutover block is not counted for the successor.
+`set_propose_parameters` minimum-weight and cooldown values are uint256-bounded
+before ABI re-encoding so safe admission cannot leak an encoder exception.
 
 Configuration includes Voter decay in `0..604799`, with zero disabling decay. A
 changed pointer either establishes all four nested Voter values after the
@@ -629,7 +655,8 @@ Proposal creation does not guess the next numeric ID. Chain context is supplied
 separately from the receipt. The decoder requires a successful receipt with the
 exact submitted transaction hash and exactly one `Propose` log from the expected
 Voting address. Proposer, voting epoch, content digest, and exact script must
-match the submitted values. The log has exactly four canonical topics. Its
+match the submitted values, and the authenticated receipt sender must equal the
+decoded proposer. The log has exactly four canonical topics. Its
 decoded topics and non-indexed content digest and script must re-encode to the
 exact receipt bytes, with no extra topic, trailing word, alternate offset, or
 dirty padding. A missing, duplicate, malformed, wrong-contract, or mismatched
@@ -637,6 +664,10 @@ log yields no proposal ref. Once decoded, the same composite ref is
 used for the receipt-confirmed view, browser-local `awaiting_index` overlay, and
 indexed fixture. That local overlay intentionally does not survive another
 browser session.
+Each creation-stage receipt chooses exact archive-RPC or committed-synthetic
+provenance. Live `eth_getTransactionReceipt` retains the SHA-256 and immutable
+object key for the successful non-null raw result token; synthetic evidence
+keeps both live fields null and binds its fixture projection.
 
 The explicit submission request controls transaction outcomes. Forum topic
 `1002` remains the publication-failure fixture and `1005` remains the missing
@@ -678,8 +709,12 @@ only mock client that prepares and submits actions.
 - Upcoming contains discussion-phase proposals. Active contains voting proposals
   and approved executable proposals that have not executed or expired. Closed
   contains terminal outcomes and approved signals.
-- Verified forum status requires an allowed stable category ID. A matching
-  display label alone is insufficient.
+- Verified forum status requires an allowed stable category ID and the exact
+  `https://gov.yearn.fi/t/<slug>/<id>` URL whose original serialization equals
+  `${url.origin}${url.pathname}`. A trailing slash, query, fragment, port,
+  ambiguous path, or terminal bare `?`/`#` delimiter is invalid. A matching
+  display label alone is
+  insufficient.
 - `rules.approvalThresholdBps === thresholdBps`; proposal type, Voting address,
   timing, delay, and guard agree with the proposal record.
 - Threshold evidence reproduces the pinned Vyper storage slot and exact Propose
@@ -713,8 +748,8 @@ including its 660-byte length, SHA-256 digest, raw CID, media type, and
 ## 8. Feed envelope
 
 The committed feed example contains 27 proposals and 81 lifecycle events. Its
-published rejection corpus contains 103 vectors, and the focused boundary suite
-contains 136 tests.
+published rejection corpus contains 114 vectors, and the focused boundary suite
+contains 152 tests.
 
 The mock client should resemble the future feed:
 

@@ -10,6 +10,7 @@ import {
   type Hex,
 } from "viem";
 import { z } from "@/lib/schemas/zod";
+import { deriveDaoPinnedVoterConstructorArtifacts } from "@/lib/schemas/dao-voter-build";
 import {
   canonicalizeDaoProposalContent,
   createDaoRawSha256Cid,
@@ -204,8 +205,6 @@ const PINNED_VOTER_CREATION_BYTE_LENGTH = 2_060 as const;
 const PINNED_VOTER_CREATION_SHA256 =
   "0xbcb72ccd8fec2d904ecd867503481abc4d841d4b1ef7d5104b6017ff15a93839" as const;
 const PINNED_VOTER_INITCODE_WITH_ARGUMENT_BYTE_LENGTH = 2_092 as const;
-const PINNED_VOTER_INITCODE_WITH_ARGUMENT_SHA256 =
-  "0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4" as const;
 const PINNED_VOTER_RUNTIME_TEMPLATE_BYTE_LENGTH = 1_957 as const;
 const PINNED_VOTER_RUNTIME_STDOUT_BYTE_LENGTH = 3_917 as const;
 const PINNED_VOTER_RUNTIME_STDOUT_SHA256 =
@@ -222,11 +221,6 @@ const PINNED_VOTER_RUNTIME_TEMPLATE_KECCAK256 =
 const PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH = 1_989 as const;
 const PINNED_VOTER_DEPLOYED_RUNTIME_SHA256 =
   "0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b" as const;
-const PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256 =
-  "0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e" as const;
-const PINNED_VOTER_GENESIS_TIMESTAMP = 1_542_736_800 as const;
-const PINNED_VOTER_GENESIS_WORD =
-  "0x000000000000000000000000000000000000000000000000000000005bf44ba0" as const;
 const PINNED_EXECUTOR_CREATION_BYTECODE_COMMAND =
   "./vyper.0.4.2+commit.c216787f.linux -Werror -O gas --evm-version cancun -f bytecode contracts/governance/Executor.vy" as const;
 const PINNED_EXECUTOR_RUNTIME_COMMAND =
@@ -314,6 +308,10 @@ const DAO_FORUM_PROPOSAL_CATEGORIES = new Map<
 ]);
 
 const zUint = z.string().max(78).regex(UINT_PATTERN);
+const zUint256 = zUint.refine(
+  (value) => toUint(value) !== null,
+  "Value must fit in an unsigned 256-bit integer."
+);
 const zPositiveUint = z.string().max(78).regex(POSITIVE_UINT_PATTERN);
 const zPositiveU64 = z.string().max(20).regex(POSITIVE_UINT_PATTERN);
 const zSafeUint = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
@@ -337,6 +335,10 @@ const zVoteLogData = z.string().length(130).regex(LOWER_BYTES_PATTERN);
 const zReasonLogData = z.string().max(642).regex(LOWER_BYTES_PATTERN);
 const zSelector = z.string().regex(SELECTOR_PATTERN);
 const zIsoUtc = z.string().max(32).regex(ISO_UTC_PATTERN);
+const RawRpcResultEvidenceShape = {
+  rawResultSha256: zNonZeroHash.nullable(),
+  rawResultObjectKey: z.string().min(1).max(1_024).nullable(),
+};
 
 const FailureSchema = z.strictObject({
   code: z.string().regex(FAILURE_CODE_PATTERN),
@@ -449,9 +451,7 @@ const PinnedVoterBuildArtifactSchema = z.strictObject({
   initcodeWithArgumentByteLength: z.literal(
     PINNED_VOTER_INITCODE_WITH_ARGUMENT_BYTE_LENGTH
   ),
-  initcodeWithArgumentSha256: z.literal(
-    PINNED_VOTER_INITCODE_WITH_ARGUMENT_SHA256
-  ),
+  initcodeWithArgumentSha256: zNonZeroHash,
 });
 
 const PinnedVoterRuntimeTemplateSchema = z.strictObject({
@@ -1172,6 +1172,7 @@ const VotingTransitionOverrideSchema = z.strictObject({
       rpcMethod: z.literal("eth_getCode").nullable(),
       fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
       fixtureProjectionSha256: zNonZeroHash.nullable(),
+      ...RawRpcResultEvidenceShape,
       hashMethod: z.literal("keccak256"),
       address: zNonZeroAddress,
       blockNumber: zUint,
@@ -1199,6 +1200,7 @@ const ExecutorOperatorAuthorizationProofSchema = z.strictObject({
     rpcMethod: z.literal("eth_getStorageAt").nullable(),
     fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
     fixtureProjectionSha256: zNonZeroHash.nullable(),
+    ...RawRpcResultEvidenceShape,
     storageLayout: z.strictObject({
       compiler: z.literal("vyper@0.4.2"),
       sourceSha256: z.literal(PINNED_EXECUTOR_SOURCE_SHA256),
@@ -1248,6 +1250,7 @@ const ExecutorOperatorAuthorizationProofSchema = z.strictObject({
     fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
     fixtureProjectionSha256: zNonZeroHash.nullable(),
     rawLogsSha256: zNonZeroHash.nullable(),
+    rawLogsObjectKey: z.string().min(1).max(1_024).nullable(),
     semantics: z.literal(
       "block_end_state_equals_propose_position_only_after_zero_later_relevant_setter_logs"
     ),
@@ -1362,6 +1365,7 @@ const SimulationCompleteShape = {
         rpcMethod: z.literal("eth_getBlockByHash").nullable(),
         fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
         fixtureProjectionSha256: zNonZeroHash.nullable(),
+        ...RawRpcResultEvidenceShape,
         blockNumber: zUint,
         blockHash: zNonZeroHash,
         timestamp: zUnixSeconds,
@@ -1377,6 +1381,7 @@ const SimulationCompleteShape = {
         rpcMethod: z.literal("eth_getTransactionReceipt").nullable(),
         fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
         fixtureProjectionSha256: zNonZeroHash.nullable(),
+        ...RawRpcResultEvidenceShape,
         transactionHash: zNonZeroHash,
         transactionSender: zNonZeroAddress,
         blockNumber: zUint,
@@ -1510,9 +1515,7 @@ const VoterImplementationSchema = z.discriminatedUnion("state", [
     buildArtifact: PinnedVoterBuildArtifactSchema,
     runtimeTemplate: PinnedVoterRuntimeTemplateSchema,
     immutableGenesisTimestamp: zUnixSeconds,
-    compiledRuntimeBytecodeHash: z.literal(
-      PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
-    ),
+    compiledRuntimeBytecodeHash: zNonZeroHash,
     bytecode: z.strictObject({
       evidenceKind: z.enum([
         "archive_rpc_and_reproducible_build",
@@ -1521,17 +1524,14 @@ const VoterImplementationSchema = z.discriminatedUnion("state", [
       rpcMethod: z.literal("eth_getCode").nullable(),
       fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
       fixtureProjectionSha256: zNonZeroHash.nullable(),
+      ...RawRpcResultEvidenceShape,
       hashMethod: z.literal("keccak256"),
       address: zNonZeroAddress,
       blockNumber: zUint,
       blockHash: zNonZeroHash,
       codeByteLength: z.literal(PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH),
-      deployedBytecodeHash: z.literal(
-        PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
-      ),
-      deployedRuntimeSha256: z.literal(
-        PINNED_VOTER_DEPLOYED_RUNTIME_SHA256
-      ),
+      deployedBytecodeHash: zNonZeroHash,
+      deployedRuntimeSha256: zNonZeroHash,
       buildArtifactSha256: z.literal(
         PINNED_VOTER_CREATION_BYTECODE_STDOUT_SHA256
       ),
@@ -1615,6 +1615,7 @@ const ExecutorImplementationSchema = z.discriminatedUnion("state", [
       rpcMethod: z.literal("eth_getCode").nullable(),
       fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
       fixtureProjectionSha256: zNonZeroHash.nullable(),
+      ...RawRpcResultEvidenceShape,
       hashMethod: z.literal("keccak256"),
       address: zNonZeroAddress,
       blockNumber: zUint,
@@ -1732,15 +1733,15 @@ const ConfigurationSetterCallSchema = z.discriminatedUnion("setter", [
       DAO_FEED_CONFIGURATION_SETTER_SELECTORS.setProposeParameters
     ),
     arguments: z.strictObject({
-      minWeight: zUint,
-      cooldownSeconds: zUint,
+      minWeight: zUint256,
+      cooldownSeconds: zUint256,
       blacklistAddress: zNonZeroAddress,
     }),
     log: z.strictObject({
       ...ConfigurationSetterLogBaseShape,
       decoded: z.strictObject({
-        minWeight: zUint,
-        cooldownSeconds: zUint,
+        minWeight: zUint256,
+        cooldownSeconds: zUint256,
         blacklistAddress: zNonZeroAddress,
       }),
     }),
@@ -2051,12 +2052,8 @@ const VoterCodeBirthEvidenceSchema = z.discriminatedUnion("evidenceKind", [
     deployedCodeByteLength: z.literal(
       PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH
     ),
-    deployedBytecodeHash: z.literal(
-      PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
-    ),
-    deployedRuntimeSha256: z.literal(
-      PINNED_VOTER_DEPLOYED_RUNTIME_SHA256
-    ),
+    deployedBytecodeHash: zNonZeroHash,
+    deployedRuntimeSha256: zNonZeroHash,
     rpcMethods: z.null(),
     fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts"),
     fixtureProjectionSha256: zNonZeroHash,
@@ -2082,12 +2079,8 @@ const VoterCodeBirthEvidenceSchema = z.discriminatedUnion("evidenceKind", [
     deployedCodeByteLength: z.literal(
       PINNED_VOTER_DEPLOYED_RUNTIME_BYTE_LENGTH
     ),
-    deployedBytecodeHash: z.literal(
-      PINNED_VOTER_DEPLOYED_RUNTIME_KECCAK256
-    ),
-    deployedRuntimeSha256: z.literal(
-      PINNED_VOTER_DEPLOYED_RUNTIME_SHA256
-    ),
+    deployedBytecodeHash: zNonZeroHash,
+    deployedRuntimeSha256: zNonZeroHash,
     rpcMethods: z.tuple([
       z.literal("eth_getTransactionReceipt"),
       z.literal("eth_getCode"),
@@ -2367,6 +2360,7 @@ const ProposalThresholdEvidenceSchema = z.strictObject({
   rpcMethod: z.literal("eth_getStorageAt").nullable(),
   fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
   fixtureProjectionSha256: zNonZeroHash.nullable(),
+  ...RawRpcResultEvidenceShape,
   votingAddress: zNonZeroAddress,
   proposalId: zUint,
   blockNumber: zUint,
@@ -2686,7 +2680,17 @@ const DaoCreationIdentityStageStructuralSchema = z.strictObject({
   transactionHash: zNonZeroHash,
   receipt: z.strictObject({
     status: z.literal("success"),
+    transactionHash: zNonZeroHash,
+    transactionSender: zNonZeroAddress,
+    blockNumber: zUint,
+    blockHash: zNonZeroHash,
+    transactionIndex: zSafeUint,
     matchingProposeLogCount: z.literal(1),
+    evidenceKind: z.enum(["archive_rpc", "committed_synthetic_fixture"]),
+    rpcMethod: z.literal("eth_getTransactionReceipt").nullable(),
+    fixturePath: z.literal("tests/fixtures/dao-feed-v1.ts").nullable(),
+    fixtureProjectionSha256: zNonZeroHash.nullable(),
+    ...RawRpcResultEvidenceShape,
   }),
   identity: CreationIdentitySchema,
   indexedSnapshotId: z.string().regex(SNAPSHOT_ID_PATTERN).nullable(),
@@ -2838,6 +2842,29 @@ export function deriveDaoSyntheticEvidenceSha256(
   );
 }
 
+export function deriveDaoCreationStageReceiptProjectionSha256(input: {
+  transactionHash: Hex;
+  transactionSender: Address;
+  blockNumber: string;
+  blockHash: Hex;
+  transactionIndex: number;
+  status: "success";
+  matchingProposeLogCount: 1;
+}): Hex {
+  return deriveDaoSyntheticEvidenceSha256(
+    "creation_stage_eth_getTransactionReceipt_projection",
+    {
+      transactionHash: input.transactionHash,
+      transactionSender: input.transactionSender,
+      blockNumber: input.blockNumber,
+      blockHash: input.blockHash,
+      transactionIndex: input.transactionIndex,
+      status: input.status,
+      matchingProposeLogCount: input.matchingProposeLogCount,
+    }
+  );
+}
+
 export function deriveDaoExecutorExecuteCalldata(script: Hex): Hex {
   return encodeFunctionData({
     abi: [
@@ -2892,6 +2919,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
   blobBaseFeeWei: string;
   blockHeaderEvidenceKind: "archive_rpc" | "committed_synthetic_fixture";
   blockHeaderFixtureProjectionSha256: Hex | null;
+  blockHeaderRawResultSha256: Hex | null;
+  blockHeaderRawResultObjectKey: string | null;
   proposeTransactionHash: Hex;
   proposeTransactionSender: Address;
   proposeReceiptBlockNumber: string;
@@ -2899,6 +2928,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
   proposeReceiptEffectiveGasPriceWei: string;
   proposeReceiptEvidenceKind: "archive_rpc" | "committed_synthetic_fixture";
   proposeReceiptFixtureProjectionSha256: Hex | null;
+  proposeReceiptRawResultSha256: Hex | null;
+  proposeReceiptRawResultObjectKey: string | null;
   transactionOrigin: Address;
   votingCaller: Address;
   executorAddress: Address;
@@ -2924,6 +2955,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     | "archive_rpc_and_reproducible_build"
     | "committed_synthetic_fixture_and_reproducible_build";
   executorEvidenceFixtureProjectionSha256: Hex | null;
+  executorEvidenceRawResultSha256: Hex | null;
+  executorEvidenceRawResultObjectKey: string | null;
   executorOperatorStorageSlot: Hex;
   executorOperatorBlockEndStorageWord: Hex;
   executorOperatorAuthorizedAtPropose: boolean;
@@ -2931,6 +2964,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     | "archive_rpc"
     | "committed_synthetic_fixture";
   executorOperatorBlockEndFixtureProjectionSha256: Hex | null;
+  executorOperatorBlockEndRawResultSha256: Hex | null;
+  executorOperatorBlockEndRawResultObjectKey: string | null;
   executorOperatorReplayManifestSha256: Hex;
   executorOperatorReplayRelevantSetterLogCount: number;
   executorOperatorReplayAppliedSetterLogCount: number;
@@ -2939,6 +2974,7 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     | "committed_synthetic_fixture";
   executorOperatorReplayFixtureProjectionSha256: Hex | null;
   executorOperatorReplayRawLogsSha256: Hex | null;
+  executorOperatorReplayRawLogsObjectKey: string | null;
   executorFrameInitialGas: string;
   effectiveGasPriceWei: string;
   overrideVotingAddress: Address;
@@ -2949,6 +2985,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
   overrideVotingCodeHash: Hex;
   overrideVotingEvidenceKind: "archive_rpc" | "committed_synthetic_fixture";
   overrideVotingFixtureProjectionSha256: Hex | null;
+  overrideVotingRawResultSha256: Hex | null;
+  overrideVotingRawResultObjectKey: string | null;
 }): Hex {
   const warmAddresses = deriveExpectedOsakaWarmAddresses({
     transactionOrigin: input.transactionOrigin,
@@ -2980,6 +3018,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
         : null,
     blockHeaderFixtureProjectionSha256:
       input.blockHeaderFixtureProjectionSha256,
+    blockHeaderRawResultSha256: input.blockHeaderRawResultSha256,
+    blockHeaderRawResultObjectKey: input.blockHeaderRawResultObjectKey,
     chainSpecRepository: PINNED_MAINNET_CHAIN_SPEC.repository,
     chainSpecRevision: PINNED_MAINNET_CHAIN_SPEC.revision,
     chainSpecPath: PINNED_MAINNET_CHAIN_SPEC.sourcePath,
@@ -3007,6 +3047,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
         : null,
     proposeReceiptFixtureProjectionSha256:
       input.proposeReceiptFixtureProjectionSha256,
+    proposeReceiptRawResultSha256: input.proposeReceiptRawResultSha256,
+    proposeReceiptRawResultObjectKey: input.proposeReceiptRawResultObjectKey,
     proposeReceiptStatus: "success",
     proposeReceiptBlockNumber: input.proposeReceiptBlockNumber,
     proposeReceiptBlockHash: input.proposeReceiptBlockHash,
@@ -3033,6 +3075,10 @@ export function deriveDaoSimulationContextInputsSha256(input: {
       input.executorOperatorBlockEndEvidenceKind,
     executorOperatorBlockEndFixtureProjectionSha256:
       input.executorOperatorBlockEndFixtureProjectionSha256,
+    executorOperatorBlockEndRawResultSha256:
+      input.executorOperatorBlockEndRawResultSha256,
+    executorOperatorBlockEndRawResultObjectKey:
+      input.executorOperatorBlockEndRawResultObjectKey,
     executorOperatorReplayManifestSha256:
       input.executorOperatorReplayManifestSha256,
     executorOperatorReplayRelevantSetterLogCount:
@@ -3046,6 +3092,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
       input.executorOperatorReplayFixtureProjectionSha256,
     executorOperatorReplayRawLogsSha256:
       input.executorOperatorReplayRawLogsSha256,
+    executorOperatorReplayRawLogsObjectKey:
+      input.executorOperatorReplayRawLogsObjectKey,
     harnessName: "gov-apps-stats-revm-frame-injector",
     harnessRevision: input.harnessRevision,
     harnessArtifactSha256: input.harnessArtifactSha256,
@@ -3083,6 +3131,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
         : null,
     executorEvidenceFixtureProjectionSha256:
       input.executorEvidenceFixtureProjectionSha256,
+    executorEvidenceRawResultSha256: input.executorEvidenceRawResultSha256,
+    executorEvidenceRawResultObjectKey: input.executorEvidenceRawResultObjectKey,
     executorEvidenceAddress: input.executorEvidenceAddress,
     executorEvidenceBlockNumber: input.executorEvidenceBlockNumber,
     executorEvidenceBlockHash: input.executorEvidenceBlockHash,
@@ -3126,6 +3176,8 @@ export function deriveDaoSimulationContextInputsSha256(input: {
     overrideVotingEvidenceKind: input.overrideVotingEvidenceKind,
     overrideVotingFixtureProjectionSha256:
       input.overrideVotingFixtureProjectionSha256,
+    overrideVotingRawResultSha256: input.overrideVotingRawResultSha256,
+    overrideVotingRawResultObjectKey: input.overrideVotingRawResultObjectKey,
   });
   return sha256(new TextEncoder().encode(canonicalInputs));
 }
@@ -4019,6 +4071,7 @@ function validateGlobalBlockIdentity(
       byHeight.set(heightKey, { hash, timestamp, path });
     } else if (priorHeight.timestamp === null && timestamp !== null) {
       priorHeight.timestamp = timestamp;
+      priorHeight.path = path;
     }
 
     const hashKey = `${feed.chainId}:${hash}`;
@@ -4103,6 +4156,33 @@ function validateGlobalBlockIdentity(
         proposal.chainCreatedAt.observedAt.blockHash,
         proposal.chainCreatedAt.timestamp,
         ["proposals", index, "chainCreatedAt"]
+      );
+    }
+  }
+
+  const knownTimestamps = [...byHeight.entries()]
+    .map(([heightKey, evidence]) => ({
+      number: BigInt(heightKey.slice(heightKey.indexOf(":") + 1)),
+      timestamp: evidence.timestamp,
+      path: evidence.path,
+    }))
+    .filter(
+      (
+        evidence
+      ): evidence is { number: bigint; timestamp: number; path: PropertyKey[] } =>
+        evidence.timestamp !== null
+    )
+    .sort((left, right) =>
+      left.number < right.number ? -1 : left.number > right.number ? 1 : 0
+    );
+  for (let index = 1; index < knownTimestamps.length; index += 1) {
+    const previous = knownTimestamps[index - 1]!;
+    const current = knownTimestamps[index]!;
+    if (current.number > previous.number && current.timestamp <= previous.timestamp) {
+      issue(
+        context,
+        current.path,
+        "Known canonical block timestamps must increase strictly with chain height across every retained provenance record."
       );
     }
   }
@@ -4593,11 +4673,33 @@ function validateContracts(
       issue(context, path, "An inactive contract generation must identify retirement and replacement.");
     } else {
       const retired = toUint(contract.retiredAtBlock.number);
+      const canonical = toUint(feed.canonicalBlock.number);
       if (retired === null || start === null || retired < start) {
         issue(
           context,
           [...path, "retiredAtBlock"],
           "A contract generation cannot retire before its producer start block."
+        );
+      }
+      if (retired !== null && canonical !== null && retired > canonical) {
+        issue(
+          context,
+          [...path, "retiredAtBlock"],
+          "A retired Voting generation must retire at or before the canonical snapshot block."
+        );
+      }
+      if (
+        retired !== null &&
+        contract.configurationHistory.some(
+          (configuration) =>
+            (toUint(configuration.effectiveAt.blockNumber) ??
+              UINT256_MAX) > retired
+        )
+      ) {
+        issue(
+          context,
+          [...path, "configurationHistory"],
+          "A retired Voting generation cannot retain configuration effective after its inclusive retirement block."
         );
       }
     }
@@ -4615,6 +4717,14 @@ function validateContracts(
   for (let index = 0; index < feed.contracts.length - 1; index += 1) {
     const current = feed.contracts[index];
     const next = feed.contracts[index + 1];
+    const currentDeployment = toUint(current.deploymentBlock.number);
+    const currentStart = toUint(current.startBlock);
+    const retirement =
+      current.retiredAtBlock === null
+        ? null
+        : toUint(current.retiredAtBlock.number);
+    const nextDeployment = toUint(next.deploymentBlock.number);
+    const nextStart = toUint(next.startBlock);
     if (
       current.active ||
       current.replacedByVotingAddress === null ||
@@ -4624,6 +4734,25 @@ function validateContracts(
         context,
         ["contracts", index, "replacedByVotingAddress"],
         "Each retired Voting generation must point to the next ordered generation."
+      );
+    }
+    if (
+      current.retiredAtBlock === null ||
+      retirement === null ||
+      nextDeployment === null ||
+      nextStart === null ||
+      currentDeployment === null ||
+      currentStart === null ||
+      retirement !== nextDeployment ||
+      current.retiredAtBlock.hash !== next.deploymentBlock.hash ||
+      nextDeployment <= currentDeployment ||
+      nextDeployment <= currentStart ||
+      nextStart !== nextDeployment + 1n
+    ) {
+      issue(
+        context,
+        ["contracts", index, "retiredAtBlock"],
+        "Each generation cutover requires the predecessor retirement and successor deployment to share one canonical block/hash, with the successor producer start exactly one block later and strictly after predecessor deployment/start."
       );
     }
   }
@@ -4741,6 +4870,18 @@ function validateConfigurationSetterCall(
   context: RefinementContext,
   path: readonly PropertyKey[]
 ): void {
+  if (
+    call.setter === "set_propose_parameters" &&
+    (toUint(call.arguments.minWeight) === null ||
+      toUint(call.arguments.cooldownSeconds) === null)
+  ) {
+    issue(
+      context,
+      [...path, "arguments"],
+      "set_propose_parameters uint arguments must fit unsigned 256-bit ABI words before canonical re-encoding."
+    );
+    return;
+  }
   const expected = encodeDaoFeedConfigurationSetterAbi(setterAbiInput(call));
   const voterSetter =
     call.setter === "set_decay_length" ||
@@ -4881,94 +5022,104 @@ function applyConfigurationMutationAssertions(
   path: readonly PropertyKey[]
 ): void {
   const mutated = new Set<string>();
-  const expectValue = (
+  const lastMutationByField = new Map<
+    keyof HistoricalConfiguration,
+    { value: unknown; address: boolean }
+  >();
+  const recordMutation = (
     field: keyof HistoricalConfiguration,
     value: unknown,
     address = false
   ) => {
     mutated.add(field as string);
-    const actual = configuration[field];
-    const matches =
-      address && typeof actual === "string" && typeof value === "string"
-        ? sameAddress(actual, value)
-        : actual === value;
-    if (!matches) {
-      issue(
-        context,
-        [...path, field],
-        `Configuration field ${String(field)} must equal its final canonical setter mutation.`
-      );
-    }
+    lastMutationByField.set(field, { value, address });
   };
 
-  for (const call of [...calls].sort((a, b) => a.log.logIndex - b.log.logIndex)) {
+  for (const call of calls) {
     switch (call.setter) {
       case "set_propose_parameters":
-        expectValue(
+        recordMutation(
           "proposalBlacklistAddress",
           call.arguments.blacklistAddress,
           true
         );
         break;
       case "set_vote_parameters":
-        expectValue(
+        recordMutation(
           "votingPeriodSeconds",
           call.arguments.votingPeriodSeconds
         );
-        expectValue(
+        recordMutation(
           "voteStartOffsetSeconds",
           DAO_FEED_EPOCH_LENGTH_SECONDS -
             call.arguments.votingPeriodSeconds
         );
-        expectValue("voterAddress", call.arguments.voterAddress, true);
+        recordMutation("voterAddress", call.arguments.voterAddress, true);
         break;
       case "set_execute_parameters":
-        expectValue(
+        recordMutation(
           "executionDelaySeconds",
           call.arguments.executionDelaySeconds
         );
-        expectValue("executionGuard", call.arguments.executionGuard);
-        expectValue("executorAddress", call.arguments.executorAddress, true);
+        recordMutation("executionGuard", call.arguments.executionGuard);
+        recordMutation("executorAddress", call.arguments.executorAddress, true);
         break;
       case "set_hooks":
-        expectValue("votingHookAddress", call.arguments.hooksAddress, true);
+        recordMutation("votingHookAddress", call.arguments.hooksAddress, true);
         break;
       case "set_weight_measure":
-        expectValue(
+        recordMutation(
           "weightMeasureAddress",
           call.arguments.measureAddress,
           true
         );
         break;
       case "set_operator":
-        expectValue("operatorAddress", call.arguments.operatorAddress, true);
+        recordMutation("operatorAddress", call.arguments.operatorAddress, true);
         break;
       case "accept_guardian":
-        expectValue("guardianAddress", call.log.decoded.guardianAddress, true);
+        recordMutation("guardianAddress", call.log.decoded.guardianAddress, true);
         break;
       case "set_decay_length":
-        expectValue(
+        recordMutation(
           "voterDecayLengthSeconds",
           call.arguments.voterDecayLengthSeconds
         );
         break;
       case "set_delegated_staking":
-        expectValue(
+        recordMutation(
           "delegatedStakingAddress",
           call.arguments.delegatedStakingAddress,
           true
         );
         break;
       case "set_ybc":
-        expectValue("ybcAddress", call.arguments.ybcAddress, true);
+        recordMutation("ybcAddress", call.arguments.ybcAddress, true);
         break;
       case "set_ybc_weight_aggregator":
-        expectValue(
+        recordMutation(
           "ybcWeightAggregatorAddress",
           call.arguments.ybcWeightAggregatorAddress,
           true
         );
         break;
+    }
+  }
+
+  for (const [field, mutation] of lastMutationByField) {
+    const actual = configuration[field];
+    const matches =
+      mutation.address &&
+      typeof actual === "string" &&
+      typeof mutation.value === "string"
+        ? sameAddress(actual, mutation.value)
+        : actual === mutation.value;
+    if (!matches) {
+      issue(
+        context,
+        [...path, field],
+        `Configuration field ${String(field)} must equal its final canonical setter mutation.`
+      );
     }
   }
 
@@ -5147,7 +5298,12 @@ function validateConfigurationBoundary(
         count +
         proposal.events.filter((event) => {
           const block = toUint(event.log.blockNumber);
-          return block !== null && block >= deployment! && block <= parent!;
+          return (
+            block !== null &&
+            block >= deployment! &&
+            block <= parent! &&
+            sameAddress(event.data.abi.address, scan.votingAddress)
+          );
         }).length,
       0
     );
@@ -6346,9 +6502,9 @@ function validateProposals(
         chainId: feed.chainId,
         blockNumber: setterLog.blockNumber,
         blockHash: setterLog.blockHash,
-        timestamp:
-          proposal.events.find((event) => event.type === "propose")?.log
-            .timestamp ?? null,
+        // SetOperator evidence carries no authenticated block timestamp.
+        // Never borrow the later Propose timestamp for an earlier setter log.
+        timestamp: null,
         transactionHash: setterLog.transactionHash,
         transactionIndex: setterLog.transactionIndex,
         logIndex: setterLog.logIndex,
@@ -7173,11 +7329,12 @@ function validateDiscussion(
         url.port !== "" ||
         url.search !== "" ||
         url.hash !== "" ||
-        !/^\/t\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\/[1-9]\d*\/?$/u.test(
+        discussion.url !== `${url.origin}${url.pathname}` ||
+        !/^\/t\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\/[1-9]\d*$/u.test(
           url.pathname
         )
       ) {
-        issue(context, [...path, "url"], "Verified discussion provenance must use one canonical gov.yearn.fi /t/<slug>/<id> topic without query, fragment, port, or ambiguous path.");
+        issue(context, [...path, "url"], "Verified discussion provenance must use one canonical gov.yearn.fi /t/<slug>/<id> topic without query, fragment, port, trailing slash, or ambiguous path.");
       }
     } catch {
       // The shared URL validator reports the structural failure.
@@ -7593,6 +7750,31 @@ function validatePinnedVoterInvocations(
     }
 
     if (outcome === "returned_positive") {
+      const hasOpaquePriorAggregateState = opaquePositivePinnedVotes.some(
+        ({ event }) =>
+          event.data.classification.method ===
+            "pinned_voter_trace_unavailable" &&
+          sameAddress(
+            event.data.classification.voterAddress,
+            classification.voterAddress
+          ) &&
+          comparePositions(event.log, first.event.log) < 0
+      );
+      if (hasOpaquePriorAggregateState) {
+        issue(
+          context,
+          [
+            ...proposalPath,
+            "events",
+            first.index,
+            "data",
+            "classification",
+            "trace",
+            "aggregatorResult",
+          ],
+          "Pinned Voter aggregate replay cannot resume after an opaque earlier invocation: later aggregate-bearing events must cascade to raw/unclassified until authenticated cumulative state is available."
+        );
+      }
       const delegated = byOrdinal.get(1);
       const ybc = byOrdinal.get(2);
       if (
@@ -8657,6 +8839,19 @@ function validateAnalysis(
           : 30_000_000n;
     const creation =
       proposal.creation.state === "indexed" ? proposal.creation : null;
+    if (gasContext.chainId !== 1) {
+      issue(
+        context,
+        [
+          ...path,
+          "proposalSimulation",
+          "frameContext",
+          "gasContext",
+          "chainId",
+        ],
+        "Completed v1 simulations use the pinned Ethereum mainnet schedule and therefore require chainId 1."
+      );
+    }
     validateSource(
       gasContext.chainSpec.source,
       context,
@@ -8974,15 +9169,6 @@ function validateAnalysis(
         laterOperatorSetterLogCount += 1;
       }
     }
-    const expectedOperatorStorageProjection =
-      deriveDaoExecutorOperatorStorageProjectionSha256({
-        executorAddress: simulation.executorAddress as Address,
-        votingAddress: proposal.ref.votingAddress as Address,
-        blockNumber: propose.log.blockNumber,
-        blockHash: propose.log.blockHash as Hex,
-        resolvedStorageSlot: expectedOperatorStorageSlot,
-        storageWord: operatorStorage.storageWord as Hex,
-      });
     const expectedOperatorReplayProjection =
       deriveDaoExecutorOperatorReplayProjectionSha256({
         executorAddress: simulation.executorAddress as Address,
@@ -9045,49 +9231,39 @@ function validateAnalysis(
         "Completed simulation must prove Executor.operators[Voting] at the exact Propose position from the pinned Vyper slot, canonical block-end word, the last applied SetOperator value, and a complete same-block manifest with no later relevant log."
       );
     }
-    if (operatorStorage.evidenceKind === "committed_synthetic_fixture") {
-      if (
-        operatorStorage.rpcMethod !== null ||
-        operatorStorage.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
-        operatorStorage.fixtureProjectionSha256 !==
-          expectedOperatorStorageProjection
-      ) {
-        issue(
-          context,
-          [
-            ...path,
-            "proposalSimulation",
-            "frameContext",
-            "executorOperatorAuthorization",
-            "blockEndEvidence",
-          ],
-          "Synthetic Executor authorization storage evidence must reproduce the exact committed projection without archive claims."
-        );
-      }
-    } else if (
-      operatorStorage.rpcMethod !== "eth_getStorageAt" ||
-      operatorStorage.fixturePath !== null ||
-      operatorStorage.fixtureProjectionSha256 !== null
-    ) {
-      issue(
-        context,
-        [
-          ...path,
-          "proposalSimulation",
-          "frameContext",
-          "executorOperatorAuthorization",
-          "blockEndEvidence",
-        ],
-        "Live Executor authorization storage evidence must use eth_getStorageAt and omit synthetic fixture fields."
-      );
-    }
+    validateRpcOrSyntheticEvidence(
+      operatorStorage,
+      {
+        archiveKind: "archive_rpc",
+        syntheticKind: "committed_synthetic_fixture",
+        rpcMethod: "eth_getStorageAt",
+        projectionType: "executor_operator_eth_getStorageAt_projection",
+        projection: {
+          executorAddress: simulation.executorAddress,
+          votingAddress: proposal.ref.votingAddress,
+          blockNumber: propose.log.blockNumber,
+          blockHash: propose.log.blockHash,
+          resolvedStorageSlot: expectedOperatorStorageSlot,
+          storageWord: operatorStorage.storageWord,
+        },
+      },
+      context,
+      [
+        ...path,
+        "proposalSimulation",
+        "frameContext",
+        "executorOperatorAuthorization",
+        "blockEndEvidence",
+      ]
+    );
     if (operatorReplay.evidenceKind === "committed_synthetic_fixture") {
       if (
         operatorReplay.rpcMethod !== null ||
         operatorReplay.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
         operatorReplay.fixtureProjectionSha256 !==
           expectedOperatorReplayProjection ||
-        operatorReplay.rawLogsSha256 !== null
+        operatorReplay.rawLogsSha256 !== null ||
+        operatorReplay.rawLogsObjectKey !== null
       ) {
         issue(
           context,
@@ -9105,7 +9281,8 @@ function validateAnalysis(
       operatorReplay.rpcMethod !== "eth_getLogs" ||
       operatorReplay.fixturePath !== null ||
       operatorReplay.fixtureProjectionSha256 !== null ||
-      operatorReplay.rawLogsSha256 === null
+      operatorReplay.rawLogsSha256 === null ||
+      operatorReplay.rawLogsObjectKey === null
     ) {
       issue(
         context,
@@ -9116,7 +9293,7 @@ function validateAnalysis(
           "executorOperatorAuthorization",
           "positionReplay",
         ],
-        "Live Executor authorization replay evidence must retain the exact eth_getLogs response-byte digest and omit synthetic fixture fields."
+        "Live Executor authorization replay evidence must retain the exact eth_getLogs response-byte digest and immutable object key, and omit synthetic fixture fields."
       );
     }
     if (
@@ -9202,6 +9379,10 @@ function validateAnalysis(
               gasContext.blockHeader.evidenceKind,
             blockHeaderFixtureProjectionSha256:
               gasContext.blockHeader.fixtureProjectionSha256 as Hex | null,
+            blockHeaderRawResultSha256:
+              gasContext.blockHeader.rawResultSha256 as Hex | null,
+            blockHeaderRawResultObjectKey:
+              gasContext.blockHeader.rawResultObjectKey,
             proposeTransactionHash:
               gasContext.proposeReceipt.transactionHash as Hex,
             proposeTransactionSender:
@@ -9216,6 +9397,10 @@ function validateAnalysis(
               gasContext.proposeReceipt.evidenceKind,
             proposeReceiptFixtureProjectionSha256:
               gasContext.proposeReceipt.fixtureProjectionSha256 as Hex | null,
+            proposeReceiptRawResultSha256:
+              gasContext.proposeReceipt.rawResultSha256 as Hex | null,
+            proposeReceiptRawResultObjectKey:
+              gasContext.proposeReceipt.rawResultObjectKey,
             transactionOrigin: simulation.transactionOrigin as Address,
             votingCaller: simulation.caller as Address,
             executorAddress: simulation.executorAddress as Address,
@@ -9254,6 +9439,10 @@ function validateAnalysis(
               simulationExecutor.bytecode.fixtureProjectionSha256 as
                 | Hex
                 | null,
+            executorEvidenceRawResultSha256:
+              simulationExecutor.bytecode.rawResultSha256 as Hex | null,
+            executorEvidenceRawResultObjectKey:
+              simulationExecutor.bytecode.rawResultObjectKey,
             executorOperatorStorageSlot:
               operatorStorage.storageLayout.resolvedStorageSlot as Hex,
             executorOperatorBlockEndStorageWord:
@@ -9264,6 +9453,10 @@ function validateAnalysis(
               operatorStorage.evidenceKind,
             executorOperatorBlockEndFixtureProjectionSha256:
               operatorStorage.fixtureProjectionSha256 as Hex | null,
+            executorOperatorBlockEndRawResultSha256:
+              operatorStorage.rawResultSha256 as Hex | null,
+            executorOperatorBlockEndRawResultObjectKey:
+              operatorStorage.rawResultObjectKey,
             executorOperatorReplayManifestSha256:
               operatorReplay.canonicalManifestSha256 as Hex,
             executorOperatorReplayRelevantSetterLogCount:
@@ -9276,6 +9469,8 @@ function validateAnalysis(
               operatorReplay.fixtureProjectionSha256 as Hex | null,
             executorOperatorReplayRawLogsSha256:
               operatorReplay.rawLogsSha256 as Hex | null,
+            executorOperatorReplayRawLogsObjectKey:
+              operatorReplay.rawLogsObjectKey,
             executorFrameInitialGas:
               gasContext.executorFrameInitialGas,
             effectiveGasPriceWei: gasContext.effectiveGasPriceWei,
@@ -9293,6 +9488,10 @@ function validateAnalysis(
               override.proof.bytecode.evidenceKind,
             overrideVotingFixtureProjectionSha256: override.proof.bytecode
               .fixtureProjectionSha256 as Hex | null,
+            overrideVotingRawResultSha256:
+              override.proof.bytecode.rawResultSha256 as Hex | null,
+            overrideVotingRawResultObjectKey:
+              override.proof.bytecode.rawResultObjectKey,
           })
         : null;
     if (
@@ -9407,6 +9606,21 @@ function validateEvent(
       context,
       [...path, "log", "blockNumber"],
       "Lifecycle events cannot precede their contract generation's producer start block."
+    );
+  }
+  const contractRetirement =
+    contract?.retiredAtBlock === null || contract?.retiredAtBlock === undefined
+      ? null
+      : toUint(contract.retiredAtBlock.number);
+  if (
+    contractRetirement !== null &&
+    eventBlock !== null &&
+    eventBlock > contractRetirement
+  ) {
+    issue(
+      context,
+      [...path, "log", "blockNumber"],
+      "Lifecycle events for a retired Voting generation cannot follow its inclusive retirement block."
     );
   }
   if (event.log.blockNumber === feed.canonicalBlock.number && event.log.blockHash !== feed.canonicalBlock.hash) {
@@ -9874,6 +10088,39 @@ function validateCreationIdentityStage(
   if (stage.transactionHash !== stage.identity.log.transactionHash) {
     issue(context, ["transactionHash"], "Receipt-stage transaction hash must match its decoded Propose log.");
   }
+  if (
+    stage.receipt.transactionHash !== stage.transactionHash ||
+    stage.receipt.blockNumber !== stage.identity.log.blockNumber ||
+    stage.receipt.blockHash !== stage.identity.log.blockHash ||
+    stage.receipt.transactionIndex !== stage.identity.log.transactionIndex ||
+    !sameAddress(stage.receipt.transactionSender, stage.identity.proposer)
+  ) {
+    issue(
+      context,
+      ["receipt"],
+      "Receipt-stage provenance must bind the exact successful Propose transaction position and authenticate transaction sender equal to the decoded proposer."
+    );
+  }
+  validateRpcOrSyntheticEvidence(
+    stage.receipt,
+    {
+      archiveKind: "archive_rpc",
+      syntheticKind: "committed_synthetic_fixture",
+      rpcMethod: "eth_getTransactionReceipt",
+      projectionType: "creation_stage_eth_getTransactionReceipt_projection",
+      projection: {
+        transactionHash: stage.receipt.transactionHash,
+        transactionSender: stage.receipt.transactionSender,
+        blockNumber: stage.receipt.blockNumber,
+        blockHash: stage.receipt.blockHash,
+        transactionIndex: stage.receipt.transactionIndex,
+        status: stage.receipt.status,
+        matchingProposeLogCount: stage.receipt.matchingProposeLogCount,
+      },
+    },
+    context,
+    ["receipt"]
+  );
   if (!sameAddress(stage.ref.votingAddress, stage.identity.abi.address)) {
     issue(context, ["identity", "abi", "address"], "Receipt-stage ABI evidence must come from the exact Voting address.");
   }
@@ -10267,6 +10514,8 @@ type RpcOrSyntheticEvidence = {
   rpcMethod: string | null;
   fixturePath: string | null;
   fixtureProjectionSha256: string | null;
+  rawResultSha256: string | null;
+  rawResultObjectKey: string | null;
 };
 
 function validateRpcOrSyntheticEvidence(
@@ -10285,12 +10534,14 @@ function validateRpcOrSyntheticEvidence(
     if (
       evidence.rpcMethod !== expected.rpcMethod ||
       evidence.fixturePath !== null ||
-      evidence.fixtureProjectionSha256 !== null
+      evidence.fixtureProjectionSha256 !== null ||
+      evidence.rawResultSha256 === null ||
+      evidence.rawResultObjectKey === null
     ) {
       issue(
         context,
         path,
-        `Archive evidence must use exact ${expected.rpcMethod} provenance and cannot claim committed synthetic fixture fields.`
+        `Archive evidence must use exact ${expected.rpcMethod} provenance, retain the successful non-null raw JSON-RPC result-token SHA-256 and immutable object key, and cannot claim committed synthetic fixture fields.`
       );
     }
     return;
@@ -10304,12 +10555,14 @@ function validateRpcOrSyntheticEvidence(
     if (
       evidence.rpcMethod !== null ||
       evidence.fixturePath !== "tests/fixtures/dao-feed-v1.ts" ||
-      evidence.fixtureProjectionSha256 !== expectedProjectionSha256
+      evidence.fixtureProjectionSha256 !== expectedProjectionSha256 ||
+      evidence.rawResultSha256 !== null ||
+      evidence.rawResultObjectKey !== null
     ) {
       issue(
         context,
         path,
-        "Committed synthetic evidence must name the exact fixture path, omit RPC claims, and reproduce the canonical projection digest."
+        "Committed synthetic evidence must name the exact fixture path, omit live raw JSON-RPC claims, and reproduce the canonical projection digest."
       );
     }
     return;
@@ -10415,6 +10668,9 @@ function validateConfigurationSemantics(
       context,
       [...path, "voterImplementation", "source"]
     );
+    const constructorArtifacts = deriveDaoPinnedVoterConstructorArtifacts(
+      implementation.bytecode.constructorGenesisTimestamp
+    );
     const expectedBuildEvidenceSha256 =
       deriveDaoVoterBuildEvidenceSha256({
         constructorGenesisTimestamp:
@@ -10431,9 +10687,6 @@ function validateConfigurationSemantics(
         immutableGenesisWord:
           implementation.bytecode.immutableGenesisWord as Hex,
       });
-    const expectedGenesisWord = encodeUint256Word(
-      BigInt(implementation.bytecode.constructorGenesisTimestamp)
-    );
     validateRpcOrSyntheticEvidence(
       implementation.bytecode,
       {
@@ -10458,20 +10711,22 @@ function validateConfigurationSemantics(
       configuration.voterState !== "configured" ||
       implementation.immutableGenesisTimestamp !==
         implementation.bytecode.constructorGenesisTimestamp ||
-      implementation.immutableGenesisTimestamp !==
-        PINNED_VOTER_GENESIS_TIMESTAMP ||
       !sameAddress(implementation.bytecode.address, configuration.voterAddress) ||
       implementation.bytecode.blockNumber !==
         implementationEvidencePosition.blockNumber ||
       implementation.bytecode.blockHash !== implementationEvidencePosition.blockHash ||
       implementation.compiledRuntimeBytecodeHash !==
         implementation.bytecode.deployedBytecodeHash ||
+      implementation.compiledRuntimeBytecodeHash !==
+        constructorArtifacts.deployedRuntimeKeccak256 ||
       implementation.bytecode.immutableGenesisWord !==
-        expectedGenesisWord ||
-      implementation.bytecode.immutableGenesisWord !==
-        PINNED_VOTER_GENESIS_WORD ||
+        constructorArtifacts.immutableGenesisWord ||
       implementation.bytecode.deployedRuntimeSha256 !==
-        PINNED_VOTER_DEPLOYED_RUNTIME_SHA256 ||
+        constructorArtifacts.deployedRuntimeSha256 ||
+      implementation.buildArtifact.initcodeWithArgumentByteLength !==
+        constructorArtifacts.initcodeWithArgumentByteLength ||
+      implementation.buildArtifact.initcodeWithArgumentSha256 !==
+        constructorArtifacts.initcodeWithArgumentSha256 ||
       implementation.bytecode.buildEvidenceSha256 !==
         expectedBuildEvidenceSha256
     ) {

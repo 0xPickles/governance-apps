@@ -74,6 +74,11 @@ against the submitted values. The receipt sender must equal that Propose
 proposer. Chain context is supplied separately; it is not
 trusted from receipt data. Missing, duplicate, malformed, wrong-contract, or
 mismatched logs produce no proposal link.
+Creation-stage receipts carry exact archive-RPC or committed-synthetic
+provenance. Live `eth_getTransactionReceipt` evidence retains the SHA-256 and
+immutable object key for the successful non-null raw JSON-RPC result token;
+synthetic evidence retains neither live field and reproduces its committed
+projection. Rebinding the Propose ABI cannot excuse a sender mismatch.
 
 The event log must contain exactly four canonical topics. After decoding, the
 consumer re-encodes the selector, indexed proposal ID, proposer, and epoch, plus
@@ -118,9 +123,20 @@ therefore select old and new rows respectively; an intervening lifecycle log
 forces split rows. All retained setter logs occupy the feed-wide block-global
 log namespace. The fixture uses deployment `23900000`, producer start
 `23900001`, and `config-2` at block `23902000`, transaction `0`, log index `9`.
+Repeated setters for one field replay in canonical call/log order; the row must
+equal the last mutation for that field.
+The `set_propose_parameters` minimum-weight and cooldown arguments must fit
+uint256 before ABI re-encoding; malformed producer integers reject through the
+typed boundary and never escape a safe parser.
 When a Voting deployment timestamp is known, it must satisfy the pinned
 constructor precondition
 `deploymentTimestamp >= genesisTimestamp + EPOCH_LENGTH`.
+One generation remains valid through its inclusive retirement block. Its
+successor deploys at that exact block/hash, starts one block later, and is the
+only active generation. Old events/configurations cannot follow retirement and
+successor events cannot predate start. Bootstrap lifecycle counts are scoped to
+the scanned Voting address, so an old emitter at the shared cutover height does
+not contaminate the successor scan.
 
 ## 4. Voting
 
@@ -210,11 +226,18 @@ creation, runtime-template, and layout outputs. Creation stdout is 4,123 bytes
 Runtime stdout is 3,917 bytes (`0x461f3f…cd54`), decoding to a 1,957-byte
 template (`0x452dca…a8b` SHA-256; `0xdfc74b…caf` Keccak-256). Layout stdout is
 578 bytes (`0x648615…681`) and proves one 32-byte `genesis` immutable at offset
-zero. Fixture genesis `1542736800` appends word
+zero. For any genesis `G`, the proof derives the ABI uint256 word, appends it to
+both decoded creation code and runtime template, and recomputes the 2,092-byte
+initcode SHA-256 and 1,989-byte runtime SHA-256/Keccak-256. Fixture genesis
+`1542736800` appends word
 `0x000000000000000000000000000000000000000000000000000000005bf44ba0`,
-producing 1,989 runtime bytes (`0xb5de90…e0b` SHA-256;
+producing initcode SHA-256 `0x2b17e0…73a4` and runtime bytes
+(`0xb5de90…e0b` SHA-256;
 `0xef209e…26e` Keccak-256). The full hashes and exact command strings are
 normative in `feed-schema-v1.md` and the generated JSON Schema.
+The dynamic accepted vector `G=1542736801` derives word `0x…5bf44ba1`,
+initcode SHA-256 `0x035f0c…7804`, runtime SHA-256 `0x6faf59…ac6d`, and runtime
+Keccak-256 `0xea7147…93d5`; inconsistent words or hashes reject.
 
 A pointer to a preconfigured Voter cannot guess its four mutable nested values.
 It proves direct code birth (zero code in the prior block and pinned runtime
@@ -257,12 +280,19 @@ also replays pinned Voter `ybc_votes` cumulatively: each positive aggregator
 return updates checked cumulative weight/Yea, and both aggregate Vote logs use
 `floor(10000*cumulativeYea/cumulativeWeight)`. All intermediate products and
 sums, including passage multiplication, must fit uint256.
+A positive trace-unavailable invocation makes the cumulative aggregate state
+opaque. Later aggregate-bearing invocations cannot restart from zero; without
+an authenticated seed, their human and aggregate logs cascade to raw,
+unclassified provenance. Nonmember and returned-zero human-only paths remain
+classifiable because they do not consume hidden aggregate state.
 
 All live transaction, receipt, trace, code, and log-result hashes use the exact
 top-level JSON-RPC result-token byte preimage defined in `feed-schema-v1.md`;
 named object or manifest keys retain those bytes where the branch exposes such
-a key. Synthetic records bind only their fixture projection and keep exposed
-live hash/key fields null.
+a key. Generic archive code, storage, header, and receipt records expose
+`rawResultSha256` and `rawResultObjectKey`; Executor log replay exposes
+`rawLogsSha256` and `rawLogsObjectKey`. Synthetic records bind only their
+fixture projection and keep exposed live hash/key fields null.
 
 Pinned code without a usable trace uses `pinned_voter_trace_unavailable` and
 keeps the raw Vote unclassified. Custom code uses
@@ -457,6 +487,8 @@ conditional proposal-time Executor-frame scenario. A completed result records:
 Only an executable proposal with exact retained, hash-verified bytes and valid
 pinned-Executor framing may have a completed result. Signals, missing or
 malformed scripts, hash mismatches, and custom Executors remain unavailable.
+Completed v1 records are mainnet-only: feed and frame context both require
+`chainId = 1` before applying the pinned mainnet fork schedule.
 
 A bare top-level `Executor.execute` call with caller set to Voting is not
 equivalent because `tx.origin` becomes Voting. An ordinary deployed harness also
@@ -469,7 +501,9 @@ The completed record requires the proposal-effective pinned Executor proof and
 code evidence at the Propose block. Live records authenticate the header with
 `eth_getBlockByHash`, including positive u64 gas limit and base fee, and the
 successful Propose receipt with `eth_getTransactionReceipt`, including hash,
-sender, block, and effective gas price. It derives:
+sender, block, and effective gas price. Each live result also retains the exact
+successful non-null raw result-token SHA-256 and immutable object key; its
+synthetic counterpart keeps both live fields `null`. It derives:
 
 ```text
 Executor frame gas = min(Propose block gasLimit, 30_000_000)
@@ -502,9 +536,11 @@ overapproximation: outer transaction validation is bypassed, Osaka's
 is not modeled. It proves recorded injected-frame behavior, not future
 execution feasibility. The `yearn.dao.simulation-context-inputs.v4` SHA-256
 commitment binds chain-spec/engine pins, header/receipt and synthetic/RPC
-projection evidence, fork/blob/opcode context, caller chain, calldata, script,
+projection evidence including every raw digest/object-key pair,
+fork/blob/opcode context, caller chain, calldata, script,
 injector, Executor source/build/code proof, Voting override, exact
-Executor-authorization storage/replay evidence kind and raw/projection digest,
+Executor-authorization storage/replay evidence kind and raw/projection
+digest/object key,
 gas disclosures, envelope, access list, and warm set. Version 3 is rejected.
 The exact Osaka/BPO2 activation values, Prague-fraction rejection, engine
 initialization order, fixture blob-fee comparison, REVM crate URI/hash, and six
@@ -550,8 +586,9 @@ The consumer maintains one canonical registry for every block-bearing record,
 not only lifecycle logs. At one chain height, deployments, configurations,
 events, receipts, archive-or-committed-synthetic code proofs, simulation
 evidence, cursors, and finality data use one hash and one value for each known
-timestamp. One hash maps to one height. Ethereum `logIndex` is block-global and
-rises strictly with
+timestamp. One hash maps to one height. Known timestamps rise strictly with
+block height; equal or decreasing time at a higher retained height is invalid.
+Ethereum `logIndex` is block-global and rises strictly with
 transaction order across proposals and Voting generations. Bootstrap,
 configuration-boundary, preconfigured-Voter-history, and Executor-authorization
 Set* logs share that namespace. One exact physical Set* log may be referenced by
@@ -597,6 +634,12 @@ canonical byte sequence cannot be relabeled invalid, and a producer cannot
 substitute a later failure code for the first failing check. RFC 3339 values are
 parsed as real instants; regex-shaped impossible calendar dates are schema
 failures.
+
+Verified discussion provenance uses the canonical
+`https://gov.yearn.fi/t/<slug>/<id>` topic URL. Its original serialized value
+must equal `${url.origin}${url.pathname}` exactly, so trailing slashes, queries,
+fragments, ports, ambiguous paths, and terminal bare `?` or `#` delimiters are
+invalid.
 
 Each asset-manifest digest authenticates one independent raw asset block. A
 relative manifest attachment such as `./assets/diagram.svg` is an exact logical

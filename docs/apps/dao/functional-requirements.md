@@ -138,6 +138,16 @@ skipped. Each later row binds a successful setter transaction, sender, exact
 calldata, unfiltered trace path, canonical Set* log, and becomes effective at
 its final real Set* log. Same-transaction lifecycle logs on opposite sides of a
 setter use old and new rows; an intervening lifecycle log forces split rows.
+Repeated setters for one field replay in canonical call/log order and the row
+uses the final mutation. Adjacent Voting generations use an inclusive old
+retirement block equal to the successor deployment block/hash; the successor
+starts one block later. Old events/configurations stop at retirement, new
+events start at successor start, and bootstrap lifecycle counts are scoped to
+the exact Voting emitter so the shared cutover block cannot cross-contaminate
+generations.
+The retained `set_propose_parameters` minimum-weight and cooldown arguments are
+bounded to uint256 before ABI re-encoding, and all safe consumer entry points
+return typed rejection rather than exposing an encoder exception.
 The feed also authenticates the stored proposal threshold at Propose from the
 pinned Vyper slot-then-key mapping layout, exact 32-byte word, and archive or
 committed-synthetic evidence. Both displayed threshold copies must equal that
@@ -180,6 +190,12 @@ invocation identities are feed-wide, ordinals follow canonical log order, and
 one pinned caller submits at most once per proposal. The consumer replays
 cumulative pinned `ybc_votes` with checked uint256 arithmetic and derives the
 shared aggregate basis points from cumulative Yea and weight.
+The immutable word, initcode, and deployed runtime are derived for the recorded
+constructor genesis from the frozen creation bytes and runtime template; v1
+does not hardcode the fixture genesis or its constructor-bound hashes. After a
+positive trace-unavailable invocation, later aggregate-bearing events cannot
+restart cumulative replay at zero and must cascade to raw/unclassified unless
+an authenticated cumulative seed is supplied.
 The exact public methods are `vote_yea(address,uint256)` / `0x69586e2e` and
 `vote_nay(address,uint256)` / `0xff855dde`. Compiler distribution,
 source-integrity preimages, commands, stdout/raw-byte hashes, immutable layout,
@@ -203,9 +219,12 @@ the direct-root fixture. Live `rawTraceSha256` hashes the exact retained UTF-8
 bytes of the successful top-level JSON-RPC result object from opening `{` to
 matching `}`, excluding the envelope, ID, and surrounding whitespace, before
 decoding or reserialization. Synthetic examples use a separate projection.
-Every other live transaction, receipt, code, and log-result hash uses the same
+Every other live transaction, receipt, code, storage, header, and log-result
+hash uses the same
 exact JSON-RPC result-token byte rule from `feed-schema-v1.md`; synthetic
-records keep exposed live hash/key fields null. Object or manifest keys are
+records keep exposed live hash/key fields null. Generic archive branches retain
+`rawResultSha256` with `rawResultObjectKey`; Executor log replay retains
+`rawLogsSha256` with `rawLogsObjectKey`. Object or manifest keys are
 required only where the selected union branch exposes them.
 
 Only a verified pinned Executor permits pinned script framing, decoded calls,
@@ -226,7 +245,8 @@ still retains every available raw identity field.
 The feed uses one canonical block registry across deployment, configuration,
 event, receipt, bytecode, simulation, cursor, and finality evidence. One chain
 height has one hash and one value for every known timestamp; one hash maps to
-one height. Within a block, `logIndex` is unique and rises strictly as
+one height. Known timestamps increase strictly with block height; equal or
+decreasing time at a higher block rejects. Within a block, `logIndex` is unique and rises strictly as
 transaction order advances across proposals and Voting generations. Real
 bootstrap, configuration, preconfigured-Voter, and Executor-authorization logs
 occupy that same namespace. Repeated references to one physical setter log are
@@ -332,7 +352,10 @@ one primary reason controls the action.
 
 The app requires a public `gov.yearn.fi` topic in the configured forum
 `Proposals` category. A same-origin server endpoint validates and normalizes the
-topic. Eligibility uses stable category IDs, not display labels. Descendants are
+topic to the exact `/t/<slug>/<id>` URL without a trailing slash, query,
+fragment, port, ambiguous path, or terminal bare `?` or `#` delimiter. The
+original serialized URL must equal `${url.origin}${url.pathname}` exactly.
+Eligibility uses stable category IDs, not display labels. Descendants are
 accepted only when their IDs are explicitly configured. Version 1 fixes the
 authoritative root to `5 / Proposals / proposals` and permits descendants `9`,
 `18`, `17`, `21`, `10`, and `29` only with exact root ancestry and metadata.
@@ -423,7 +446,11 @@ the Propose proposer. That log must have four canonical
 topics, and its decoded topics and non-indexed data must re-encode byte for byte
 with no trailing or dirty padding. Open proposal and Copy link appear only after
 that receipt supplies the composite identity. Receipt confirmation,
-awaiting-index, and indexed states retain the same identity. Publication failure
+awaiting-index, and indexed states retain the same identity. The creation-stage
+receipt uses exact archive-RPC or committed-synthetic provenance. Live
+`eth_getTransactionReceipt` retains the raw successful result-token SHA-256 and
+immutable object key; synthetic evidence keeps both live fields null and binds
+its fixture projection. Publication failure
 never exposes Step 2. The typed review outcome controls proposal creation.
 Wallet rejection, onchain revert, and network failure preserve the published
 content and retry without republishing. They produce no hash, receipt, proposal
@@ -458,6 +485,11 @@ evidence selects REVM `SpecId::OSAKA` and BPO2, whose authenticated excess blob
 gas determines the blob base fee. The frame binds block beneficiary, zero
 difficulty, PREVRANDAO, exact `execute(bytes)` calldata, and the Osaka warm set
 including coinbase and all Osaka precompiles.
+Completed v1 simulation is mainnet-only: feed and frame context require
+`chainId = 1`. Every live header, receipt, Executor code, authorization storage,
+authorization log replay, and Voting override code branch retains its raw
+result digest and immutable object key, and v4 binds each pair; synthetic
+branches bind projections and require the live pair to be null.
 
 Completed simulation separately proves `Executor.operators[Voting]` at the
 Propose position from pinned mapping base slot `2`, exact zero/one storage word,

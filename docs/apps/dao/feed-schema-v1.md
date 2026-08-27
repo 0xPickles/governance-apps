@@ -93,6 +93,14 @@ follow the canonical snapshot, or move backward in block/transaction/log order.
 Events cannot predate that generation's start block. When deployment time is
 known, pinned Voting construction requires
 `deploymentTimestamp >= genesisTimestamp + 1,209,600`.
+For adjacent generations, the predecessor remains valid through its inclusive
+retirement block, that retirement block is exactly the successor deployment
+block with the same hash, and the successor producer start is the following
+block. Old-generation events and configurations cannot follow retirement; new
+events cannot precede the successor start; only the last generation is active.
+Bootstrap lifecycle coverage is scoped by both scan range and the exact Voting
+emitter, so an old-generation log in the shared cutover block is not counted as
+a new-generation bootstrap log.
 
 The root canonical block owns the snapshot time and hash. All block-bearing
 evidence enters one feed-wide canonical registry. At one chain height,
@@ -102,7 +110,9 @@ and receipts,
 state-transition proofs, cursors, and finality records use one block hash and
 one value for every known timestamp. A block hash maps back to one height.
 Unknown timestamps remain `null`; they do not license a conflicting known
-timestamp. Transaction hashes remain nullable; event identity does not use
+timestamp. Across increasing block heights, every known timestamp must increase
+strictly; equality or reversal is invalid even when each block is internally
+consistent. Transaction hashes remain nullable; event identity does not use
 them. The event ID is:
 
 ```text
@@ -146,6 +156,10 @@ and Executor-authorization logs. The committed fixture starts at block
 `23900001` from deployment block `23900000`; `config-1` replays nine bootstrap
 setter logs, while `config-2` retains ten setters and becomes effective at
 block `23902000`, transaction `0`, global log index `9`.
+If one boundary contains repeated setters for the same tracked field, replay
+uses canonical call/log order and the last mutation for that field is the row
+value. Producer array order, an earlier value, or a reordered final write cannot
+override the canonical last setter.
 
 Configuration replay includes `voterDecayLengthSeconds` in `0..604799`; zero
 disables decay. It also includes every address/state field. An unchanged Voter
@@ -170,8 +184,11 @@ and exact emitter/topics/data, but its schema does not assert a sender or call
 trace.
 
 All live raw JSON-RPC hashes are byte commitments, not reserialized JSON.
+Generic archive branches use `rawResultSha256` plus
+`rawResultObjectKey`; specialized records also expose
 `rawTransactionSha256`, `rawReceiptSha256`, `rawTraceSha256`,
-`rawPreviousCodeSha256`, `rawDeployedCodeSha256`, and `rawLogsSha256` are
+`rawPreviousCodeSha256`, `rawDeployedCodeSha256`, or `rawLogsSha256` plus
+`rawLogsObjectKey`. These hashes are
 SHA-256 over the exact UTF-8 bytes of the successful, non-null, top-level
 JSON-RPC `result` token before JSON decoding or reserialization. Transaction,
 receipt, and trace results hash the complete object token from opening `{` to
@@ -189,7 +206,7 @@ The tracked setter ABI is exact:
 
 | Contract / setter | Selector | Canonical event topic 0 | Tracked result |
 | --- | --- | --- | --- |
-| Voting `set_propose_parameters(uint256,uint256,address)` | `0xff6df1ac` | `0xfab3227f78255cd593ef6859519102d5fb7ad8f773deb32a3464ce696f0020fa` | call/log retains minimum weight and cooldown; configuration projects blacklist |
+| Voting `set_propose_parameters(uint256,uint256,address)` | `0xff6df1ac` | `0xfab3227f78255cd593ef6859519102d5fb7ad8f773deb32a3464ce696f0020fa` | call/log retains uint256-bounded minimum weight and cooldown before ABI encoding; configuration projects blacklist |
 | Voting `set_vote_parameters(uint256,address)` | `0xf182b394` | `0x559116557c3a62b0f633fca41b82c45045bd81575f2ffdb29b3b6a8a6ecb34bb` | period and Voter; offset is `L-period` |
 | Voting `set_execute_parameters(uint256,bool,address)` | `0xdcfec72c` | `0xbcd64841ac721e268f925c3209cfd0b682bf2586bf932242b82c33df319a8ed6` | delay, guard, Executor |
 | Voting `set_hooks(address)` | `0x0c360521` | `0xdb0670e174c4203280e70166db52920a0ddc53923128a7e0e964c5350de54f1f` | hook |
@@ -262,6 +279,13 @@ event, proposal, content, and script records must agree on transaction, block,
 transaction index, proposal ID, proposer, epoch, digest, and exact script. The
 receipt transaction sender must equal the canonical Propose proposer. The
 consumer re-encodes all four topics and the full ABI data.
+Each of the three creation-stage vectors uses an exact archive-RPC or
+committed-synthetic evidence branch. Live
+`eth_getTransactionReceipt` evidence retains the successful non-null raw result
+token SHA-256 and immutable object key under the common byte-preimage rule;
+synthetic evidence keeps both fields `null` and reproduces its fixture
+projection. Sender provenance remains required before and after ABI
+re-encoding.
 
 `chainCreatedAt` is separate evidence. It is `available` only when the Propose
 block timestamp is known and then equals and binds that exact event position.
@@ -385,8 +409,11 @@ its exact byte encoding is
 final LF, then strictly decoding lowercase hex, produces 2,060 creation bytes
 with SHA-256
 `0xbcb72ccd8fec2d904ecd867503481abc4d841d4b1ef7d5104b6017ff15a93839`.
-Appending the ABI uint256 constructor word produces 2,092 initcode bytes with
-SHA-256 `0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4`.
+For any accepted constructor genesis `G`, the producer derives the exact
+32-byte ABI uint256 word, `initcode = decodedCreation || word`, and
+`deployedRuntime = decodedRuntimeTemplate || word`. The lengths remain 2,092
+and 1,989 bytes, while the initcode SHA-256 and deployed-runtime SHA-256 and
+Keccak-256 are derived from `G`; they are not fixture literals.
 The exact runtime command replaces `-f bytecode` with
 `-f bytecode_runtime`. Its stdout is 3,917 bytes with SHA-256
 `0x461f3f38e239d707be52a4c89d57d887c4c8e60b42b2032ebe6ed99b41e9cd54`;
@@ -401,9 +428,19 @@ The exact layout command replaces the output with `-f layout`; its stdout is
 It proves a 32-byte `genesis` immutable at code offset zero. The committed
 fixture genesis `1542736800` appends word
 `0x000000000000000000000000000000000000000000000000000000005bf44ba0`,
+produces initcode SHA-256
+`0x2b17e0d55f428eaad1e1bcb6af7631a727c7bfd7d0803e68ed900ae7a3b273a4`,
 yielding 1,989 deployed runtime bytes with SHA-256
 `0xb5de901445a5744788a6979108d95eba59c98fe4602ae2ded0ec087c19fc6e0b`
 and Keccak-256 `0xef209e54f557183eb15a068121c3668d349d2f245893345d747b4e09bb55826e`.
+The accepted dynamic vector `G = 1542736801` uses word
+`0x000000000000000000000000000000000000000000000000000000005bf44ba1`,
+initcode SHA-256
+`0x035f0c7871b39cafd4a47ef7ad0e04b04bd71f65e64ae78ce5014359a5877804`,
+runtime SHA-256
+`0x6faf5966a18ad50c242e2f7791d86e2031f3788de3341ef5c478525e7ac2ac6d`,
+and runtime Keccak-256
+`0xea7147fdd429674740a390017328cae6ca7fb707021ad9aeec62dee6e5fd93d5`.
 The constructor genesis is independent of Voting genesis, must not follow any
 Vote the Voter could emit, and must match its own code/build evidence.
 `yearn.dao.voter-build-evidence.v2` binds every source, compiler-distribution,
@@ -466,6 +503,12 @@ a Vote. Neither unclassified state may claim human direction, aggregate role, or
 human participation. Human participation is `complete` only when every raw Vote
 is classified. Otherwise it is `lower_bound`, with the exact classified-human
 count, unclassified-event count, and provenance failure.
+A positive trace-unavailable invocation also makes cumulative `ybc_votes`
+aggregate state opaque. A later positive aggregate-bearing invocation cannot
+restart replay at zero: without an authenticated cumulative seed, its human and
+aggregate Vote events cascade to raw/unclassified provenance. Human-only
+nonmember or returned-zero paths remain classifiable because they do not depend
+on hidden aggregate state.
 
 The trace resolves address collisions and permits the pinned Voter's
 contract-valid zero delegated aggregate account. Flag and veto actor evidence
@@ -584,7 +627,10 @@ uncanonical source claim. A failed analysis summary names `decoder` only when a
 call actually failed decoding and names `simulation` only for a simulation-only
 failure, with the matching canonical error code.
 
-Verified discussions require canonical `gov.yearn.fi/t/<slug>/<id>` URLs. The
+Verified discussions require the original serialized URL to equal exactly
+`${url.origin}${url.pathname}` for a canonical
+`gov.yearn.fi/t/<slug>/<id>` topic. Trailing slashes, queries, fragments, and
+terminal bare `?` or `#` delimiters are invalid. The
 authoritative public category metadata observed on 2026-08-26 fixes root
 `5 / Proposals / proposals`; accepted descendants are IDs `9`, `18`, `17`,
 `21`, `10`, and `29` with exact root ancestry and ID/name/slug tuples.
@@ -593,7 +639,8 @@ Unknown calls keep raw target and calldata but no contract name, signature,
 arguments, or verified source. Failed decoding uses a decoder failure. Decode
 state does not imply a simulation result.
 
-A completed proposal-time simulation uses `revm@34.0.0` and method
+A completed proposal-time simulation is mainnet-only in v1: the feed and frame
+context must both use `chainId = 1`. It uses `revm@34.0.0` and method
 `revm_engine_injected_executor_frame_conditional_origin`. It is a disclosed,
 conditional proposal-time scenario, not a claim that an unknown future
 `Voting.execute` transaction will succeed. Only an executable proposal with
@@ -693,16 +740,20 @@ the chain-spec and engine pins, block/header and receipt facts, synthetic/RPC
 projection digests, runtime fork/blob context, exact warm set and calldata,
 origin and caller chain, script, injector, Executor source/build/code proof,
 Voting state override, exact Executor-authorization storage/replay evidence
-kind and raw-log/projection digest, gas formula/disclosures, envelope, and
-access list. A v3 digest is invalid. If the producer lacks or cannot reproduce
+kind and raw/projection provenance, gas formula/disclosures, envelope, and
+access list. In particular, v4 binds the evidence kind and raw digest/object-key
+pair for the header, Propose receipt, Executor code, authorization storage,
+authorization log replay, and Voting override code; synthetic branches bind
+their fixture projection and require both live fields to be `null`. A v3 digest
+is invalid. If the producer lacks or cannot reproduce
 any required fact, or cannot prove there are zero later same-block relevant
 Executor setters, it emits a fully `unavailable` simulation instead of partial
 frame claims.
-For archive authorization replay, `rawLogsSha256` uses the exact JSON-RPC
-result-array token rule above; the record also retains the canonical manifest
-encoding, byte length, digest, and decoded logs. This union has no manifest-key
-field. The synthetic branch binds only its fixture projection and keeps the live
-raw hash and RPC method `null`.
+For archive authorization replay, `rawLogsSha256` and `rawLogsObjectKey` bind
+the exact JSON-RPC result-array token under the common rule above; the record
+also retains the canonical manifest encoding, byte length, digest, and decoded
+logs. The synthetic branch binds only its fixture projection and keeps the live
+raw hash, object key, and RPC method `null`.
 
 Before entering the Executor frame, the method applies one typed
 proposal-specific override proving `executed: false -> true`. That proof
@@ -770,8 +821,8 @@ provenance, content-failure reproduction, event-effective capabilities,
 running vote totals, chronology, cryptographic and ABI bindings, block-global
 log order, bounds, retry, reorg, cursor, and publication invariants.
 The committed accepted example contains exactly 27 proposals and 81 lifecycle
-events. The rejection artifact contains 103 vectors, and the focused schema
-suite currently contains 136 passing tests.
+events. The rejection artifact contains 114 vectors, and the focused schema
+suite currently contains 152 passing tests.
 
 ## Producer assumptions still open
 
