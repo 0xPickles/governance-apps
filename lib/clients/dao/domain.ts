@@ -1,4 +1,4 @@
-import { createDaoExecuteCall, matchesDaoExecuteCall } from "./execute-call";
+import { createDaoExecuteCall, matchesDaoExecuteCall, matchesDaoExecutionContext } from "./execute-call";
 import { keccak256 } from "viem";
 import { checkDaoExecutorScript } from "./script";
 import type {
@@ -763,6 +763,7 @@ function deriveExecuteCapability(input: DaoCapabilityInput): string | null {
     createDaoExecuteCall(input.proposal.ref, input.account.address, input.proposal.script.bytes))) {
     return DAO_BLOCKED_REASONS.executionSimulationMismatch;
   }
+  if (!matchesDaoExecutionContext(input)) return DAO_BLOCKED_REASONS.executionSimulationRequired;
   return null;
 }
 

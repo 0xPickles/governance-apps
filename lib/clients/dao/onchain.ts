@@ -115,13 +115,13 @@ async function acquireDaoLiveAccount(
   const canonical = blockSchema.parse(await rpc.request({ method: "eth_getBlockByNumber", params: [block.number, false] }));
   if (canonical.hash !== hash) throw new Error("DAO live block was replaced during the read.");
   const facts = {
-    address: account, connected: true, correctChain: true, ...weight,
+    address: account, connected: true, correctChain: true, ...weight, observation,
     hasVoted: contribution.weight > 0n,
     voteDirection: contribution.weight > 0n && contribution.yea === contribution.weight ? "yea" as const : contribution.weight > 0n && contribution.yea === 0n ? "nay" as const : null,
     isProposer: account.toLowerCase() === stored.proposer.toLowerCase(),
     isOperator: account.toLowerCase() === operator,
     isGuardian: account.toLowerCase() === guardian,
-    executionPreflight: { call: null, state: "idle" as const, scriptHash: stored.script_hash, blockNumber: number, simulatedAt: null, error: null },
+    executionPreflight: { call: null, state: "idle" as const, scriptHash: stored.script_hash, observation: null, contextKey: null, simulatedAt: null, error: null },
   };
   return {
     ...facts, observation, liveProposal, writesEnabled: false,

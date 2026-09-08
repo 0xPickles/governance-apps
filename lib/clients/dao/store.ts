@@ -1,4 +1,4 @@
-import { createDaoExecuteCall } from "./execute-call";
+import { createDaoExecuteCall, daoExecutionContextKey } from "./execute-call";
 import { keccak256, stringToHex, type Address } from "viem";
 import type { DaoTestBridgeAdapter } from "@/lib/test-bridge";
 import { nowSeconds } from "@/lib/mocks/time";
@@ -61,6 +61,7 @@ import type {
   DaoProposalEvent,
   DaoProposalLookup,
   DaoProposalRef,
+  DaoStateObservation,
   DaoProposerEligibilityInput,
   DaoProposerState,
   DaoVoteDirection,
@@ -585,6 +586,7 @@ export function syncDaoMockStoreToNow(timestamp: number = nowSeconds()) {
   }
   return updateStore((current) => {
     current.now = timestamp;
+    if (current.account.observation) current.account.observation = deriveMockCanonicalBlock(current.account.observation, timestamp);
     current.feed.canonicalBlock = deriveMockCanonicalBlock(
       current.feed.canonicalBlock,
       timestamp
@@ -826,12 +828,17 @@ export function setDaoMockExecutionState(executionState: DaoMockExecutionState) 
     current.executionGuard =
       executionState === "permissionless" ? "permissionless" : "guarded";
     current.account.isOperator = executionState !== "permissionless";
+    const selected = getSelectedProposalRuntime(current);
+    const observation = { number: 24_000_001n, hash: deriveDaoMockBlockHash(24_000_001n, current.now), timestamp: current.now };
+    current.account.observation = observation;
     current.account.executionPreflight = {
       ...current.account.executionPreflight,
       call: createDaoExecuteCall(getSelectedProposalRuntime(current).proposal.ref, current.account.address, getSelectedProposalRuntime(current).proposal.script.bytes ?? "0x"),
       state: executionState === "simulation-failure" ? "failed" : "succeeded",
       scriptHash: getSelectedProposalRuntime(current).proposal.script.hash,
-      blockNumber: 24_000_001n,
+      observation: { ...observation },
+      contextKey: daoExecutionContextKey({ proposal: selected.proposal, account: current.account,
+        now: current.now, vetoEndsAt: selected.vetoEndsAt, executionGuard: current.executionGuard })!,
       simulatedAt: new Date(current.now * 1_000).toISOString(),
       error:
         executionState === "simulation-failure"
@@ -839,6 +846,11 @@ export function setDaoMockExecutionState(executionState: DaoMockExecutionState) 
           : null,
     };
   });
+}
+
+/** Synthetic live observation; advancing/replacing it does not rerun preflight. */
+export function setDaoMockLiveObservation(observation: DaoStateObservation | undefined) {
+  return updateStore(current => { current.account.observation = cloneValue(observation); });
 }
 
 export function setDaoMockExecutionGuard(guard: DaoExecutionGuard) {

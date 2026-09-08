@@ -132,14 +132,23 @@ export type DaoAnalysis = {
   error: string | null;
 };
 
+export type DaoStateObservation = { number: bigint; hash: Hex; timestamp: DaoUnixSeconds };
+
 export type DaoExecutionPreflight = {
   call: import("./execute-call").DaoExecuteCall | null;
-  state: "idle" | "simulating" | "succeeded" | "failed";
   scriptHash: Hex;
-  blockNumber: bigint | null;
-  simulatedAt: string | null;
   error: string | null;
-};
+} & ({
+  state: "succeeded";
+  observation: DaoStateObservation;
+  contextKey: string;
+  simulatedAt: string;
+} | {
+  state: "idle" | "simulating" | "failed";
+  observation: DaoStateObservation | null;
+  contextKey: string | null;
+  simulatedAt: string | null;
+});
 
 export type DaoLogRef = {
   blockNumber: bigint;
@@ -327,6 +336,8 @@ export type DaoProposal = {
 };
 
 export type DaoAccountProposalFacts = {
+  /** Current account/preparation read block, independent of feed observation. */
+  observation?: DaoStateObservation;
   address: Address;
   connected: boolean;
   correctChain: boolean;
@@ -343,7 +354,6 @@ export type DaoAccountProposalFacts = {
 
 export type DaoAccountProposalState = DaoAccountProposalFacts & {
   capabilities: DaoCapabilities;
-  observation?: { number: bigint; hash: Hex; timestamp: number };
   liveProposal?: DaoProposal;
   writesEnabled?: boolean;
 };

@@ -17,6 +17,8 @@ import {
   setDaoMockAccountState,
   setDaoMockScriptState,
   setDaoMockProposalThreshold,
+  setDaoMockLiveObservation,
+  setDaoMockExecutionGuard,
   setDaoMockAlreadyVoted,
   setDaoMockRole,
   setDaoMockTransactionOutcome,
@@ -277,6 +279,22 @@ describe("DAO mock proposal actions", () => {
     await expect(prepared()).rejects.toThrow("DAO preparation changed");
     expect(getDaoMockSnapshot().pendingAction).toBeNull();
   });
+
+  it.each(["missing", "new-block", "same-height-replacement", "configuration"] as const)(
+    "invalidates prepared execution after live %s changes", async change => {
+      const proposal = load(change === "configuration" ? "guarded-execution" : "permissionless-execution");
+      const actor = getDaoMockSnapshot().account.address;
+      const prepared = prepareDaoMockExecute(proposal.ref, actor);
+      const observation = readDaoMockAccountProposalState(proposal.ref, actor).observation!;
+      if (change === "missing") setDaoMockLiveObservation(undefined);
+      if (change === "new-block") setDaoMockLiveObservation({ ...observation, number: observation.number + 1n });
+      if (change === "same-height-replacement") setDaoMockLiveObservation({ ...observation, hash: `0x${"cd".repeat(32)}` });
+      if (change === "configuration") setDaoMockExecutionGuard("permissionless");
+      await expect(prepared()).rejects.toThrow(DAO_BLOCKED_REASONS.executionSimulationRequired);
+      expect(getDaoMockSnapshot().pendingAction).toBeNull();
+      expect(readDaoMockAccountProposalState(proposal.ref, actor).capabilities.canExecute).toBe(false);
+    }
+  );
 
   it.each(["disconnected", "wrong-network"] as const)("blocks prepared writes after %s", async state => {
     const proposal = load("voting");

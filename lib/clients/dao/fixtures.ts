@@ -1,4 +1,4 @@
-import { createDaoExecuteCall } from "./execute-call";
+import { createDaoExecuteCall, daoExecutionContextKey } from "./execute-call";
 import { analyzeDaoScript } from "./script-analysis";
 import { keccak256, sha256, toBytes, type Address, type Hex } from "viem";
 import { parseDaoFeedJson, serializeDaoFeedJson } from "./client";
@@ -414,7 +414,10 @@ export function getDaoMockFixture(id: DaoMockFixtureId): DaoMockFixture {
   });
   const preflightSucceeded =
     id === "guarded-execution" || id === "permissionless-execution";
+  const executionGuard = id === "permissionless-execution" ? "permissionless" : "guarded";
+  const observation = { number: 24_000_001n, hash: deriveDaoMockBlockHash(24_000_001n, DAO_MOCK_NOW), timestamp: DAO_MOCK_NOW };
   const account: DaoAccountProposalFacts = {
+    observation,
     address: accountAddress,
     connected: true,
     correctChain: true,
@@ -426,12 +429,19 @@ export function getDaoMockFixture(id: DaoMockFixtureId): DaoMockFixture {
     isGuardian: isGuardianFixture,
     executionPreflight: {
       call: preflightSucceeded && proposal.script.bytes ? createDaoExecuteCall(proposal.ref, accountAddress, proposal.script.bytes) : null,
-      state: preflightSucceeded ? "succeeded" : "idle",
+      state: "idle",
       scriptHash: proposal.script.hash,
-      blockNumber: preflightSucceeded ? 24_000_001n : null,
-      simulatedAt: preflightSucceeded ? "2026-08-18T12:00:12Z" : null,
+      observation: null,
+      contextKey: null,
+      simulatedAt: null,
       error: null,
     },
+  };
+  if (preflightSucceeded) account.executionPreflight = {
+    ...account.executionPreflight, state: "succeeded", observation: { ...observation },
+    simulatedAt: new Date(DAO_MOCK_NOW * 1000).toISOString(),
+    contextKey: daoExecutionContextKey({ proposal, account, now: DAO_MOCK_NOW,
+      vetoEndsAt: getProposalPostVoteEnd(proposal), executionGuard })!,
   };
 
   return {
@@ -442,8 +452,7 @@ export function getDaoMockFixture(id: DaoMockFixtureId): DaoMockFixture {
     proposalRef: { ...proposal.ref },
     account,
     proposer: createProposerInput(id === "proposal-capacity-full"),
-    executionGuard:
-      id === "permissionless-execution" ? "permissionless" : "guarded",
+    executionGuard,
   };
 }
 

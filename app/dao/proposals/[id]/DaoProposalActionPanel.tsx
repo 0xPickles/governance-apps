@@ -731,11 +731,11 @@ function ExecuteConfirmation({
           label={daoCopy.actions.currentSimulation}
           value={daoCopy.actions.simulationSucceeded}
         />
-        {preflight.blockNumber !== null ? (
+        {preflight.observation != null ? (
           <ActionFact
             label={daoCopy.actions.simulationReference}
             value={daoCopy.actions.simulationBlock(
-              preflight.blockNumber.toString()
+              preflight.observation.number.toString()
             )}
           />
         ) : null}
