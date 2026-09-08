@@ -2,8 +2,10 @@ import type { Address } from "viem";
 import { z } from "@/lib/schemas/zod";
 import { DaoAddressSchema, DaoUintSchema, DAO_MAX_TIMESTAMP, DaoFeedError, type DaoFeedWire } from "@/lib/schemas/dao-feed";
 
+// The shared protocol RPC and explorer surfaces currently support mainnet only.
+export const DAO_SUPPORTED_CHAIN_ID = 1;
 const deploymentSchema = z.strictObject({
-  chainId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+  chainId: z.literal(DAO_SUPPORTED_CHAIN_ID),
   votingAddress: DaoAddressSchema,
   deploymentBlock: DaoUintSchema,
   genesis: z.number().int().min(0).max(DAO_MAX_TIMESTAMP),
@@ -41,7 +43,7 @@ export function daoDeploymentScope(deployments: readonly DaoDeployment[]): strin
 
 export function assertDaoDeployments(feed: DaoFeedWire, trusted: readonly DaoDeployment[]): void {
   if (trusted.length === 0 || trusted.length !== feed.deployments.length ||
-      trusted.some((d) => d.chainId !== feed.chainId ||
+      trusted.some((d) => d.chainId !== DAO_SUPPORTED_CHAIN_ID || d.chainId !== feed.chainId ||
         !feed.deployments.some((entry) => entry.votingAddress === d.votingAddress))) {
     throw new DaoFeedError("incompatible", "DAO feed does not match the configured chain and Voting deployments.");
   }

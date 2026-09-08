@@ -363,7 +363,7 @@ export const daoCopy = {
     vetoDialogDescription:
       "Give the onchain reason and review how voting changes.",
     earlyVetoEffect:
-      "This proposal has no votes. Vetoing also retracts it, disables voting, and removes it from participation accounting.",
+      "This proposal currently has zero voting weight. Vetoing also retracts it, disables voting, and removes it from participation accounting.",
     postVoteVetoEffect:
       "This proposal has votes. Vetoing blocks approval and execution, but participation voting stays open until the voting window ends.",
     postVoteVetoClosedEffect:

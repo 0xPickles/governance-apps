@@ -232,7 +232,7 @@ test("does not retain a found detail outside the surfaced feed snapshot", async 
   ).toHaveCount(0);
 });
 
-test("contains proposal analysis and technical values at every review viewport", async ({
+test("contains proposed script and technical values at every review viewport", async ({
   page,
 }) => {
   for (const viewport of VIEWPORTS) {
@@ -264,6 +264,7 @@ test("contains proposal analysis and technical values at every review viewport",
     await expect(
       page.getByText("No verified source", { exact: true }).first(),
     ).toBeVisible();
+    await page.getByText("Proposal rules", { exact: true }).click();
     await expect(
       page
         .getByRole("link", { name: "Voting.vy at pinned stYFI revision" })
@@ -388,10 +389,10 @@ test("renders every terminal fixture with explicit status and vote rule copy", a
   await page.goto("/dao/proposals/11");
   await expect(page.getByText("Flagged", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("No community result", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(/moderation, not a community vote result/i)).toBeVisible();
+  await expect(page.getByText("Flagging retracts the proposal and blocks voting and execution. No community vote result is implied.")).toBeVisible();
 
   await page.goto("/dao/proposals/12");
-  await expect(page.getByText(/vetoed before participation began/i)).toBeVisible();
+  await expect(page.getByText("This proposal is retracted and vetoed. Voting and execution are blocked.")).toBeVisible();
   await page.goto("/dao/proposals/13");
   await expect(page.getByText(/Participation voting remains available/)).toBeVisible();
 

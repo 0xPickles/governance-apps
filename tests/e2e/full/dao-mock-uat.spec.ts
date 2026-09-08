@@ -96,7 +96,7 @@ const PROPOSAL_FIXTURES = [
   {
     fixture: "script-missing",
     proposalId: 16,
-    title: "Proposal with unavailable script",
+    title: "Proposal with missing script bytes",
     status: "Voting",
   },
   {
@@ -108,7 +108,7 @@ const PROPOSAL_FIXTURES = [
   {
     fixture: "script-malformed",
     proposalId: 18,
-    title: "Proposal with malformed script",
+    title: "Proposal with malformed script bytes",
     status: "Approved",
   },
   {

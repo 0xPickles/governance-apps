@@ -81,7 +81,7 @@ const VETO_STATES: readonly [DaoMockVetoState, string][] = [
 ];
 const SCRIPT_STATES: readonly [DaoMockScriptState, string][] = [
   ["missing", "Missing"],
-  ["decoded", "Decoded"],
+  ["decoded", "Framed"],
   ["partial", "Partial"],
   ["malformed", "Malformed"],
   ["hash-mismatch", "Hash mismatch"],

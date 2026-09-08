@@ -4,6 +4,7 @@ import acceptance from "@/docs/apps/dao/examples/feed-v2/acceptance-cases.json";
 import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
 import jsonSchema from "@/docs/apps/dao/feed-schema-v2.schema.json";
 import { parseDaoFeed, parseDaoFeedResponse, DAO_FEED_MAX_PAYLOAD_BYTES, type DaoFeedWire } from "@/lib/schemas/dao-feed";
+import { parseDaoDeployments } from "@/lib/clients/dao/deployment";
 import { adaptDaoFeed } from "@/lib/clients/dao/feed-adapter";
 import { deriveDaoLifecycleFacts, deriveDaoProposalExecutionReadiness } from "@/lib/clients/dao/domain";
 import { V2_DEPLOYMENTS, V2_ACCOUNT } from "@/tests/fixtures/dao-feed-v2";
@@ -43,6 +44,10 @@ describe("DAO V2 public acceptance", () => {
     const feed = wire(); feed.proposals[0].votes = (2n ** 256n).toString();
     expect(accepts(feed)).toBe(true);
     expect(() => parseDaoFeed(feed)).toThrow(/uint256/);
+  });
+  it("accepts only app-supported mainnet deployment configuration", () => {
+    expect(parseDaoDeployments(JSON.stringify(V2_DEPLOYMENTS))).toHaveLength(1);
+    expect(() => parseDaoDeployments(JSON.stringify(V2_DEPLOYMENTS.map(d => ({ ...d, chainId: 10 }))))).toThrow();
   });
   it("rejects unknown deployments, wrong chain, duplicate identities and incomplete coverage", () => {
     const unknown = wire(); unknown.proposals[0].votingAddress = "0x9999999999999999999999999999999999999999";
