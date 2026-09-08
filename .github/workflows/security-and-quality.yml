@@ -48,6 +48,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Check Generated DAO Artifacts
+        run: npm run generate:dao-feed -- --check
+
       - name: Lint
         run: npm run lint
 
