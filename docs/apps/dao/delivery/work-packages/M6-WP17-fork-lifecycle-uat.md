@@ -1,51 +1,17 @@
-# M6 WP17: Fork Lifecycle E2E and UAT
+# WP17: cross-repository lifecycle UAT
 
-Branch: `agent/dao/m6/wp17`
+Status: Deferred; explicit UAT acceptance required.
 
-## Objective
+## Scope
 
-Prove that contracts, publication, indexing, decoding, simulation, reads, and
-writes work together across every required lifecycle branch.
+Exercise proposal zero; votes including zero accounts/weights and replacement; Flag retraction; Veto at zero/positive totals and later replacement to zero; vetoed-but-votable; signals with EXECUTED status and no Execute; config/time status changes without logs; stored threshold persistence; writes, simulation failure, feed lag and canonical replacement.
 
-## Depends on
+## Acceptance
 
-- M6 WP16 merged into `agent/integration`.
-- Producer fork environment available.
+Acceptance: actual producer bytes pass actual consumer routes, connected/current wallet actions and confirmed receipt identity; no fabricated history/attribution; mobile/desktop/keyboard review and durability/publication recovery; user accepts evidence before rollout.
 
-## Required flows
+## Dependencies and validation
 
-- Create signal and executable proposals.
-- Move from discussion into voting.
-- Cast normal and late-decayed votes.
-- Veto before any vote and confirm voting fails.
-- Vote, veto, then cast a participation vote.
-- Retract, flag, reject, approve, execute, fail execution, and expire.
-- Show no-quorum passage with positive Yea weight above threshold.
-- Show feed lag after writes and later reconciliation.
-- Replay actual fork logs through the producer and validate the resulting feed
-  in the frontend.
-- Exercise missing IPFS, partial decode, and failed simulation fixtures where live
-  reproduction is impractical.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Acceptance criteria
-
-- Every flow records transaction, block, feed snapshot, UI result, and expected
-  contract state.
-- No mock-only assumption masks a live integration gap.
-- Post-veto participation is explicitly proved on the pinned contract revision.
-- Live fork output closes every fixture-only gap recorded by M3 WP10.
-- Execution uses exact script and fresh simulation.
-- User reviews and accepts the fork UAT evidence.
-
-## Validation
-
-- `npm run typecheck`, `npm run lint`, `npm run test`.
-- `npm run test:e2e`, `npm run test:e2e:full`, `npm run build`.
-- Producer full checks and saved evidence.
-
-## Review
-
-Independent fork auditor, contract auditor, product UAT reviewer, and integrator.
-Stop at the human gate before tagging M6 or starting rollout.
-Returned changes become `M6-WP17A`, `M6-WP17B`, and so on from the latest
-integration head, followed by a new review and user gate.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

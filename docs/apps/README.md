@@ -45,5 +45,5 @@ Each app folder contains app-scoped specs, UX notes, and delivery status.
 - [`dao/functional-requirements.md`](dao/functional-requirements.md)
 - [`dao/user-stories.md`](dao/user-stories.md)
 - [`dao/ui-spec.md`](dao/ui-spec.md)
-- [`dao/mock-data-schema-v1.md`](dao/mock-data-schema-v1.md)
+- [`dao/mock-data.md`](dao/mock-data.md)
 - [`dao/delivery/README.md`](dao/delivery/README.md)

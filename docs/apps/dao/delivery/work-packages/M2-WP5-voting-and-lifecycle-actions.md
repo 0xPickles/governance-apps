@@ -1,5 +1,8 @@
 # M2 WP5: Voting and Lifecycle Actions
 
+> Historical package scope. Acceptance evidence remains in [status](../status.md). Active maintenance follows the [V2 reset](../feed-v2-reset.md), [V2 specification](../../feed-schema-v2.md) and revised dependency graph. Old producer-before-consumer gates, simulation/proof obligations and production mock exceptions are superseded.
+
+
 Branch: `agent/dao/m2/wp5`
 
 ## Objective

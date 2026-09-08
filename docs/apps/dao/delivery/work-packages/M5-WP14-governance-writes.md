@@ -1,51 +1,17 @@
-# M5 WP14: Governance Writes
+# WP14: live governance writes
 
-Branch: `agent/dao/m5/wp14`
-
-## Objective
-
-Implement propose, vote, retract, flag, and veto as prepared domain transactions
-through shared `useTx` with current eligibility checks.
-
-## Depends on
-
-- M5 WP13 merged into `agent/integration`.
-- Pinned ABI and the accepted configurable address-manifest shape. Concrete fork
-  addresses and deployment blocks belong to WP16.
+Status: Deferred; production write methods remain disabled in this reset.
 
 ## Scope
 
-- Exact digest/script proposal preparation after successful publication.
-- Yea/Nay through the configured Voter.
-- Proposer retract and role-gated flag/veto.
-- Wrong-network, simulate, signing, submitted, success, revert, and feed-lag
-  states.
-- Query and live-state invalidation.
+Implement only reviewed actions via prepared domain clients and shared useTx. Verify actual account/chain/trusted deployment, roles, current stored proposal/contribution, timing/configuration and action-specific hook/capacity conditions before signing. Never authorize from a feed label.
 
-## Non-goals
+## Acceptance
 
-- No execute write; WP15 owns execution safety.
-- No raw wagmi writes in components.
-- No optimistic canonical proposal or vote history.
+Acceptance: simulate actual caller/destination/arguments; invalidate preparation on account/network/proposal/script/relevant observation change; test zero receipt ID and same-identity awaiting-index recovery; no duplicate creation on feed lag; content failure does not forbid eligible voting; Flag and both Veto paths remain correct.
 
-## Acceptance criteria
+## Dependencies and validation
 
-- Proposal uses the exact reviewed content digest and script.
-- Post-veto participation voting remains available when live state permits it.
-- Early-veto, duplicate-vote, zero-weight, cooldown, blacklist, cap, and role
-  blocks are precise.
-- All writes use prepared transactions and `useTx`.
-- Unit and provider-fixture simulation proves the required preflight seam;
-  deployed-contract proof remains an M6 gate.
-- Successful writes show awaiting-index state without inventing feed records.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Validation
-
-- Prepared calldata and argument tests.
-- Simulation, success, rejection, revert, wrong-network, and lag tests.
-- Hook integration and critical flow E2E.
-- Standard repository checks.
-
-## Review
-
-Write-path auditor, contract-behavior reviewer, and transaction UX reviewer.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

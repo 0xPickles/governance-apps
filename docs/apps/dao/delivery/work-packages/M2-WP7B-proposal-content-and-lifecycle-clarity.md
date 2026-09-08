@@ -1,5 +1,8 @@
 # M2 WP7B: Proposal Content and Lifecycle Clarity
 
+> Historical package scope. Acceptance evidence remains in [status](../status.md). Active maintenance follows the [V2 reset](../feed-v2-reset.md), [V2 specification](../../feed-schema-v2.md) and revised dependency graph. Old producer-before-consumer gates, simulation/proof obligations and production mock exceptions are superseded.
+
+
 Status: scoped for implementation; the M2 product gate remains unaccepted.
 
 Branch: `agent/dao/m2/wp7b`
@@ -547,7 +550,7 @@ Update behavior and rationale in the same implementation package:
 - `docs/apps/dao/functional-requirements.md`
 - `docs/apps/dao/user-stories.md`
 - `docs/apps/dao/ui-spec.md`
-- `docs/apps/dao/mock-data-schema-v1.md`
+- `docs/apps/dao/mock-data.md`
 - `docs/apps/dao/examples/proposal-content.example.json`
 - `docs/apps/dao/examples/mock-data.example.json`
 - `docs/apps/dao/delivery/README.md` and dependency graph
@@ -674,7 +677,7 @@ rg -n -i "delve|tapestry|leverage|multifaceted|robust|holistic|utilize|in order 
   docs/apps/dao/functional-requirements.md \
   docs/apps/dao/user-stories.md \
   docs/apps/dao/ui-spec.md \
-  docs/apps/dao/mock-data-schema-v1.md
+  docs/apps/dao/mock-data.md
 git diff --check 4588a9806dd7002e3f5a1bb26bb098a1f7bf91d9..HEAD
 
 npm run typecheck

@@ -1,5 +1,8 @@
 # M2 WP6: Proposal Authoring
 
+> Historical package scope. Acceptance evidence remains in [status](../status.md). Active maintenance follows the [V2 reset](../feed-v2-reset.md), [V2 specification](../../feed-schema-v2.md) and revised dependency graph. Old producer-before-consumer gates, simulation/proof obligations and production mock exceptions are superseded.
+
+
 Historical note: WP7B supersedes this package's separate title, summary, and
 specification fields with the finalized in-place `yearn.dao.proposal.v1`
 Markdown source and asset manifest. WP6 remains the delivery record for the

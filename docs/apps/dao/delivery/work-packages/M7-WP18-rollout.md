@@ -1,57 +1,17 @@
-# M7 WP18: Preproduction and Controlled Rollout
+# WP18: gated production rollout
 
-Branch: `agent/dao/m7/wp18`
-
-## Objective
-
-Validate the accepted system in preproduction, prepare monitoring and rollback,
-and expose production only after explicit approval.
-
-The M2 WP7A host is only an unaccepted, mock-backed review seam. This package
-must revalidate beta with the accepted live feed, forum/IPFS, wallet-write, and
-onchain system; it does not inherit mock-beta evidence as launch evidence.
-
-## Depends on
-
-- User-accepted M6 fork evidence.
-- Final deployed contracts and producer production configuration.
-- IPFS retention and operational ownership.
+Status: Deferred; requires explicit production approval after staging/lifecycle acceptance.
 
 ## Scope
 
-- `/dao` shared-host smoke before subdomain exposure.
-- Beta host, wallet, network, feed, content, analysis, and write smoke.
-- Production feature gate, environment validation, host routing, sitemap, and
-  discovery choices.
-- Feed freshness, IPFS failure, decode coverage, simulation failure, and write
-  report monitoring.
-- Rollback rehearsal and post-deploy smoke.
-- Explicit stYFI Snapshot-to-DAO cutover copy and links.
+Verify reviewed deployment/source/configuration, feed endpoint, complete acquisition/health/age, current RPC, exact-call preflight, durable content/scripts, cache policy, conditional publication, monitoring and rollback. Preserve protected beta hosts and path-first release.
 
-## Non-goals
+## Acceptance
 
-- No change to `gov.yearn.fi` forum URLs.
-- No production exposure before the approval record.
-- No destructive removal of historical Snapshot proposal access.
+Acceptance: production mode excludes mocks; all writes pass live checks and useTx; no required historical analysis; disable gates without losing chain/content records; expose dao.yearn.fi and change Snapshot links only under explicit production approval.
 
-## Acceptance criteria
+## Dependencies and validation
 
-- Path route passes before `dao.yearn.fi` is enabled.
-- Production configuration cannot enable DAO with missing required feed/RPC
-  inputs.
-- Rollback disables exposure without deleting indexed proposal data.
-- Monitoring owners and alert thresholds are recorded.
-- Snapshot cutover links preserve access to history.
-- Product, contract, security, operations, and integrator sign-offs are recorded.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Validation
-
-- Production environment and dependency checks.
-- Beta and production smoke.
-- Rollback rehearsal.
-- Full release checklist and worker build/size gate.
-
-## Review
-
-Release reviewer, security reviewer, operations owner, and final integrator. Tag
-M7 only after production approval.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

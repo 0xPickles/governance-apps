@@ -1,5 +1,8 @@
 # M1 WP1: Domain Model and Deterministic Mocks
 
+> Historical package scope. Acceptance evidence remains in [status](../status.md). Active maintenance follows the [V2 reset](../feed-v2-reset.md), [V2 specification](../../feed-schema-v2.md) and revised dependency graph. Old producer-before-consumer gates, simulation/proof obligations and production mock exceptions are superseded.
+
+
 Branch: `agent/dao/m1/wp1`
 
 ## Objective
@@ -25,7 +28,7 @@ math.
 - Composite proposal identity.
 - Raw protocol status, display status, and action capabilities as separate data.
 - Epoch/timing, threshold, vote, signal, veto, and content-failure derivation.
-- Feed-shaped proposal fixtures from `mock-data-schema-v1.md`.
+- Feed-shaped proposal fixtures from `mock-data.md`.
 - Proposer eligibility, rolling six-epoch shared capacity, and fresh execution
   preflight state.
 - Script parsing and fixed error vectors.

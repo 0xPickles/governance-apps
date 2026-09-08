@@ -1,5 +1,7 @@
 # DAO Governance UI Specification
 
+V2 reset: preserve the accepted layout. Production routes read the V2 feed with separately observed wallet facts; production writes remain gated. Preview mock actions keep their existing workflow.
+
 ## 1. Design stance
 
 DAO Governance is a reading and decision surface, not an analytics dashboard.
@@ -228,39 +230,21 @@ exact-source disclosure preserves the Markdown byte for byte.
 ### Lifecycle and provenance
 
 Keep `Status`, `Vote result`, `Moderation`, and `Execution` as separate facts.
-Flagged shows `No community result`; early and post-participation vetoes use
-different explanations. Every event row names its truthful actor role, uses the
+Flagged shows `No community result`; veto explanations use stored retracted state and current timing. No later-total inference labels a historical veto phase. Every event row uses truthful ABI identity or an unknown-actor label, uses the
 producer-owned UTC block time, and links the transaction when available. Use
 `Time unavailable` and `Transaction unavailable` without inventing data.
 
 `Proposal rules` is collapsed by default and renders supplied domain facts:
 approval threshold, positive-total rule, no minimum turnout, proposal type,
 voting period, execution delay and guard, Voting contract, verified source, and
-configuration observation block. The UI formats 5,000 as 50% and 6,000 as 60%;
+configuration observation block. Stored threshold and snapshot default are distinct; timing/guard configuration is not labeled “rules at creation.” The UI formats 5,000 as 50% and 6,000 as 60%;
 it does not own the underlying rule.
 
-### Execution analysis
+### Proposed script
 
-The section contains:
+Show exact script/hash integrity, supported frame order and raw targets, selectors and calldata. Missing bytes differ from empty signal bytes. Mismatched bytes and malformed supported framing block execution preparation. Unsupported Executor implementations show raw bytes and an unsupported-decoder explanation.
 
-- analysis state;
-- proposal-time simulation result and block;
-- ordered calls;
-- target name and address;
-- function and arguments for verified decoding;
-- raw selector and calldata for unknown calls;
-- script hash verification;
-- current execution simulation when the action is available.
-
-Possible labels:
-
-- `Analysis pending`
-- `Decoded · simulation succeeded`
-- `Partially decoded · simulation succeeded`
-- `Simulation failed`
-- `Unable to decode`
-
-Never use `Safe` as a status.
+Unknown calls stay unknown. Optional locally reviewed decoding may show function/arguments and its source. Proposer descriptions do not establish byte behavior. Remove historical simulation badges, pending-analysis loaders, engine/proof panels and backend analysis promises. Fresh transaction simulation belongs to the later execution confirmation flow; success is not a safety guarantee.
 
 ### Technical details
 
@@ -344,8 +328,7 @@ Valid-state copy:
 
 Supporting copy:
 
-> Detailed decoding and simulation will be published on the proposal page after
-> submission.
+> The proposal page retains exact scripts and supported frame details. Indexing records the confirmed proposal.
 
 ### Section 5: review and submit
 
@@ -505,36 +488,9 @@ notice labels the last successful snapshot using `canonicalBlock.timestamp`.
 An initial request that has never surfaced a successful feed remains a distinct
 cold-start error and does not reveal an in-flight response as last-good data.
 
-The read-only detail surface keeps four trust layers distinct:
+Detail separates immutable content, snapshot contract observations, frontend script framing and current wallet observations. The feed has no producer-owned historical decoding or simulation evidence. Preserve raw call targets and calldata when unknown. Source links come from app-owned reviewed definitions; a source pin does not verify a deployment.
 
-1. immutable proposal content and its validation state;
-2. contract lifecycle, vote results, and terminal events;
-3. producer-owned decoding and proposal-time simulation, including provenance;
-4. raw onchain identity and feed metadata in the technical disclosure.
-
-Proposal content and technical feed metadata render from one read envelope. A
-proposal is ready only when its serialized composite reference resolves inside
-that same surfaced feed; a proposal found by an older or hidden query is not
-combined with a newer empty or mismatched feed. The technical feed snapshot time
-comes from `canonicalBlock.timestamp`, independently of producer generation
-time.
-
-Producer-owned provenance values render verbatim. The read layer maps only
-explicitly supported producer error codes to public explanations; it does not
-rewrite arbitrary registry, engine, contract, function, verified-source, or error
-text. Fixture source data uses production-shaped presentation values so the
-public route never explains its test implementation.
-
-Unavailable or invalid immutable content replaces only the content body. The
-proposal identity, status, timing, vote results, discussion state, lifecycle,
-and technical record remain available. Unknown calls retain target, selector,
-calldata, byte size, and the absence of a verified source record. Structured
-source links use only producer-validated HTTPS values; a pinned source proves
-the decoder input, not a mock deployment. Long identifiers, addresses, hashes,
-and scripts scroll or wrap inside their own regions rather
-than widening the page. Copy controls for Voting, Voter, Executor, and call
-target addresses stay visibly available with at least 40-pixel targets for
-coarse pointers while desktop explorer links retain their new-tab behavior.
+Long identifiers, addresses, hashes and scripts wrap or scroll within their own regions. Copy controls retain 40-pixel targets and native explorer links.
 
 An approved signal uses `Approved` as its primary outcome and always pairs it
 with `No executable actions`, even when its raw contract status is `EXECUTED`.
@@ -550,9 +506,9 @@ in the right column without becoming a height-obscuring sticky panel.
 The action panel renders only account facts and capability reasons supplied by
 the DAO client. Yea and Nay start unselected. A vote review repeats the selected
 direction, proposal title, effective weight, original weight and decay when
-applicable, and the public-Voter irreversibility. A post-vote veto retains the
-same binary choices under the participation notice; an early veto exposes no
-vote choice. Veto confirmation says participation voting stays open only while
+applicable, and the public-Voter irreversibility. A vetoed proposal with retracted=false retains the
+same binary choices under the participation notice when current eligibility
+permits; a retracted proposal exposes no vote choice. Veto confirmation says participation voting stays open only while
 the current voting window is actually open; a closed-window veto says that the
 window has ended and is not reopened.
 
@@ -622,23 +578,14 @@ execution and post-veto participation—prove the requested fixture rather than 
 default title or status. The 200% overflow check injects a 200% root font size;
 it is evidence for root-font scaling, not a browser-zoom claim.
 
-## 15. M2 WP7A guarded review runtime
+## 15. Feed V2 and rollout states
 
-The shared path remains the primary development and preview surface.
-`dao-beta.dao-ops.com` provides clean `/`, `/propose`, and `/proposals/[id]`
-paths for the unaccepted mock review. Nested links and breadcrumbs are
-host-aware; cross-beta DAO links target that host rather than nesting `/dao`.
-DAO root queries and fragments stay on clean `/` there and under `/dao` on a
-shared host. App-path normalization never returns a protocol-relative target.
+The production route never uses mock fallback. With the existing DAO flag off, routes remain unavailable. Enabled, operator-configured review builds require an exact trusted deployment set and server feed URL. The beta host remains noindex/noncanonical and Access-protected; this task changes no deployed configuration.
 
-In preproduction production-runtime builds, `NEXT_PUBLIC_ENABLE_DAO=true`
-permits only the route-local DAO mock client. Global mocks, E2E mode, preview
-runtime, and debug UI remain disabled. DAO controls appear only when the shared
-debug UI is independently enabled. The flag applies to the shared preproduction
-deployment, so `/dao` is also reachable through other hosts served by that
-Worker. The six exact governance beta hosts require Cloudflare Access on every
-path; the clean-path host, route flag, and `noindex` policy are not security
-boundaries. The production workflow hardcodes the flag false. DAO remains absent
-from canonical metadata, sitemap, machine-readable discovery, and deployed
-production Wrangler host configuration. `dao.yearn.fi` is reserved in the
-internal routing registry only.
+Use a compact snapshot notice inside the existing route container. Show block time and age even after a successful old response; warn after five minutes. Failed refresh retains the last-good board/detail with an error and Retry. Initial loading, empty feed, unavailable source, incompatible version/deployment and ambiguous multi-deployment selection remain distinct. Proposal URLs include chain and Voting address so ID zero and repeated numeric IDs work.
+
+The current-wallet panel uses a separate observed block, status and effective weight. Disconnected users keep all global data. Wrong network, RPC failure, refreshing or disconnect hides old eligibility. A newer live change may show feed lag without rewriting snapshot fields. Production actions remain explicitly disabled until their packages pass review.
+
+## 16. V2 review evidence
+
+Review phone 390×844, tablet 768×1024, desktop 1280×900 and short desktop 1280×600. Check native keyboard links/disclosures/retry, screen-reader labels, raw byte wrapping, content failures and signal completion. Saved consumer response route tests do not count as producer interoperability evidence.

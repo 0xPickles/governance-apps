@@ -1,45 +1,17 @@
-# M4 WP12: Content and Analysis Presentation
+# WP12: content and script presentation
 
-Branch: `agent/dao/m4/wp12`
-
-## Objective
-
-Render producer-backed IPFS, decoding, script verification, and proposal-time
-simulation results with accurate provenance and failure behavior.
-
-## Depends on
-
-- M4 WP11 merged into `agent/integration`.
+Status: Implemented in the reset, pending external review. Historical analysis package scope is retired.
 
 ## Scope
 
-- Available, unavailable, invalid, and unverified content states.
-- Analysis pending, complete, partial, failed, and unavailable states.
-- Ordered known and unknown calls.
-- Simulation block/time and script-hash evidence.
-- Tiered voting and execution gating from the functional requirements.
+Frontend canonical content and safe Markdown/attachment parser; exact script/hash integrity; supported Executor frames and raw unknown calls; truthful timeline actors; stored threshold versus snapshot-effective rules; explicit snapshot/live observation dates.
 
-## Non-goals
+## Acceptance
 
-- No IPFS upload.
-- No fresh execution simulation or execute write.
-- No proposer metadata presented as verified ABI decoding.
+Acceptance: no historical simulation badge/job/proof or waiting-for-backend-analysis copy; malformed enrichment retains proposal visibility and voting policy; signal completion invents no Execute; technical content and controls work on mobile/desktop/keyboard.
 
-## Acceptance criteria
+## Dependencies and validation
 
-- Missing content does not hide or disable an otherwise permitted vote.
-- Missing or mismatched script blocks execution capability.
-- Unknown calls retain raw target, selector, and calldata.
-- Proposal-time simulation states that current state can change.
-- Technical content is readable and accessible on mobile.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Validation
-
-- Component tests for every content/analysis matrix row.
-- Unknown-target, hash-mismatch, and failure regressions.
-- Responsive and accessibility E2E plus standard checks.
-
-## Review
-
-Security/contract auditor and frontend auditor. Tag M4 after the combined read
-path is accepted.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

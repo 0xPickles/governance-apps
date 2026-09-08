@@ -1,5 +1,8 @@
 # M2 WP7C: Beta Access and Execution Clarity
 
+> Historical package scope. Acceptance evidence remains in [status](../status.md). Active maintenance follows the [V2 reset](../feed-v2-reset.md), [V2 specification](../../feed-schema-v2.md) and revised dependency graph. Old producer-before-consumer gates, simulation/proof obligations and production mock exceptions are superseded.
+
+
 Status: scoped for implementation; the M2 product gate remains unaccepted.
 
 Branch: `agent/dao/m2/wp7c`
@@ -260,7 +263,7 @@ Update canonical behavior with the implementation:
 - `docs/apps/dao/functional-requirements.md`
 - `docs/apps/dao/user-stories.md`
 - `docs/apps/dao/ui-spec.md`
-- `docs/apps/dao/mock-data-schema-v1.md`
+- `docs/apps/dao/mock-data.md`
 - `docs/apps/dao/delivery/README.md`
 - `docs/apps/dao/delivery/dao-beta-runbook.md`
 - shared runtime, security, preproduction, and testing guidance affected by the
