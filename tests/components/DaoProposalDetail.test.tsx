@@ -87,9 +87,9 @@ describe("DAO proposal detail", () => {
   });
 
   it.each([
-    [12n, "The veto blocks approval and execution. Voting is unavailable at this snapshot."],
+    [12n, "This proposal is retracted and vetoed. Voting and execution are blocked."],
     [13n, "Participation voting remains available until the voting window closes, but approval and execution are blocked."],
-  ])("explains veto phase for proposal #%s", (proposalId, explanation) => {
+  ])("explains stored veto eligibility for proposal #%s", (proposalId, explanation) => {
     render(<ProposalDetail envelope={envelope(proposal(proposalId))} />);
 
     expect(screen.getAllByText("Vetoed", { exact: true })[0]).toBeVisible();

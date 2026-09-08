@@ -63,6 +63,12 @@ test("renders saved V2 through real routes without wallet RPC or mocks", async (
   // Protocol EXECUTED remains visible as an observed status; it creates no event/action.
   await expect(page.getByRole("heading", { name: "Recorded events" }).locator("..").getByText(/^Executed/)).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Execute proposal", exact: true })).toHaveCount(0);
+  await page.goto("/dao/proposals/7?chain=1&voting=0x1111111111111111111111111111111111111111");
+  await expect(page.getByText("This proposal is retracted and vetoed. Voting and execution are blocked.")).toBeVisible();
+  await page.goto("/dao/proposals/8?chain=1&voting=0x1111111111111111111111111111111111111111");
+  await expect(page.getByText(/Participation voting remains available/)).toBeVisible();
+  await page.goto("/dao/proposals/16?chain=1&voting=0x1111111111111111111111111111111111111111");
+  await expect(page.getByText("Immutable content could not be retrieved").first()).toBeVisible();
   await page.goto("/dao/proposals/19?chain=1&voting=0x1111111111111111111111111111111111111111");
   await expect(page.getByText("Immutable content did not pass validation").first()).toBeVisible();
   expect(await page.locator("main script, main iframe").count()).toBe(0);

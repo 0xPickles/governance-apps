@@ -496,7 +496,7 @@ function ProposalLifecycle({
             {daoCopy.detail.lifecycleFacts.moderationDetails}
           </p>
           <p className="text-pretty text-sm leading-6">
-            {formatModerationExplanation(facts)}
+            {formatModerationExplanation(facts, proposal.retracted)}
           </p>
           {facts.moderation.reason ? (
             <p className="break-words text-pretty text-sm font-bold [overflow-wrap:anywhere]">
@@ -610,11 +610,13 @@ function formatExecutionFacts(
 }
 
 function formatModerationExplanation(
-  facts: ReturnType<typeof deriveDaoLifecycleFacts>
+  facts: ReturnType<typeof deriveDaoLifecycleFacts>,
+  retracted: boolean,
 ): string {
   if (facts.moderation.kind === "flagged") {
     return daoCopy.detail.moderationExplanation.flagged;
   }
+  if (retracted) return daoCopy.detail.moderationExplanation.retractedVeto;
   return facts.moderation.votingAvailable
     ? daoCopy.detail.moderationExplanation.postVoteVetoOpen
     : daoCopy.detail.moderationExplanation.postVoteVetoClosed;

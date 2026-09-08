@@ -220,7 +220,7 @@ export const daoCopy = {
     moderationExplanation: {
       flagged:
         "Flagging retracts the proposal and blocks voting and execution. No community vote result is implied.",
-      earlyVeto:
+      retractedVeto:
         "This proposal is retracted and vetoed. Voting and execution are blocked.",
       postVoteVetoOpen:
         "Participation voting remains available until the voting window closes, but approval and execution are blocked.",
