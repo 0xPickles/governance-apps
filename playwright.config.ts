@@ -46,6 +46,7 @@ export default defineConfig({
     },
   },
   projects: [
+    { name: "dao-feed", testDir: "tests/e2e/dao-feed" },
     {
       name: "smoke",
       testDir: "tests/e2e/smoke",

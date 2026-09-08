@@ -22,20 +22,21 @@ export default async function DaoProposalPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ from?: string | string[] }>;
+  searchParams: Promise<{ from?: string | string[]; chain?: string | string[]; voting?: string | string[] }>;
 }) {
   if (!isDaoEnabled()) {
     notFound();
   }
 
   const { id } = await params;
-  const { from } = await searchParams;
+  const { from, chain, voting } = await searchParams;
   const requestHeaders = await headers();
   const initialHostname = resolveRequestHostname(requestHeaders, "");
   return (
     <DaoProposalPageClient
       initialHostname={initialHostname}
       proposalId={id}
+      selection={{ chainId: typeof chain === "string" ? chain : null, votingAddress: typeof voting === "string" ? voting : null }}
       requestedOrigin={typeof from === "string" ? from : null}
     />
   );

@@ -1,0 +1,292 @@
+{
+  "description": "Synthetic mutations of dao-feed-v2.example.json; schema means draft-07 acceptance; consumer includes V2 semantic checks and trusted sample deployment adapter. These are not chain observations.",
+  "cases": [
+    {
+      "name": "saved",
+      "set": [],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "empty",
+      "set": [
+        {
+          "path": [
+            "proposals"
+          ],
+          "value": []
+        },
+        {
+          "path": [
+            "deployments",
+            0,
+            "proposalCount"
+          ],
+          "value": "0"
+        }
+      ],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "unsupported-v1",
+      "set": [
+        {
+          "path": [
+            "schema"
+          ],
+          "value": "yearn.dao.feed.v1"
+        }
+      ],
+      "schema": false,
+      "consumer": false
+    },
+    {
+      "name": "leading-zero",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "id"
+          ],
+          "value": "00"
+        }
+      ],
+      "schema": false,
+      "consumer": false
+    },
+    {
+      "name": "uint-overflow",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "votes"
+          ],
+          "value": "115792089237316195423570985008687907853269984665640564039457584007913129639936"
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "wrong-chain",
+      "set": [
+        {
+          "path": [
+            "chainId"
+          ],
+          "value": 10
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "duplicate-identity",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            1,
+            "id"
+          ],
+          "value": "0"
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "incomplete-coverage",
+      "set": [
+        {
+          "path": [
+            "deployments",
+            0,
+            "proposalCount"
+          ],
+          "value": "28"
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "flag-needs-retracted",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            6,
+            "retracted"
+          ],
+          "value": false
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "observed-status-without-replay",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "status"
+          ],
+          "value": "PROPOSED"
+        }
+      ],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "status-flags-disagree",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            6,
+            "status"
+          ],
+          "value": "VOTING"
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "zero-vote-facts",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "events",
+            1,
+            "account"
+          ],
+          "value": "0x0000000000000000000000000000000000000000"
+        },
+        {
+          "path": [
+            "proposals",
+            0,
+            "events",
+            1,
+            "weight"
+          ],
+          "value": "0"
+        },
+        {
+          "path": [
+            "proposals",
+            0,
+            "events",
+            1,
+            "yea"
+          ],
+          "value": "0"
+        }
+      ],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "vote-yea-is-bps",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "events",
+            1,
+            "yea"
+          ],
+          "value": "10001"
+        }
+      ],
+      "schema": true,
+      "consumer": false
+    },
+    {
+      "name": "missing-script-readable",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "scriptBytes"
+          ],
+          "value": null
+        }
+      ],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "malformed-frame-readable",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "scriptBytes"
+          ],
+          "value": "0x01"
+        }
+      ],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "malformed-hex-envelope",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "scriptBytes"
+          ],
+          "value": "0x1"
+        }
+      ],
+      "schema": false,
+      "consumer": false
+    },
+    {
+      "name": "invalid-enrichment-readable",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "contentBytes"
+          ],
+          "value": "%%%"
+        }
+      ],
+      "schema": true,
+      "consumer": true
+    },
+    {
+      "name": "wrong-enrichment-type",
+      "set": [
+        {
+          "path": [
+            "proposals",
+            0,
+            "contentBytes"
+          ],
+          "value": 42
+        }
+      ],
+      "schema": false,
+      "consumer": false
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "chainId": 1,
   "generatedAt": "2026-08-18T12:00:00Z",
   "canonicalBlock": {
@@ -18,6 +18,10 @@
   ],
   "proposals": [
     {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
       "ref": {
         "chainId": 1,
         "votingAddress": "0x1111111111111111111111111111111111111111",
@@ -39,6 +43,7 @@
       "displayGroup": "upcoming",
       "type": "signal",
       "rules": {
+        "snapshotThresholdBps": 5000,
         "approvalThresholdBps": 5000,
         "thresholdSnapshottedAtCreation": true,
         "minimumTurnout": null,
@@ -94,27 +99,11 @@
       "script": {
         "bytes": "0x",
         "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-        "hashVerified": true
+        "hashVerified": true,
+        "framing": "supported"
       },
       "analysis": {
-        "state": "unavailable",
-        "generatedAt": null,
-        "registryVersion": null,
         "calls": [],
-        "proposalSimulation": {
-          "state": "unavailable",
-          "method": null,
-          "engine": null,
-          "blockNumber": null,
-          "blockHash": null,
-          "simulatedAt": null,
-          "stateTimestamp": null,
-          "timestampMode": null,
-          "timestampOverride": null,
-          "caller": null,
-          "stateOverrides": null,
-          "error": "Signal proposals have no executable calls."
-        },
         "error": null
       },
       "events": [
@@ -129,10 +118,3196 @@
             "logIndex": 0
           },
           "actor": "0x4444444444444444444444444444444444444444",
-          "voteActorKind": null,
           "yeaBps": null,
           "direction": null,
           "weight": null,
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "2"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": 1787162400,
+      "executionEndsAt": 1788285600,
+      "thresholdBps": 5000,
+      "totalWeight": "11000000000000000000",
+      "yeaWeight": "7500000000000000000",
+      "nayWeight": "3500000000000000000",
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreihfpbdg2b2jmhio4zybkme3iomjjkk2hm4qvufq4rmsaxzxvy2mhi",
+        "digest": "0xe578466d074961d0ee67015309b439894a95a3b390ad0b0e459205f37ae34c3a",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Fund protocol research\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n\n![Governance flow diagram](ipfs://bafkreiddpbv6fdpnzg5lnxseuuwicjg4en67yzioea3xtws2aoxnq45cbe)\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/2",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-31T18:00:00.000Z",
+          "assets": [
+            {
+              "path": "./assets/governance-flow.svg",
+              "mediaType": "image/svg+xml",
+              "byteLength": 660,
+              "digest": "0x63786be28dedc9bab6de44a52c8124dc237dfc650e203779da5a03aed873a209",
+              "width": 1280,
+              "height": 720
+            }
+          ]
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/2",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900020",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000014",
+            "timestamp": 1785520800,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fc",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900021",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000015",
+            "timestamp": 1786471500,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fd",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "3000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900021",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000015",
+            "timestamp": 1786471500,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fd",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x8888888888888888888888888888888888888888",
+          "yeaBps": 10000,
+          "direction": null,
+          "weight": "4000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900021",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000015",
+            "timestamp": 1786471500,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fd",
+            "transactionIndex": 1,
+            "logIndex": 3
+          },
+          "actor": "0x7777777777777777777777777777777777777777",
+          "yeaBps": 10000,
+          "direction": null,
+          "weight": "2000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900021",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000015",
+            "timestamp": 1786471800,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fe",
+            "transactionIndex": 2,
+            "logIndex": 4
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "2000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900021",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000015",
+            "timestamp": 1786471800,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fe",
+            "transactionIndex": 2,
+            "logIndex": 5
+          },
+          "actor": "0x8888888888888888888888888888888888888888",
+          "yeaBps": 7500,
+          "direction": null,
+          "weight": "4000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900021",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000015",
+            "timestamp": 1786471800,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000003fe",
+            "transactionIndex": 2,
+            "logIndex": 6
+          },
+          "actor": "0x7777777777777777777777777777777777777777",
+          "yeaBps": 7500,
+          "direction": null,
+          "weight": "2000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "3"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785434400,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": 1787162400,
+      "executionEndsAt": 1788285600,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreigomd4u26gzqk3xh7ade7lczebu4e7w3eahuauoxjfw7l24mqvhwq",
+        "digest": "0xce60f94d78d982b773fc0327d62c9034e13f6d9007a028eba4b6faf5c642a7b4",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Renew security operations\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/3",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-30T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/3",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900030",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000001e",
+            "timestamp": 1785434400,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000406",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900031",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000001f",
+            "timestamp": 1786471560,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000407",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900032",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000020",
+            "timestamp": 1786471620,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000408",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "4"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "198",
+      "createdAt": 1782928800,
+      "voteStartsAt": 1784052000,
+      "voteEndsAt": 1784656800,
+      "executionStartsAt": null,
+      "executionEndsAt": null,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "executed",
+      "displayStatus": "approved",
+      "displayGroup": "closed",
+      "type": "signal",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "signal",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": null,
+        "executionGuard": null,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreig5owtywnnx5f7o6uanuttsu7cw6rbh3pggsyw4a75dvdsolqpqdm",
+        "digest": "0xdd75a78b35b7e97eef500da4e72a7c56f4427dbcc6962dc07fa3a8e4e5c1f01b",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Approve the contributor charter\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/4",
+          "proposalType": "signal",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-01T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/4",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x",
+        "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900040",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000028",
+            "timestamp": 1782928800,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000410",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900041",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000029",
+            "timestamp": 1784052360,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000411",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900042",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000002a",
+            "timestamp": 1784052420,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000412",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "5"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784311200,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1787065200,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 1198800,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreigtysnrnkwrqywq225afdjcetea3hxq537moba5uhxcd2gmegrene",
+        "digest": "0xd3c49b16aad1862d0d6ba028d2224c80d9ef0eefec7041da1ee21e8cc21a2469",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Update treasury policy\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/5",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-17T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/5",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900050",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000032",
+            "timestamp": 1784311200,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000041a",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900051",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000033",
+            "timestamp": 1785261960,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000041b",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900052",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000034",
+            "timestamp": 1785262020,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000041c",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": true,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "6"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784138400,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1785952800,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "executed",
+      "displayStatus": "executed",
+      "displayGroup": "closed",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreibhjst6pimh73y5wbltjwhgv4hmnmjpqpbglpdwhwtt5yerfyx2lm",
+        "digest": "0x274ca7e7a187fef1db05734d8e6af0ec6b12f83c265bc763da73ee0912e2fa5b",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Execute the treasury migration\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/6",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-15T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/6",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900060",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000003c",
+            "timestamp": 1784138400,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000424",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900061",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000003d",
+            "timestamp": 1785261960,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000425",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900062",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000003e",
+            "timestamp": 1785262020,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000426",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "execute",
+          "log": {
+            "blockNumber": "23900063",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000003f",
+            "timestamp": 1785956400,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000427",
+            "transactionIndex": 1,
+            "logIndex": 3
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "7"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784311200,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1787065200,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 6000,
+      "totalWeight": "100",
+      "yeaWeight": "49",
+      "nayWeight": "51",
+      "protocolStatus": "failed",
+      "displayStatus": "rejected",
+      "displayGroup": "closed",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 6000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 1198800,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreibteavuegnll36kragi45od4jb3sztsbogcgz3qbg4fwudtlgbduy",
+        "digest": "0x33202b4219ab5efca880c8e75c3e243b966720b8c23677009b85b507359823a6",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Increase the operations budget\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/7",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-17T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/7",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900070",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000046",
+            "timestamp": 1784311200,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000042e",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900071",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000047",
+            "timestamp": 1785261960,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000042f",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "49",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900072",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000048",
+            "timestamp": 1785262020,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000430",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "51",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "8"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784311200,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": null,
+      "executionEndsAt": null,
+      "thresholdBps": 5000,
+      "totalWeight": "0",
+      "yeaWeight": "0",
+      "nayWeight": "0",
+      "protocolStatus": "failed",
+      "displayStatus": "rejected",
+      "displayGroup": "closed",
+      "type": "signal",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "signal",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": null,
+        "executionGuard": null,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreigx2uv2hiqmo4sex746g4mxs4g7ssyfyyhs6yy3hhpc4su5f6v4uy",
+        "digest": "0xd7d52ba3a20c77244bff9e37197970df94b05c60f2f631b39de2e4a9d2fabca6",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Record a proposal with no votes\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/8",
+          "proposalType": "signal",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-17T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/8",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x",
+        "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900080",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000050",
+            "timestamp": 1784311200,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000438",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "9"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "198",
+      "createdAt": 1782928800,
+      "voteStartsAt": 1784052000,
+      "voteEndsAt": 1784656800,
+      "executionStartsAt": 1784743200,
+      "executionEndsAt": 1785866400,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "expired",
+      "displayStatus": "expired",
+      "displayGroup": "closed",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreid23ftzd2xldpfvy24t4tcgsym4g4pmavm2vvqigriqnahobadc2u",
+        "digest": "0x7ad96791eaeb1bcb5c6b93e4c469619c371ec0559aad60834510680ee08062d5",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Expired executable proposal\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/9",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-01T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/9",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900090",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000005a",
+            "timestamp": 1782928800,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000442",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900091",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000005b",
+            "timestamp": 1784052360,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000443",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900092",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000005c",
+            "timestamp": 1784052420,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000444",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": true,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "10"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": null,
+      "executionEndsAt": null,
+      "thresholdBps": 5000,
+      "totalWeight": "0",
+      "yeaWeight": "0",
+      "nayWeight": "0",
+      "protocolStatus": "retracted",
+      "displayStatus": "retracted",
+      "displayGroup": "closed",
+      "type": "signal",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "signal",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": null,
+        "executionGuard": null,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreigttxtyr55inotxdqypicrdt25wpc2izb4ebfcwkzpkrddix7oqam",
+        "digest": "0xd39de788f7a86ba771c30f40a239ebb678b48c878409456565ea88c68bfdd003",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Retracted contributor request\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/10",
+          "proposalType": "signal",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-31T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/10",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x",
+        "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900100",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000064",
+            "timestamp": 1785520800,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000044c",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "retract",
+          "log": {
+            "blockNumber": "23900101",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000065",
+            "timestamp": 1787054340,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000044d",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": null,
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": true,
+      "executed": false,
+      "flagged": true,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "11"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": null,
+      "executionEndsAt": null,
+      "thresholdBps": 5000,
+      "totalWeight": "0",
+      "yeaWeight": "0",
+      "nayWeight": "0",
+      "protocolStatus": "flagged",
+      "displayStatus": "flagged",
+      "displayGroup": "closed",
+      "type": "signal",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "signal",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": null,
+        "executionGuard": null,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreiewhfr7m2txukgmmvmkv4otuztmmksyhgzehq4ygdys3y6ldqpcuu",
+        "digest": "0x963963f66a77a28cc6558aaf1d3a666c62a5839b243c39830f12de3cb1c1e2a5",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Malformed proposal\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/11",
+          "proposalType": "signal",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-31T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/11",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x",
+        "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900110",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000006e",
+            "timestamp": 1785520800,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000456",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "flag",
+          "log": {
+            "blockNumber": "23900111",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000006f",
+            "timestamp": 1787054340,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000457",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": null,
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": "Malformed proposal content"
+        }
+      ],
+      "moderation": {
+        "flagReason": "Malformed proposal content",
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": true,
+      "executed": false,
+      "flagged": false,
+      "vetoed": true,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "12"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": null,
+      "executionEndsAt": null,
+      "thresholdBps": 5000,
+      "totalWeight": "0",
+      "yeaWeight": "0",
+      "nayWeight": "0",
+      "protocolStatus": "vetoed",
+      "displayStatus": "vetoed",
+      "displayGroup": "closed",
+      "type": "signal",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "signal",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": null,
+        "executionGuard": null,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreiahesxj43igcv7rxbkj4wch5ihi4oxao3jo2balet5lx4pyhcppky",
+        "digest": "0x0724ae9e6d06157f1b8549e5847ea0e8e3ae076d2ed040b24fabbf1f8389ef56",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Vetoed before participation\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/12",
+          "proposalType": "signal",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-31T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/12",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x",
+        "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900120",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000078",
+            "timestamp": 1785520800,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000460",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "veto",
+          "log": {
+            "blockNumber": "23900121",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000079",
+            "timestamp": 1787054340,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000461",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": null,
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": "Guardian veto before the first vote"
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": "Guardian veto before the first vote"
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": true,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "13"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": 1787162400,
+      "executionEndsAt": 1788285600,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "vetoed",
+      "displayStatus": "vetoed",
+      "displayGroup": "closed",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreiczylk2sbx3zsq64rk6oggneyoheiouyocupbdzdo4q56xlurxq6e",
+        "digest": "0x59c2d5a906fbcca1ee455e718cd261c7221d4c3854784791bb90efaeba46f0f1",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Vetoed after participation began\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/13",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-31T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/13",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900130",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000082",
+            "timestamp": 1785520800,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000046a",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900131",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000083",
+            "timestamp": 1786471560,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000046b",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900132",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000084",
+            "timestamp": 1786471620,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000046c",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "veto",
+          "log": {
+            "blockNumber": "23900133",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000085",
+            "timestamp": 1787054340,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000046d",
+            "transactionIndex": 1,
+            "logIndex": 3
+          },
+          "actor": null,
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": "Guardian veto after participation began"
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": "Guardian veto after participation began"
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "14"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": 1787162400,
+      "executionEndsAt": 1788285600,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "unavailable",
+        "cid": null,
+        "digest": "0x2eca93665f84be9bd4fbf4f73e22ce7bf1e840881c95ac4ccabe366c427e3cae",
+        "value": null,
+        "error": "The content gateway did not return a response."
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/14",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900140",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000008c",
+            "timestamp": 1785520800,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000474",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900141",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000008d",
+            "timestamp": 1786471560,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000475",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900142",
+            "blockHash": "0x000000000000000000000000000000000000000000000000000000000000008e",
+            "timestamp": 1786471620,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000476",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "15"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": 1787162400,
+      "executionEndsAt": 1788285600,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "invalid",
+        "cid": "bafkreidtakub6vhtf2gk7yaawq3zeo4hk5f4yl7g5bz3pdpinx55ssckwi",
+        "digest": "0x7302a81f54f32e8cafe000b437923b87574bcc2fe6e873b78de86dfbd9484ab2",
+        "value": null,
+        "error": "The immutable document does not match yearn.dao.proposal.v1."
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/15",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900150",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000096",
+            "timestamp": 1785520800,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000047e",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900151",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000097",
+            "timestamp": 1786471560,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000047f",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900152",
+            "blockHash": "0x0000000000000000000000000000000000000000000000000000000000000098",
+            "timestamp": 1786471620,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000480",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "16"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "200",
+      "createdAt": 1785520800,
+      "voteStartsAt": 1786471200,
+      "voteEndsAt": 1787076000,
+      "executionStartsAt": 1787162400,
+      "executionEndsAt": 1788285600,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "voting",
+      "displayStatus": "voting",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreidil5jj2lfduz74ud2vsh246sgrzqv6ti4m6dyphog52xlfv4rzey",
+        "digest": "0x685f529d2ca3a67fca0f5591f5cf48d1cc2be9a38cf0f0f3b8ddd5d65af23926",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Proposal with missing script bytes\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/16",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-31T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/16",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": null,
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": null,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": "Exact proposed script bytes are unavailable."
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900160",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000a0",
+            "timestamp": 1785520800,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000488",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900161",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000a1",
+            "timestamp": 1786471560,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000489",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900162",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000a2",
+            "timestamp": 1786471620,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000048a",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "17"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784138400,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1785952800,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreigtzem7vhtz7xxga4ilignahefx5ucerb35f3m5mcwvv5zhlof4xa",
+        "digest": "0xd3c919fa9e79fdee60710b419a0390b7ed0448877d2ed9d60ad5af7275b8bcb8",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Proposal with a partially decoded script\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/17",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-15T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/17",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900170",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000aa",
+            "timestamp": 1784138400,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000492",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900171",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000ab",
+            "timestamp": 1785261960,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000493",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900172",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000ac",
+            "timestamp": 1785262020,
+            "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000494",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "18"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784138400,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1785952800,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreif6gbrpqvztkoa6oa5oerrr2c5l2ef5ebjgm3zszanyg3pehrfsaa",
+        "digest": "0xbe3062f857335381e703ae24631d0babd10bd2052666f32c81b836de43c4b200",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Proposal with malformed script bytes\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/18",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-15T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/18",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x01",
+        "hash": "0x5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": "The first Executor header is incomplete."
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900180",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000b4",
+            "timestamp": 1784138400,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000049c",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900181",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000b5",
+            "timestamp": 1785261960,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000049d",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900182",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000b6",
+            "timestamp": 1785262020,
+            "transactionHash": "0x000000000000000000000000000000000000000000000000000000000000049e",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "19"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784138400,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1785952800,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreiawj7v6esmzjyssfnjfpyctp3ryp6rm6hil2awwaftnnruq6oel2m",
+        "digest": "0x164febe249994e2522b5257e0537ee387fa2cf1d0bd02d60166d6c690f388bd3",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Proposal with a script hash mismatch\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/19",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-15T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/19",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "hashVerified": false,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900190",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000be",
+            "timestamp": 1784138400,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004a6",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900191",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000bf",
+            "timestamp": 1785261960,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004a7",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900192",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000c0",
+            "timestamp": 1785262020,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004a8",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "20"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "201",
+      "createdAt": 1787054400,
+      "voteStartsAt": 1787680800,
+      "voteEndsAt": 1788285600,
+      "executionStartsAt": null,
+      "executionEndsAt": null,
+      "thresholdBps": 5000,
+      "totalWeight": "0",
+      "yeaWeight": "0",
+      "nayWeight": "0",
+      "protocolStatus": "proposed",
+      "displayStatus": "discussion",
+      "displayGroup": "upcoming",
+      "type": "signal",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "signal",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": null,
+        "executionGuard": null,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreiacnkvmla3m27xvllozqnl6ciax4vepac52xmhtfuobpyzf6hfz2u",
+        "digest": "0x026aaac5836cd7ef55add98357e12017e548f00bbabb0f32d1c17e325f1cb9d5",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Direct-contract proposal\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/20",
+          "proposalType": "signal",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-08-18T12:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "unverified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/20",
+        "title": null,
+        "categoryId": null,
+        "category": null,
+        "categorySlugPath": []
+      },
+      "script": {
+        "bytes": "0x",
+        "hash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900200",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+            "timestamp": null,
+            "transactionHash": null,
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "21"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784138400,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1785952800,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "guarded",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreignw45l4zrrjwzetbtcjzetf6vwrlrl3dytvkfsqhzawo7mcqcxhe",
+        "digest": "0xcdb73abe66314db24986624e4932fab68ae2bd8f13aa8b281f20b3bec1405739",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Guarded executable proposal\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Interoperability evidence governance-verification-evidence-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n\nReview the [governance-verification-evidence-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa](https://example.com/governance/governance-verification-evidence-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) before execution.\n\n| Evidence | Exact value |\n| --- | --- |\n| Canonical manifest | governance-verification-evidence-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa |\n\n```text\ngovernance-verification-evidence-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n```\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/21",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-15T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/21",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900210",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000d2",
+            "timestamp": 1784138400,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004ba",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900211",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000d3",
+            "timestamp": 1785261960,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004bb",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900212",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000d4",
+            "timestamp": 1785262020,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004bc",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
+          "reason": null
+        }
+      ],
+      "moderation": {
+        "flagReason": null,
+        "vetoReason": null
+      }
+    },
+    {
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "ref": {
+        "chainId": 1,
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "proposalId": "22"
+      },
+      "proposer": "0x4444444444444444444444444444444444444444",
+      "votingEpoch": "199",
+      "createdAt": 1784138400,
+      "voteStartsAt": 1785261600,
+      "voteEndsAt": 1785866400,
+      "executionStartsAt": 1785952800,
+      "executionEndsAt": 1787076000,
+      "thresholdBps": 5000,
+      "totalWeight": "250000000000000000000",
+      "yeaWeight": "155000000000000000000",
+      "nayWeight": "95000000000000000000",
+      "protocolStatus": "passed",
+      "displayStatus": "approved",
+      "displayGroup": "active",
+      "type": "executable",
+      "rules": {
+        "snapshotThresholdBps": 5000,
+        "approvalThresholdBps": 5000,
+        "thresholdSnapshottedAtCreation": true,
+        "minimumTurnout": null,
+        "passageRequiresPositiveTotal": true,
+        "proposalType": "executable",
+        "votingPeriodSeconds": 604800,
+        "executionDelaySeconds": 86400,
+        "executionGuard": "permissionless",
+        "votingAddress": "0x1111111111111111111111111111111111111111",
+        "votingSource": {
+          "kind": "github",
+          "label": "Voting.vy at pinned stYFI revision",
+          "url": "https://github.com/yearn/stYFI/blob/9395d5e6fffdfe21fda32af94d32fca1a4f7840b/contracts/governance/Voting.vy",
+          "revision": "9395d5e6fffdfe21fda32af94d32fca1a4f7840b"
+        },
+        "votingSourcePath": "contracts/governance/Voting.vy",
+        "observationBlockNumber": "24000000"
+      },
+      "content": {
+        "state": "available",
+        "cid": "bafkreibfjehhnnlpnwe3m2bn2ahgwsjhvdjt6ddsjhvigg5m2epiksw3gi",
+        "digest": "0x25490e76b56f6d89b6682dd00e6b4927a8d33f0c7249ea831bacd11e854adb32",
+        "value": {
+          "schema": "yearn.dao.proposal.v1",
+          "markdown": "# Permissionless executable proposal\n\nThis proposal records the decision and rationale presented for DAO review.\n\n## Specification\n\nReview the requested governance outcome, voting record, and any ordered onchain actions before making a decision.\n",
+          "discussionUrl": "https://gov.yearn.fi/t/dao-proposal/22",
+          "proposalType": "executable",
+          "createdBy": "0x4444444444444444444444444444444444444444",
+          "createdAt": "2026-07-15T18:00:00.000Z",
+          "assets": []
+        },
+        "error": null
+      },
+      "discussion": {
+        "state": "verified",
+        "url": "https://gov.yearn.fi/t/dao-proposal/22",
+        "title": "Verified governance discussion",
+        "categoryId": 42,
+        "category": "Proposals",
+        "categorySlugPath": [
+          "proposals"
+        ]
+      },
+      "script": {
+        "bytes": "0x1111111111111111111111111111111111111111000000000000000000000004900cf0cf111111111111111111111111111111111111111100000000000000000000000442cde4e8",
+        "hash": "0x9efe25394ed0109b1720b295264aef364177774ee96c9db2b3b78c67fbe9fac9",
+        "hashVerified": true,
+        "framing": "supported"
+      },
+      "analysis": {
+        "calls": [
+          {
+            "index": 0,
+            "offset": 0,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x900cf0cf",
+            "calldataBytes": 4,
+            "selector": "0x900cf0cf",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          },
+          {
+            "index": 1,
+            "offset": 36,
+            "target": "0x1111111111111111111111111111111111111111",
+            "calldata": "0x42cde4e8",
+            "calldataBytes": 4,
+            "selector": "0x42cde4e8",
+            "decodeStatus": "unknown",
+            "contractName": null,
+            "functionSignature": null,
+            "arguments": [],
+            "verifiedSource": null,
+            "sourcePath": null
+          }
+        ],
+        "error": null
+      },
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "23900220",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000dc",
+            "timestamp": 1784138400,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004c4",
+            "transactionIndex": 1,
+            "logIndex": 0
+          },
+          "actor": "0x4444444444444444444444444444444444444444",
+          "yeaBps": null,
+          "direction": null,
+          "weight": null,
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900221",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000dd",
+            "timestamp": 1785261960,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004c5",
+            "transactionIndex": 1,
+            "logIndex": 1
+          },
+          "actor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "yeaBps": 10000,
+          "direction": "yea",
+          "weight": "155000000000000000000",
+          "reason": null
+        },
+        {
+          "type": "vote",
+          "log": {
+            "blockNumber": "23900222",
+            "blockHash": "0x00000000000000000000000000000000000000000000000000000000000000de",
+            "timestamp": 1785262020,
+            "transactionHash": "0x00000000000000000000000000000000000000000000000000000000000004c6",
+            "transactionIndex": 1,
+            "logIndex": 2
+          },
+          "actor": "0x5555555555555555555555555555555555555555",
+          "yeaBps": 0,
+          "direction": "nay",
+          "weight": "95000000000000000000",
           "reason": null
         }
       ],

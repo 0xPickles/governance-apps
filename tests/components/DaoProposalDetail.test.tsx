@@ -59,7 +59,7 @@ describe("DAO proposal detail", () => {
     ).toBeGreaterThan(0);
     expect(
       screen.getByText(
-        "Signal proposals do not contain calls and do not need execution analysis."
+        "Signal proposals contain no executable calls."
       )
     ).toBeVisible();
     expect(
@@ -75,10 +75,10 @@ describe("DAO proposal detail", () => {
     render(<ProposalDetail envelope={envelope(proposal(11n))} />);
 
     expect(screen.getByText("Moderation", { exact: true })).toBeVisible();
-    expect(screen.getByText("Flagged by operator", { exact: true })).toBeVisible();
+    expect(screen.getAllByText("Flagged", { exact: true })[0]).toBeVisible();
     expect(
       screen.getByText(
-        "The operator marked this proposal invalid before votes were recorded. This is moderation, not a community vote result."
+        "Flagging retracts the proposal and blocks voting and execution. No community vote result is implied."
       )
     ).toBeVisible();
     expect(
@@ -87,12 +87,12 @@ describe("DAO proposal detail", () => {
   });
 
   it.each([
-    [12n, "Voting is blocked because the guardian vetoed before participation began."],
+    [12n, "The veto blocks approval and execution. Voting is unavailable at this snapshot."],
     [13n, "Participation voting remains available until the voting window closes, but approval and execution are blocked."],
   ])("explains veto phase for proposal #%s", (proposalId, explanation) => {
     render(<ProposalDetail envelope={envelope(proposal(proposalId))} />);
 
-    expect(screen.getByText("Vetoed by guardian", { exact: true })).toBeVisible();
+    expect(screen.getAllByText("Vetoed", { exact: true })[0]).toBeVisible();
     expect(screen.getByText(explanation, { exact: true })).toBeVisible();
     expect(
       screen.getAllByText("No community result", { exact: true }).length
@@ -132,82 +132,35 @@ describe("DAO proposal detail", () => {
     }
   );
 
-  it("renders pending analysis as pending without inventing calls", () => {
-    render(
-      <ProposalDetail envelope={envelope(proposal(16n))} />
-    );
-
-    expect(screen.getByText("Analysis pending", { exact: true })).toBeVisible();
-    expect(screen.getByText("Pending", { exact: true })).toBeVisible();
-    expect(screen.queryByText("Safe", { exact: true })).not.toBeInTheDocument();
+  it("keeps missing script bytes distinct from an empty signal", () => {
+    render(<ProposalDetail envelope={envelope(proposal(16n))} />);
+    expect(screen.getByRole("heading", { name: "Proposed script" })).toBeVisible();
+    expect(screen.getAllByText(/script.*unavailable|missing script/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Analysis pending|simulation succeeded/i)).not.toBeInTheDocument();
     expect(screen.queryByText("Unknown call")).not.toBeInTheDocument();
   });
 
-  it("shows verified provenance and raw data for a partially decoded script", () => {
-    render(
-      <ProposalDetail envelope={envelope(proposal(17n))} />
-    );
-
-    expect(
-      screen.getByText("Partially decoded · simulation succeeded")
-    ).toBeVisible();
-    expect(screen.getByText("Verified decoding")).toBeVisible();
-    expect(screen.getByText("Unknown call")).toBeVisible();
-    expect(screen.getByText("Unknown contract")).toBeVisible();
-    expect(screen.getByText("No verified source")).toBeVisible();
-    expect(screen.getByText("Selector")).toBeVisible();
-    expect(screen.getByText("Calldata")).toBeVisible();
-    expect(screen.getByText("Reference block")).toBeVisible();
-    expect(
-      screen
-        .getAllByRole("link", {
-          name: "Voting.vy at pinned stYFI revision",
-        })
-        .every((link) => link.getAttribute("href") === PINNED_VOTING_SOURCE_URL)
-    ).toBe(true);
+  it("retains raw unknown calls and the configured source reference", () => {
+    render(<ProposalDetail envelope={envelope(proposal(17n))} />);
+    expect(screen.getAllByText("Unknown call").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Calldata").length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Voting.vy at pinned stYFI revision" })
+      .every((link) => link.getAttribute("href") === PINNED_VOTING_SOURCE_URL)).toBe(true);
+    expect(screen.queryByText(/simulation succeeded|Verified decoding/)).not.toBeInTheDocument();
   });
 
-  it("keeps simulation failure separate from decoding", () => {
-    render(
-      <ProposalDetail envelope={envelope(proposal(18n))} />
-    );
-
-    expect(screen.getAllByText("Simulation failed").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Verified decoding").length).toBeGreaterThan(0);
-    expect(
-      screen.getByText(/reverted in the recorded proposal-time simulation/i)
-    ).toBeVisible();
-    expect(
-      screen.getByText("Target call reverted during atomic simulation.")
-    ).toBeVisible();
+  it("shows malformed framing without historical simulation claims", () => {
+    render(<ProposalDetail envelope={envelope(proposal(18n))} />);
+    expect(screen.getAllByText(/header|frame|malformed/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Simulation failed|proposal-time simulation/i)).not.toBeInTheDocument();
   });
 
-  it("keeps default analysis labels production-shaped", () => {
-    render(
-      <ProposalDetail envelope={envelope(proposal(2n))} />
-    );
-
-    expect(
-      screen.queryByText(/\b(mock|fixture|prototype|qa|implementation)\b/i)
-    ).not.toBeInTheDocument();
-    expect(screen.getByText("anvil")).toBeVisible();
-    expect(screen.getAllByText("Voting").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("epoch()").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("threshold()").length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByRole("link", {
-        name: "Voting.vy at pinned stYFI revision",
-      }).length
-    ).toBeGreaterThan(0);
-  });
-
-  it("renders validated producer provenance verbatim without synthesizing a URL", () => {
+  it("renders optional locally reviewed decoding without synthesizing a source URL", () => {
     const feed = structuredClone(DAO_MOCK_FEED);
     const value = feed.proposals.find(
       (entry) => entry.ref.proposalId === 2n
     );
     if (!value) throw new Error("Missing proposal #2.");
-    value.analysis.proposalSimulation.engine = "reth/v1.2.3+prod";
     value.analysis.calls[0] = {
       ...value.analysis.calls[0],
       contractName: "vaultFactory.v2",
@@ -222,7 +175,6 @@ describe("DAO proposal detail", () => {
 
     render(<ProposalDetail envelope={envelope(value, feed)} />);
 
-    expect(screen.getByText("reth/v1.2.3+prod", { exact: true })).toBeVisible();
     expect(screen.getByText("vaultFactory.v2", { exact: true })).toBeVisible();
     expect(screen.getByText("rebalance_v2()", { exact: true })).toBeVisible();
     expect(

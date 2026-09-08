@@ -1,3 +1,4 @@
+import type { DaoProposalRef } from "@/lib/clients/dao/types";
 import type { DaoDisplayGroup } from "@/lib/clients/dao";
 import { resolveGovernanceAppPathHref } from "@/lib/governance-links";
 
@@ -55,9 +56,11 @@ export function createDaoBoardGroupHref(
 export function createDaoProposalHref(
   proposalId: bigint | string,
   origin: DaoDisplayGroup,
-  hostname?: string | null
+  hostname?: string | null,
+  ref?: DaoProposalRef
 ) {
   const search = new URLSearchParams({ from: origin });
+  if (ref) { search.set("chain", String(ref.chainId)); search.set("voting", ref.votingAddress); }
   return resolveGovernanceAppPathHref(
     "dao",
     `/proposals/${proposalId.toString()}?${search.toString()}`,

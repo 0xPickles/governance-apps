@@ -1,7 +1,7 @@
 import { formatTokenAmount } from "@/lib/format";
 import { serializeDaoProposalRef } from "./domain";
 import type {
-  DaoFeedV1,
+  DaoSnapshot,
   DaoProposal,
   DaoProposalEvent,
   DaoProposalRef,
@@ -41,29 +41,16 @@ export type DaoProposalTimingDisplay =
     };
 
 export type DaoProposalReadEnvelope = {
-  feed: DaoFeedV1;
+  feed: DaoSnapshot;
   proposal: DaoProposal;
 };
-
-const DAO_PUBLIC_ANALYSIS_ERRORS: Readonly<Record<string, string>> = {
-  SIMULATION_REVERTED: "The proposal-time atomic simulation reverted.",
-  TARGET_CALL_REVERTED: "Target call reverted during atomic simulation.",
-};
-
-/**
- * Producer provenance is rendered verbatim. Only stable, explicitly recognized
- * error codes are converted into route-local explanatory copy.
- */
-export function formatDaoPublicAnalysisError(value: string): string {
-  return DAO_PUBLIC_ANALYSIS_ERRORS[value] ?? value;
-}
 
 /**
  * Couples a proposal to the exact feed snapshot that surfaced it. Numeric IDs
  * are insufficient because proposal identity also includes chain and Voting.
  */
 export function resolveDaoProposalReadEnvelope(
-  feed: DaoFeedV1,
+  feed: DaoSnapshot,
   ref: DaoProposalRef
 ): DaoProposalReadEnvelope | null {
   const serializedRef = serializeDaoProposalRef(ref);

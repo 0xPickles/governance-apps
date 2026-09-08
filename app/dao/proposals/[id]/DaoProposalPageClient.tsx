@@ -19,6 +19,7 @@ import {
 } from "../../components/DaoRouteFrame";
 import { daoCopy } from "../../messages";
 import { MockControls } from "../../components/MockControls";
+import { DaoSnapshotNotice } from "../../components/DaoSnapshotNotice";
 import { ProposalDetail } from "./ProposalDetail";
 import { DaoProposalActionPanel } from "./DaoProposalActionPanel";
 import {
@@ -39,28 +40,31 @@ const PROPOSAL_EYEBROW_CLASS_NAME =
 export function DaoProposalPageClient({
   initialHostname,
   proposalId,
+  selection,
   requestedOrigin = null,
 }: {
   initialHostname?: string;
   proposalId: string;
+  selection?: { chainId: string | null; votingAddress: string | null };
   requestedOrigin?: string | null;
 }) {
   const browserHostname = useHostname();
   const hostname = browserHostname ?? initialHostname;
   const runtime = useDaoMockRuntime();
-  const proposalQuery = useDaoProposal(proposalId);
+  const proposalQuery = useDaoProposal(proposalId, selection);
   const envelope = proposalQuery.envelope;
   const state: DaoProposalRouteState = proposalQuery.isPending
     ? "loading"
-    : proposalQuery.isError
-      ? "error"
-      : envelope
-        ? "ready"
+    : envelope
+      ? "ready"
+      : proposalQuery.isError
+        ? "error"
         : "not_found";
 
   return (
     <>
       <DaoProposalView
+        snapshotNotice={!runtime ? <DaoSnapshotNotice snapshot={envelope?.feed} error={proposalQuery.error} onRetry={() => { void proposalQuery.refetch(); }} /> : null}
         actionPanel={
           envelope ? (
             <DaoProposalActionPanel
@@ -85,6 +89,7 @@ export function DaoProposalPageClient({
 }
 
 export function DaoProposalView({
+  snapshotNotice = null,
   actionPanel = null,
   envelope,
   hostname,
@@ -94,6 +99,7 @@ export function DaoProposalView({
   requestedOrigin = null,
   state,
 }: {
+  snapshotNotice?: ReactNode;
   actionPanel?: ReactNode;
   envelope: DaoProposalReadEnvelope | null;
   hostname?: string;
@@ -105,6 +111,7 @@ export function DaoProposalView({
 }) {
   return (
     <DaoRouteFrame>
+      {snapshotNotice}
       {state !== "ready" ? (
         <header className="space-y-2 border-b border-border pb-6">
           <DaoBreadcrumbs

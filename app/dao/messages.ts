@@ -4,6 +4,25 @@ import type {
 } from "@/lib/clients/dao";
 
 export const daoCopy = {
+  feed: {
+    snapshot: "Snapshot as of",
+    snapshotTiming: "Proposal statuses and countdowns below describe this snapshot.",
+    age: (minutes: number) => minutes === 0 ? "less than a minute old" : minutes >= 1440 ? `${Math.floor(minutes / 1440)} days old` : minutes >= 60 ? `${Math.floor(minutes / 60)} hours old` : `${minutes} minutes old`,
+    stale: "This snapshot is stale. Current eligibility is checked separately.",
+    lastGood: "Showing the last valid snapshot.",
+    trust: "This feed is an operator-produced cache of chain observations.",
+    writesDisabled: "Production DAO transactions are not enabled.",
+    eligible: "The observed voting conditions permit participation.",
+    currentWallet: "Current wallet eligibility",
+    currentStatus: "Current protocol status",
+    liveWeight: "Current effective voting weight",
+    liveObserved: "Wallet state observed",
+    feedLag: "Current chain state differs from this snapshot. The feed may still be catching up.",
+    connect: "Connect a wallet to load current eligibility.",
+    checking: "Checking current wallet eligibility…",
+    notSigning: "Eligibility is provisional. Every signing flow requires fresh action checks and transaction simulation.",
+    creationDisabled: "Onchain proposal creation and content publication are not enabled in production yet.",
+  },
   app: {
     name: "DAO Governance",
     route: "/dao",
@@ -132,9 +151,10 @@ export const daoCopy = {
     noQuorum: "No minimum turnout is required.",
     positiveVoteRequired: "Passage requires at least one non-zero vote.",
     thresholdSnapshot:
-      "The approval threshold was snapshotted when this proposal was created.",
+      "The threshold is stored on this proposal. Timing and execution configuration below were effective at the displayed snapshot and may have changed since creation.",
     ruleLabels: {
-      threshold: "Approval threshold",
+      threshold: "Stored approval threshold",
+      snapshotThreshold: "Snapshot default for new proposals",
       minimumTurnout: "Minimum turnout",
       proposalType: "Proposal type",
       votingPeriod: "Voting period",
@@ -170,8 +190,8 @@ export const daoCopy = {
       noCommunityResult: "No community result",
       notDecided: "Not decided",
       none: "None",
-      flaggedByOperator: "Flagged by operator",
-      vetoedByGuardian: "Vetoed by guardian",
+      flaggedByOperator: "Flagged",
+      vetoedByGuardian: "Vetoed",
       noExecutableActions: "No executable actions",
       executionScheduled: "Scheduled",
       executable: "Executable",
@@ -199,13 +219,13 @@ export const daoCopy = {
     },
     moderationExplanation: {
       flagged:
-        "The operator marked this proposal invalid before votes were recorded. This is moderation, not a community vote result.",
+        "Flagging retracts the proposal and blocks voting and execution. No community vote result is implied.",
       earlyVeto:
-        "Voting is blocked because the guardian vetoed before participation began.",
+        "This proposal is retracted and vetoed. Voting and execution are blocked.",
       postVoteVetoOpen:
         "Participation voting remains available until the voting window closes, but approval and execution are blocked.",
       postVoteVetoClosed:
-        "Participation voting has closed. The guardian veto blocks approval and execution.",
+        "The veto blocks approval and execution. Voting is unavailable at this snapshot.",
     },
     recordedEvents: "Recorded events",
     eventVerbs: {
@@ -216,15 +236,12 @@ export const daoCopy = {
       veto: "Vetoed",
       execute: "Executed",
     },
+    eventWeight: "Recorded vote weight (base units)",
+    eventYea: "Recorded yea fraction",
+    replacementVotes: "These are event contributions; later votes may replace them.",
     eventActors: {
-      propose: "Proposed by",
-      vote: "Voted by",
-      ybcAggregate: "YBC aggregate voter",
-      styfixAggregate: "stYFIX aggregate voter",
-      retract: "Retracted by",
-      flag: "Operator",
-      veto: "Guardian",
-      execute: "Executed by",
+      propose: "Proposer", vote: "Vote account", retract: "Actor unknown",
+      flag: "Actor unknown", veto: "Actor unknown", execute: "Execution caller",
     },
     viewTransaction: "View transaction",
     timeUnavailable: "Time unavailable",
@@ -237,33 +254,11 @@ export const daoCopy = {
       flag: "Flag reason",
       veto: "Veto reason",
     },
-    analysis: "Execution analysis",
+    analysis: "Proposed script",
     analysisDescription:
-      "Historical analysis is produced against proposal-time state. It does not guarantee current execution.",
-    analysisStates: {
-      pending: {
-        label: "Analysis pending",
-        body: "Decoding and the proposal-time simulation are not available yet.",
-      },
-      complete: {
-        label: "Decoded · simulation succeeded",
-        body: "All calls have verified decoding and the ordered script succeeded in the recorded historical context.",
-      },
-      partial: {
-        label: "Partially decoded · simulation succeeded",
-        body: "At least one call has no verified source record. Raw call data remains visible.",
-      },
-      failed: {
-        label: "Simulation failed",
-        body: "The ordered script reverted in the recorded proposal-time simulation context.",
-      },
-      unavailable: {
-        label: "Analysis unavailable",
-        body: "An execution-equivalent historical context could not be established.",
-      },
-    },
+      "Call framing comes from the exact proposed bytes using the supported Executor format. Proposer descriptions are separate; framing does not establish safety.",
     signalAnalysis:
-      "Signal proposals do not contain calls and do not need execution analysis.",
+      "Signal proposals contain no executable calls.",
     scriptHashVerified: "Event script matches the stored script hash",
     scriptHashMismatch: "Event script does not match the stored script hash",
     scriptUnavailable: "Event script is unavailable",
@@ -285,19 +280,6 @@ export const daoCopy = {
     calldata: "Calldata",
     calldataSize: "Calldata size",
     bytes: (count: number) => `${count} ${count === 1 ? "byte" : "bytes"}`,
-    simulation: "Proposal-time simulation",
-    simulationStates: {
-      pending: "Pending",
-      succeeded: "Succeeded",
-      failed: "Failed",
-      unavailable: "Unavailable",
-    },
-    simulationMethod: "Method",
-    simulationEngine: "Engine",
-    simulationBlock: "Reference block",
-    simulationTimestamp: "Simulated at",
-    simulationCaller: "Execution-equivalent caller",
-    simulationError: "Simulation result",
     technicalDetails: "Technical details",
     technicalSummary: "Show onchain identity, provenance, and raw values",
     chainId: "Chain ID",
@@ -489,7 +471,7 @@ export const daoCopy = {
     content: "Content",
     lifecycle: "Lifecycle",
     veto: "Veto",
-    analysis: "Analysis",
+    analysis: "Script",
     account: "Account",
     execution: "Execution",
     authoring: "Authoring",

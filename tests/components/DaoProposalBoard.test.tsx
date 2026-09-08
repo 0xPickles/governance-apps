@@ -59,7 +59,7 @@ describe("DAO proposal board", () => {
     expect(within(blocked).queryByRole("alert")).not.toBeInTheDocument();
 
     const normal = screen.getByRole("article", {
-      name: /historical simulation failed/,
+      name: /Guarded executable proposal/,
     });
     expect(
       within(normal).getByText("Executable actions", { exact: true })
@@ -95,7 +95,7 @@ describe("DAO proposal board", () => {
       within(upcomingPanel).getByRole("link", {
         name: /Adopt the contributor budget policy/,
       })
-    ).toHaveAttribute("href", "/dao/proposals/1?from=upcoming");
+    ).toHaveAttribute("href", "/dao/proposals/1?from=upcoming&chain=1&voting=0x1111111111111111111111111111111111111111");
 
     fireEvent.click(screen.getByRole("tab", { name: /Closed/ }));
     const closedPanel = screen.getByRole("tabpanel", { name: /Closed/ });
@@ -128,7 +128,7 @@ describe("DAO proposal board", () => {
       within(unavailable).getByRole("link", {
         name: /Open proposal #14/,
       })
-    ).toHaveAttribute("href", "/dao/proposals/14?from=active");
+    ).toHaveAttribute("href", "/dao/proposals/14?from=active&chain=1&voting=0x1111111111111111111111111111111111111111");
 
     const invalid = screen.getByRole("article", {
       name: /Proposal #15/,
@@ -269,7 +269,7 @@ describe("DAO proposal board", () => {
     expect(row).not.toHaveAttribute("tabindex");
     expect(openLink).toHaveAttribute(
       "href",
-      "/dao/proposals/2?from=active"
+      "/dao/proposals/2?from=active&chain=1&voting=0x1111111111111111111111111111111111111111"
     );
     expect(openLink.className).toContain("after:absolute");
 
@@ -296,7 +296,7 @@ describe("DAO proposal board", () => {
       screen.getByRole("link", {
         name: /Open proposal #2: Fund protocol research/,
       })
-    ).toHaveAttribute("href", "/proposals/2?from=active");
+    ).toHaveAttribute("href", "/proposals/2?from=active&chain=1&voting=0x1111111111111111111111111111111111111111");
   });
 });
 

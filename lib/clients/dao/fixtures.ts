@@ -1,3 +1,5 @@
+import { createDaoExecuteCall } from "./execute-call";
+import { analyzeDaoScript } from "./script-analysis";
 import { keccak256, sha256, toBytes, type Address, type Hex } from "viem";
 import { parseDaoFeedJson, serializeDaoFeedJson } from "./client";
 import {
@@ -16,14 +18,11 @@ import {
   deriveDaoProtocolStatus,
   deriveDaoVotingWeight,
 } from "./domain";
-import { checkDaoExecutorScript } from "./script";
 import { DAO_EXECUTOR_VALID_SCRIPT_VECTORS } from "./script-vectors";
 import type {
   DaoAccountProposalFacts,
   DaoAffectedBoostEpoch,
-  DaoAnalysis,
-  DaoDecodedCall,
-  DaoFeedV1,
+  DaoSnapshot,
   DaoMockFixture,
   DaoMockFixtureId,
   DaoProposal,
@@ -33,7 +32,6 @@ import type {
   DaoProposalRef,
   DaoProposalType,
   DaoProposerEligibilityInput,
-  DaoScriptFrame,
 } from "./types";
 
 export const DAO_MOCK_NOW = 1_787_054_400;
@@ -92,24 +90,6 @@ export function deriveDaoMockBlockHash(
 
 const DAO_PINNED_VOTING_SOURCE_PATH = "contracts/governance/Voting.vy";
 
-export const DAO_MOCK_VERIFIED_CALL_REGISTRY = [
-  {
-    target: DAO_MOCK_VOTING_ADDRESS,
-    selector: "0x900cf0cf" as Hex,
-    contractName: "Voting",
-    functionSignature: "epoch()",
-    verifiedSource: DAO_PINNED_VOTING_SOURCE,
-    sourcePath: DAO_PINNED_VOTING_SOURCE_PATH,
-  },
-  {
-    target: DAO_MOCK_VOTING_ADDRESS,
-    selector: "0x42cde4e8" as Hex,
-    contractName: "Voting",
-    functionSignature: "threshold()",
-    verifiedSource: DAO_PINNED_VOTING_SOURCE,
-    sourcePath: DAO_PINNED_VOTING_SOURCE_PATH,
-  },
-] as const;
 
 const DAY = 86_400;
 const UNIT = 10n ** 18n;
@@ -179,7 +159,7 @@ type ProposalFixtureOptions = {
   vetoed?: boolean;
   contentState?: DaoProposal["content"]["state"];
   discussionState?: DaoProposal["discussion"]["state"];
-  analysisState?: "default" | "pending" | "partial" | "failed";
+  scriptState?: "default" | "missing" | "partial" | "malformed";
   hashMismatch?: boolean;
   aggregateVoteBlend?: boolean;
   executionGuard?: "guarded" | "permissionless";
@@ -283,21 +263,21 @@ const proposals = [
   }),
   createProposal({
     id: 16n,
-    title: "Proposal awaiting analysis",
+    title: "Proposal with missing script bytes",
     timing: TIMING.voting,
-    analysisState: "pending",
+    scriptState: "missing",
   }),
   createProposal({
     id: 17n,
     title: "Proposal with a partially decoded script",
     timing: TIMING.execution,
-    analysisState: "partial",
+    scriptState: "partial",
   }),
   createProposal({
     id: 18n,
-    title: "Proposal whose historical simulation failed",
+    title: "Proposal with malformed script bytes",
     timing: TIMING.execution,
-    analysisState: "failed",
+    scriptState: "malformed",
   }),
   createProposal({
     id: 19n,
@@ -326,8 +306,8 @@ const proposals = [
 
 for (const proposal of proposals) assertDaoProposalInvariants(proposal);
 
-export const DAO_MOCK_FEED: DaoFeedV1 = {
-  schemaVersion: 1,
+export const DAO_MOCK_FEED: DaoSnapshot = {
+  schemaVersion: 2,
   chainId: DAO_MOCK_CHAIN_ID,
   generatedAt: "2026-08-18T12:00:00Z",
   canonicalBlock: {
@@ -370,9 +350,9 @@ const fixtureProposalIds: Record<DaoMockFixtureId, bigint> = {
   "post-vote-veto": 13n,
   "content-unavailable": 14n,
   "content-invalid": 15n,
-  "analysis-pending": 16n,
+  "script-missing": 16n,
   "partial-decode": 17n,
-  "simulation-failed": 18n,
+  "script-malformed": 18n,
   "hash-mismatch": 19n,
   "direct-proposal": 20n,
   "guarded-execution": 21n,
@@ -396,9 +376,9 @@ const fixtureLabels: Record<DaoMockFixtureId, string> = {
   "post-vote-veto": "Post-vote veto",
   "content-unavailable": "Content unavailable",
   "content-invalid": "Content invalid",
-  "analysis-pending": "Analysis pending",
+  "script-missing": "Missing script",
   "partial-decode": "Partial decode",
-  "simulation-failed": "Simulation failed",
+  "script-malformed": "Malformed script",
   "hash-mismatch": "Hash mismatch",
   "direct-proposal": "Direct proposal",
   "guarded-execution": "Guarded execution",
@@ -410,7 +390,7 @@ export const DAO_MOCK_FIXTURE_IDS = Object.keys(
   fixtureProposalIds
 ) as DaoMockFixtureId[];
 
-export function createDaoMockFeed(): DaoFeedV1 {
+export function createDaoMockFeed(): DaoSnapshot {
   return parseDaoFeedJson(structuredClone(INTERNAL_DAO_MOCK_FEED_JSON));
 }
 
@@ -445,6 +425,7 @@ export function getDaoMockFixture(id: DaoMockFixtureId): DaoMockFixture {
     isOperator: isOperatorFixture,
     isGuardian: isGuardianFixture,
     executionPreflight: {
+      call: preflightSucceeded && proposal.script.bytes ? createDaoExecuteCall(proposal.ref, accountAddress, proposal.script.bytes) : null,
       state: preflightSucceeded ? "succeeded" : "idle",
       scriptHash: proposal.script.hash,
       blockNumber: preflightSucceeded ? 24_000_001n : null,
@@ -471,13 +452,13 @@ function createProposal(options: ProposalFixtureOptions): DaoProposal {
   const thresholdBps = options.thresholdBps ?? 5_000;
   const totalWeight = options.totalWeight ?? 250n * 10n ** 18n;
   const yeaWeight = options.yeaWeight ?? 155n * 10n ** 18n;
-  const scriptBytes = type === "signal" ? ("0x" as Hex) : VALID_SCRIPT;
+  const scriptBytes = options.scriptState === "missing" ? null : options.scriptState === "malformed" ? "0x01" as Hex : type === "signal" ? ("0x" as Hex) : VALID_SCRIPT;
   const scriptHash =
     type === "signal"
       ? DAO_EMPTY_SCRIPT_HASH
       : options.hashMismatch
         ? MISMATCHED_SCRIPT_HASH
-        : VALID_SCRIPT_HASH;
+        : scriptBytes === null ? VALID_SCRIPT_HASH : keccak256(scriptBytes);
   const lifecycle = {
     exists: true,
     now: DAO_MOCK_NOW,
@@ -496,7 +477,7 @@ function createProposal(options: ProposalFixtureOptions): DaoProposal {
   const protocolStatus = deriveDaoProtocolStatus(lifecycle);
   const displayStatus = deriveDaoDisplayStatus(protocolStatus, type);
   const content = createContent(options);
-  const analysis = createAnalysis(options.analysisState ?? "default", type);
+  const analysis = analyzeDaoScript(scriptBytes, true);
   const flagReason = options.flagged ? "Malformed proposal content" : null;
   const vetoReason = options.vetoed
     ? totalWeight === 0n
@@ -505,6 +486,10 @@ function createProposal(options: ProposalFixtureOptions): DaoProposal {
     : null;
 
   return {
+    retracted: Boolean(options.retracted || options.flagged || (options.vetoed && totalWeight === 0n)),
+    executed: options.executed ?? false,
+    flagged: options.flagged ?? false,
+    vetoed: options.vetoed ?? false,
     ref: createProposalRef(options.id),
     proposer: DAO_MOCK_PROPOSER_ADDRESS,
     votingEpoch: options.timing.votingEpoch,
@@ -523,6 +508,7 @@ function createProposal(options: ProposalFixtureOptions): DaoProposal {
     displayGroup: deriveDaoDisplayGroup(displayStatus, type),
     type,
     rules: {
+      snapshotThresholdBps: 5000,
       approvalThresholdBps: thresholdBps,
       thresholdSnapshottedAtCreation: true,
       minimumTurnout: null,
@@ -549,7 +535,8 @@ function createProposal(options: ProposalFixtureOptions): DaoProposal {
     script: {
       bytes: scriptBytes,
       hash: scriptHash,
-      hashVerified: options.hashMismatch ? false : true,
+      hashVerified: scriptBytes === null ? null : options.hashMismatch ? false : true,
+      framing: "supported",
     },
     analysis,
     events: createEvents(options, totalWeight, yeaWeight, flagReason, vetoReason),
@@ -635,134 +622,6 @@ function createDiscussion(
   };
 }
 
-function createAnalysis(
-  state: NonNullable<ProposalFixtureOptions["analysisState"]>,
-  type: DaoProposalType
-): DaoAnalysis {
-  if (state === "pending") {
-    return {
-      state: "pending",
-      generatedAt: null,
-      registryVersion: null,
-      calls: [],
-      proposalSimulation: {
-        state: "pending",
-        method: null,
-        engine: null,
-        blockNumber: null,
-        blockHash: null,
-        simulatedAt: null,
-        stateTimestamp: null,
-        timestampMode: null,
-        timestampOverride: null,
-        caller: null,
-        stateOverrides: null,
-        error: null,
-      },
-      error: null,
-    };
-  }
-
-  if (type === "signal") {
-    return {
-      state: "unavailable",
-      generatedAt: null,
-      registryVersion: null,
-      calls: [],
-      proposalSimulation: {
-        state: "unavailable",
-        method: null,
-        engine: null,
-        blockNumber: null,
-        blockHash: null,
-        simulatedAt: null,
-        stateTimestamp: null,
-        timestampMode: null,
-        timestampOverride: null,
-        caller: null,
-        stateOverrides: null,
-        error: "Signal proposals have no executable calls.",
-      },
-      error: null,
-    };
-  }
-
-  const frames = getValidScriptFrames();
-  const failed = state === "failed";
-  const partial = state === "partial";
-  return {
-    state: failed ? "failed" : partial ? "partial" : "complete",
-    generatedAt: "2026-08-18T12:00:05Z",
-    registryVersion: "yearn-dao-registry/v1",
-    calls: frames.map((frame, index) =>
-      createDecodedCall(frame, partial && index === 1 ? "unknown" : "verified")
-    ),
-    proposalSimulation: {
-      state: failed ? "failed" : "succeeded",
-      method: "atomic_script_at_state",
-      engine: "anvil",
-      blockNumber: 23_900_100n,
-      blockHash: fixedHex32(91),
-      simulatedAt: "2026-08-18T12:00:04Z",
-      stateTimestamp: DAO_MOCK_NOW - 100,
-      timestampMode: "block",
-      timestampOverride: null,
-      caller: DAO_MOCK_EXECUTOR_ADDRESS,
-      stateOverrides: null,
-      error: failed ? "TARGET_CALL_REVERTED" : null,
-    },
-    error: failed ? "SIMULATION_REVERTED" : null,
-  };
-}
-
-function createDecodedCall(
-  frame: DaoScriptFrame,
-  decodeStatus: DaoDecodedCall["decodeStatus"]
-): DaoDecodedCall {
-  if (decodeStatus !== "verified") {
-    return {
-      ...frame,
-      decodeStatus,
-      contractName: null,
-      functionSignature: null,
-      arguments: [],
-      verifiedSource: null,
-      sourcePath: null,
-    };
-  }
-
-  const registryEntry = DAO_MOCK_VERIFIED_CALL_REGISTRY.find(
-    (entry) =>
-      entry.target.toLowerCase() === frame.target.toLowerCase() &&
-      entry.selector === frame.selector
-  );
-  if (!registryEntry) {
-    throw new Error(
-      `No pinned DAO call provenance for ${frame.target}:${frame.selector ?? "none"}.`
-    );
-  }
-
-  return {
-    ...frame,
-    decodeStatus,
-    contractName: registryEntry.contractName,
-    functionSignature: registryEntry.functionSignature,
-    arguments: [],
-    verifiedSource: {
-      ...validateDaoVerifiedSource(registryEntry.verifiedSource),
-    },
-    sourcePath: registryEntry.sourcePath,
-  };
-}
-
-function getValidScriptFrames(): DaoScriptFrame[] {
-  const check = checkDaoExecutorScript(VALID_SCRIPT, "executable");
-  if (check.state !== "valid") {
-    throw new Error("The deterministic Executor fixture must be valid.");
-  }
-  return check.frames;
-}
-
 function createEvents(
   options: ProposalFixtureOptions,
   totalWeight: bigint,
@@ -798,7 +657,6 @@ function createEvents(
     events.push(
       createEvent(options, nextLogIndex++, "vote", DAO_MOCK_ACCOUNT_ADDRESS, {
         log: yeaTransaction,
-        voteActorKind: "human",
         yeaBps: 10_000,
         direction: "yea",
         weight: 3n * UNIT,
@@ -810,7 +668,6 @@ function createEvents(
         DAO_MOCK_STYFIX_AGGREGATE_ADDRESS,
         {
           log: yeaTransaction,
-          voteActorKind: "styfix_aggregate",
           yeaBps: 10_000,
           weight: 4n * UNIT,
         }
@@ -822,14 +679,12 @@ function createEvents(
         DAO_MOCK_YBC_AGGREGATE_ADDRESS,
         {
           log: yeaTransaction,
-          voteActorKind: "ybc_aggregate",
           yeaBps: 10_000,
           weight: 2n * UNIT,
         }
       ),
       createEvent(options, nextLogIndex++, "vote", DAO_MOCK_OPERATOR_ADDRESS, {
         log: nayTransaction,
-        voteActorKind: "human",
         yeaBps: 0,
         direction: "nay",
         weight: 2n * UNIT,
@@ -841,7 +696,6 @@ function createEvents(
         DAO_MOCK_STYFIX_AGGREGATE_ADDRESS,
         {
           log: nayTransaction,
-          voteActorKind: "styfix_aggregate",
           yeaBps: 7_500,
           weight: 4n * UNIT,
         }
@@ -853,7 +707,6 @@ function createEvents(
         DAO_MOCK_YBC_AGGREGATE_ADDRESS,
         {
           log: nayTransaction,
-          voteActorKind: "ybc_aggregate",
           yeaBps: 7_500,
           weight: 2n * UNIT,
         }
@@ -864,7 +717,6 @@ function createEvents(
     if (yeaWeight > 0n) {
       events.push(
         createEvent(options, nextLogIndex++, "vote", DAO_MOCK_ACCOUNT_ADDRESS, {
-          voteActorKind: "human",
           yeaBps: 10_000,
           direction: "yea",
           weight: yeaWeight,
@@ -874,7 +726,6 @@ function createEvents(
     if (nayWeight > 0n) {
       events.push(
         createEvent(options, nextLogIndex++, "vote", DAO_MOCK_OPERATOR_ADDRESS, {
-          voteActorKind: "human",
           yeaBps: 0,
           direction: "nay",
           weight: nayWeight,
@@ -926,7 +777,7 @@ function createEvent(
   overrides: Partial<
     Pick<
       DaoProposalEvent,
-      "voteActorKind" | "yeaBps" | "direction" | "weight" | "reason"
+      "yeaBps" | "direction" | "weight" | "reason"
     >
   > & {
     log?: Partial<Omit<DaoProposalEvent["log"], "logIndex">>;
@@ -953,8 +804,7 @@ function createEvent(
       transactionIndex: overrides.log?.transactionIndex ?? 1,
       logIndex,
     },
-    actor,
-    voteActorKind: overrides.voteActorKind ?? null,
+    actor: type === "flag" || type === "veto" || type === "retract" ? null : actor,
     yeaBps: overrides.yeaBps ?? null,
     direction: overrides.direction ?? null,
     weight: overrides.weight ?? null,

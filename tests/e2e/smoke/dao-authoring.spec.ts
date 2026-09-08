@@ -37,7 +37,7 @@ test("authors, reviews, publishes, and submits a Signal proposal", async ({
   ).toBeVisible();
   await expect(page.getByText("0x", { exact: true })).toBeVisible();
   await expect(
-    page.getByText(/Backend decoding and simulation follow submission/i)
+    page.getByText(/The indexed proposal retains the exact script and content commitment/i)
   ).toBeVisible();
   const steps = page.getByRole("region", { name: "Submission steps" });
   await expect(steps.getByText(/Two actions are required/i)).toBeVisible();
@@ -241,11 +241,11 @@ test("keeps the exact review locked and announces asynchronous progress", async 
   ).toBeVisible();
   const openProposal = page.getByRole("link", { name: "Open proposal" });
   const initialHref = await openProposal.getAttribute("href");
-  expect(initialHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming$/);
+  expect(initialHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming&chain=1&voting=0x1111111111111111111111111111111111111111$/);
   await expect(page.getByRole("button", { name: "Copy proposal link" })).toBeVisible();
 
   await page.clock.fastForward(150);
-  await expect(page.getByText("Awaiting proposal indexing and analysis")).toBeVisible();
+  await expect(page.getByText("Awaiting proposal indexing")).toBeVisible();
   await expect(openProposal).toHaveAttribute("href", initialHref!);
 
   await page.clock.fastForward(150);
@@ -373,7 +373,7 @@ test("keeps publication after every failed typed transaction outcome", async ({
     await expect(page.getByText("Transaction hash", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "View transaction" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Open proposal" })).toHaveCount(0);
-    await expect(page.getByText("Awaiting proposal indexing and analysis")).toHaveCount(0);
+    await expect(page.getByText("Awaiting proposal indexing")).toHaveCount(0);
     expect(
       await page.evaluate(
         (storageKey) => window.sessionStorage.getItem(storageKey),
@@ -415,7 +415,7 @@ test("uses visible review controls for rejection then retries the same publicati
   await expect(page.getByRole("link", { name: "View transaction" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open proposal" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Copy proposal link" })).toHaveCount(0);
-  await expect(page.getByText("Awaiting proposal indexing and analysis")).toHaveCount(0);
+  await expect(page.getByText("Awaiting proposal indexing")).toHaveCount(0);
   expect(
     await page.evaluate(
       (storageKey) => window.sessionStorage.getItem(storageKey),
@@ -445,7 +445,7 @@ test("uses visible review controls for rejection then retries the same publicati
 
   const openProposal = page.getByRole("link", { name: "Open proposal" });
   const proposalHref = await openProposal.getAttribute("href");
-  expect(proposalHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming$/);
+  expect(proposalHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming&chain=1&voting=0x1111111111111111111111111111111111111111$/);
   await page.getByRole("button", { name: "Copy proposal link" }).click();
   await expect(
     page.getByRole("button", { name: "Proposal link copied" })

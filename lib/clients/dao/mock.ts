@@ -24,7 +24,7 @@ import {
 } from "./store";
 import type {
   DaoAccountProposalState,
-  DaoFeedV1,
+  DaoSnapshot,
   DaoMockFixture,
   DaoMockFixtureId,
   DaoProposal,
@@ -74,7 +74,7 @@ export class MockDaoClient implements DaoClient {
     return structuredClone(getDaoMockFixture(this.fixtureId));
   }
 
-  async getFeed(): Promise<DaoFeedV1> {
+  async getFeed(): Promise<DaoSnapshot> {
     await this.waitForLatency();
     return createDaoMockFeed();
   }
@@ -237,7 +237,7 @@ export class RuntimeMockDaoClient implements DaoClient {
     this.latencyMs = options.latencyMs ?? 250;
   }
 
-  async getFeed(): Promise<DaoFeedV1> {
+  async getFeed(): Promise<DaoSnapshot> {
     await this.waitForLatency();
     return readDaoMockFeed();
   }
@@ -315,7 +315,7 @@ export function createRuntimeMockDaoClient(options?: {
   return new RuntimeMockDaoClient(options);
 }
 
-function findProposal(feed: DaoFeedV1, ref: DaoProposalRef): DaoProposal | null {
+function findProposal(feed: DaoSnapshot, ref: DaoProposalRef): DaoProposal | null {
   const key = serializeDaoProposalRef(ref);
   return (
     feed.proposals.find(

@@ -1,4 +1,6 @@
+import { createDaoExecuteCall, matchesDaoExecuteCall } from "./execute-call";
 import { keccak256 } from "viem";
+import { checkDaoExecutorScript } from "./script";
 import type {
   DaoCapabilities,
   DaoCapabilityInput,
@@ -54,7 +56,7 @@ export const DAO_BLOCKED_REASONS = {
   executionSimulationPending: "The fresh execution simulation is still running.",
   executionSimulationFailed: "The fresh execution simulation failed.",
   executionSimulationMismatch:
-    "The fresh execution simulation does not match this script.",
+    "The fresh execution simulation does not match this account, proposal or transaction.",
   awaitingIndex:
     "A confirmed proposal action is waiting for feed indexing.",
   proposerBlacklisted: "This account is blocked from creating proposals.",
@@ -194,6 +196,9 @@ export function deriveDaoProposalExecutionReadiness(
       reason: DAO_EXECUTION_READINESS_REASONS.storedScriptHashMismatch,
     };
   }
+  if (proposal.script.framing !== "unsupported" && checkDaoExecutorScript(proposal.script.bytes).state === "invalid") {
+    return { state: "integrity_blocked", blocker: "malformed_script", reason: "The proposed script has invalid Executor framing." };
+  }
   return { state: "integrity_ready", blocker: null, reason: null };
 }
 
@@ -202,7 +207,6 @@ export function deriveDaoLifecycleFacts(
   now: number
 ): DaoLifecycleFacts {
   assertFiniteInteger(now, "now");
-  const hasParticipation = proposal.totalWeight > 0n;
   const isFlagged = proposal.protocolStatus === "flagged";
   const isVetoed = proposal.protocolStatus === "vetoed";
   const votingWindowOpen = now >= proposal.voteStartsAt && now < proposal.voteEndsAt;
@@ -211,18 +215,14 @@ export function deriveDaoLifecycleFacts(
     isFlagged || isVetoed
       ? {
           kind: isFlagged ? "flagged" : "vetoed",
-          phase: hasParticipation
-            ? "after_participation"
-            : "before_participation",
           reason: isFlagged
             ? proposal.moderation.flagReason
             : proposal.moderation.vetoReason,
-          votingAvailable: isVetoed && hasParticipation && votingWindowOpen,
+          votingAvailable: isVetoed && !proposal.retracted && votingWindowOpen,
           executionBlocked: true,
         }
       : {
           kind: null,
-          phase: null,
           reason: null,
           votingAvailable:
             proposal.protocolStatus === "voting" && votingWindowOpen,
@@ -458,14 +458,6 @@ export function deriveDaoCapabilities(
   };
 }
 
-export function countDaoHumanVoteEvents(
-  events: readonly DaoProposalEvent[]
-): number {
-  return events.filter(
-    (event) => event.type === "vote" && event.voteActorKind === "human"
-  ).length;
-}
-
 export function assertDaoProposalInvariants(proposal: DaoProposal): void {
   if (!Number.isSafeInteger(proposal.ref.chainId) || proposal.ref.chainId <= 0) {
     throw new Error("Proposal chainId must be a positive safe integer.");
@@ -484,7 +476,7 @@ export function assertDaoProposalInvariants(proposal: DaoProposal): void {
   }
   if (
     proposal.createdAt > proposal.voteStartsAt ||
-    proposal.voteStartsAt >= proposal.voteEndsAt
+    proposal.voteStartsAt > proposal.voteEndsAt
   ) {
     throw new Error("Proposal voting timestamps are inconsistent.");
   }
@@ -566,7 +558,6 @@ function assertDaoProposalEventInvariant(event: DaoProposalEvent): void {
   }
   if (event.type !== "vote") {
     if (
-      event.voteActorKind !== null ||
       event.yeaBps !== null ||
       event.direction !== null ||
       event.weight !== null
@@ -577,30 +568,20 @@ function assertDaoProposalEventInvariant(event: DaoProposalEvent): void {
   }
 
   if (
-    event.voteActorKind === null ||
     event.yeaBps === null ||
     event.weight === null
   ) {
-    throw new Error("Vote events require actor kind, yeaBps, and weight.");
+    throw new Error("Vote events require yeaBps and weight.");
   }
   assertBasisPoints(event.yeaBps, "yeaBps");
   if (event.weight < 0n) {
     throw new Error("Vote event weight cannot be negative.");
   }
 
-  if (event.voteActorKind === "human") {
-    if (event.yeaBps !== 0 && event.yeaBps !== DAO_BPS) {
-      throw new Error("Human vote events must use binary yeaBps.");
-    }
-    if (
-      event.direction !== null &&
+  if (event.direction !== null &&
       ((event.direction === "yea" && event.yeaBps !== DAO_BPS) ||
-        (event.direction === "nay" && event.yeaBps !== 0))
-    ) {
-      throw new Error("Human vote direction must match yeaBps.");
-    }
-  } else if (event.direction !== null) {
-    throw new Error("Aggregate vote events cannot use a binary direction.");
+       (event.direction === "nay" && event.yeaBps !== 0))) {
+    throw new Error("Vote direction must match event basis points.");
   }
 }
 
@@ -621,7 +602,7 @@ function assertDaoProposalRulesInvariant(proposal: DaoProposal): void {
   if (rules.votingPeriodSeconds !== proposal.voteEndsAt - proposal.voteStartsAt) {
     throw new Error("Proposal rules must carry the proposal voting period.");
   }
-  if (!Number.isSafeInteger(rules.votingPeriodSeconds) || rules.votingPeriodSeconds <= 0) {
+  if (!Number.isSafeInteger(rules.votingPeriodSeconds) || rules.votingPeriodSeconds < 0) {
     throw new Error("Proposal voting period must be positive Unix seconds.");
   }
   const expectedDelay =
@@ -671,10 +652,10 @@ function deriveVoteCapability(input: DaoCapabilityInput): {
 
   const participationOnly =
     input.proposal.protocolStatus === "vetoed" &&
-    input.proposal.totalWeight > 0n;
+    !input.proposal.retracted;
   if (
-    input.proposal.protocolStatus !== "voting" &&
-    !participationOnly
+    input.proposal.retracted ||
+    (input.proposal.protocolStatus !== "voting" && !participationOnly)
   ) {
     return { purpose: "decision", reason: DAO_BLOCKED_REASONS.voteLifecycle };
   }
@@ -697,7 +678,7 @@ function deriveRetractCapability(input: DaoCapabilityInput): string | null {
   if (!input.account.isProposer) return DAO_BLOCKED_REASONS.notProposer;
   if (
     input.now >= input.proposal.voteEndsAt ||
-    !["proposed", "voting"].includes(input.proposal.protocolStatus)
+    input.proposal.retracted || input.proposal.vetoed
   ) {
     return DAO_BLOCKED_REASONS.retractLifecycle;
   }
@@ -711,7 +692,7 @@ function deriveFlagCapability(input: DaoCapabilityInput): string | null {
   if (!input.account.isOperator) return DAO_BLOCKED_REASONS.notOperator;
   if (
     input.now >= input.proposal.voteEndsAt ||
-    !["proposed", "voting"].includes(input.proposal.protocolStatus)
+    input.proposal.retracted
   ) {
     return DAO_BLOCKED_REASONS.flagLifecycle;
   }
@@ -756,12 +737,10 @@ function deriveExecuteCapability(input: DaoCapabilityInput): string | null {
   if (input.executionGuard === "guarded" && !input.account.isOperator) {
     return DAO_BLOCKED_REASONS.guardedExecution;
   }
-  if (input.proposal.script.bytes === null) {
-    return DAO_BLOCKED_REASONS.scriptUnavailable;
-  }
-  if (input.proposal.script.hashVerified !== true) {
-    return DAO_BLOCKED_REASONS.scriptHashMismatch;
-  }
+  const integrity = deriveDaoProposalExecutionReadiness(input.proposal);
+  if (integrity.state === "integrity_blocked") return integrity.blocker === "exact_script_unavailable"
+    ? DAO_BLOCKED_REASONS.scriptUnavailable : integrity.blocker === "stored_script_hash_mismatch"
+      ? DAO_BLOCKED_REASONS.scriptHashMismatch : integrity.reason;
 
   const preflight = input.account.executionPreflight;
   if (preflight.scriptHash.toLowerCase() !== input.proposal.script.hash.toLowerCase()) {
@@ -775,6 +754,14 @@ function deriveExecuteCapability(input: DaoCapabilityInput): string | null {
   }
   if (preflight.state === "failed") {
     return DAO_BLOCKED_REASONS.executionSimulationFailed;
+  }
+  const simulatedAt = preflight.simulatedAt === null ? NaN : Date.parse(preflight.simulatedAt) / 1000;
+  if (!Number.isFinite(simulatedAt) || simulatedAt < input.now - 300 || simulatedAt > input.now + 60) {
+    return DAO_BLOCKED_REASONS.executionSimulationRequired;
+  }
+  if (!input.proposal.script.bytes || !matchesDaoExecuteCall(preflight.call,
+    createDaoExecuteCall(input.proposal.ref, input.account.address, input.proposal.script.bytes))) {
+    return DAO_BLOCKED_REASONS.executionSimulationMismatch;
   }
   return null;
 }
@@ -792,7 +779,7 @@ function assertLifecycleInput(input: DaoProposalLifecycleInput): void {
   assertFiniteInteger(input.postVoteEpochEndsAt, "postVoteEpochEndsAt");
   assertBasisPoints(input.thresholdBps, "thresholdBps");
   if (
-    input.voteStartsAt >= input.voteEndsAt ||
+    input.voteStartsAt > input.voteEndsAt ||
     input.voteEndsAt >= input.postVoteEpochEndsAt
   ) {
     throw new Error("Lifecycle timestamps are inconsistent.");

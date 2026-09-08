@@ -174,7 +174,7 @@ function ProposalBoardRow({
               className="text-balance text-lg font-bold md:text-xl"
             >
               <Link
-                href={createDaoProposalHref(proposalId, origin, hostname)}
+                href={createDaoProposalHref(proposalId, origin, hostname, proposal.ref)}
                 aria-label={daoCopy.board.proposalLink(proposalId, title)}
                 className="inline-flex min-h-10 max-w-full items-center rounded py-1 text-left transition-[color] duration-150 ease-out hover:text-yearn-blue focus:outline-none focus-visible:after:absolute focus-visible:after:inset-0 focus-visible:after:rounded-box focus-visible:after:ring-2 focus-visible:after:ring-text-primary focus-visible:after:ring-offset-2 focus-visible:after:ring-offset-app after:absolute after:inset-0 after:rounded-box after:content-[''] motion-reduce:transition-none dark:hover:text-blue-300"
               >

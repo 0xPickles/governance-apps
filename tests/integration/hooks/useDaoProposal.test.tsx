@@ -8,6 +8,7 @@ import {
   resetDaoMockStore,
   setDaoMockSurface,
 } from "@/lib/clients/dao";
+import { OnchainDaoClient } from "@/lib/clients/dao/onchain";
 import { daoKeys } from "@/lib/hooks/daoKeys";
 import {
   getDaoRouteClient,
@@ -23,24 +24,20 @@ afterEach(() => {
   process.env.NEXT_PUBLIC_ENABLE_DAO = originalDaoFlag;
 });
 
-describe("DAO production-mode mock-beta gate", () => {
+describe("DAO production read gate", () => {
   it("refuses route-local mock reads while the DAO flag is false", () => {
     process.env.NEXT_PUBLIC_RUNTIME_MODE = "production";
     process.env.NEXT_PUBLIC_ENABLE_DAO = "false";
 
     expect(() => getDaoRouteClient()).toThrow(
-      "DAO mock reads are unavailable when the DAO route is disabled."
+      "DAO route is disabled."
     );
   });
 
-  it("hydrates deterministic route-local data when the DAO flag is true", async () => {
+  it("selects only the real client in production", () => {
     process.env.NEXT_PUBLIC_RUNTIME_MODE = "production";
     process.env.NEXT_PUBLIC_ENABLE_DAO = "true";
-
-    await expect(getDaoRouteClient().getFeed()).resolves.toMatchObject({
-      schemaVersion: DAO_MOCK_FEED.schemaVersion,
-      chainId: DAO_MOCK_FEED.chainId,
-    });
+    expect(getDaoRouteClient()).toBeInstanceOf(OnchainDaoClient);
   });
 });
 
@@ -60,7 +57,7 @@ describe("useDaoProposal", () => {
 
     await expect(
       queryClient.fetchQuery({
-        queryKey: daoKeys.feed(),
+        queryKey: [...daoKeys.feed(), "mock"],
         queryFn: () => {
           feedReads += 1;
           throw feedError;

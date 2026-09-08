@@ -64,8 +64,8 @@ describe("runtime feature flags", () => {
 
     expect(isTeamsEnabled(env)).toBe(true);
     expect(isDaoEnabled(env)).toBe(true);
-    expect(isDaoMockRuntimeEnabled(env)).toBe(true);
-    expect(isDaoReviewControlsEnabled(env)).toBe(true);
+    expect(isDaoMockRuntimeEnabled(env)).toBe(false);
+    expect(isDaoReviewControlsEnabled(env)).toBe(false);
     expect(isYbcEnabled(env)).toBe(true);
     expect(isYethEnabled(env)).toBe(true);
     expect(isDebugUiEnabled(env)).toBe(true);

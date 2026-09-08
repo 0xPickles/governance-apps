@@ -98,7 +98,7 @@ describe("browser-local created DAO proposals", () => {
 
     const [stored] = readDaoCreatedProposals();
     expect(stored?.stage).toBe("awaiting_index");
-    expect(stored?.proposal.analysis.state).toBe("pending");
+    expect(stored?.proposal.analysis.error).toBeNull();
     expect(stored?.proposal.script).toEqual({
       bytes: "0x",
       hash: DAO_EMPTY_SCRIPT_HASH,
@@ -132,7 +132,7 @@ describe("browser-local created DAO proposals", () => {
     const indexed = indexDaoCreatedProposal(proposal.ref, 1_787_054_424);
 
     expect(indexed?.stage).toBe("indexed");
-    expect(indexed?.proposal.analysis.state).toBe("unavailable");
+    expect(indexed?.proposal.analysis.error).toBeNull();
     expect(serializeDaoProposalRef(indexed!.proposal.ref)).toBe(before);
     expect(
       serializeDaoProposalRef(readDaoCreatedProposals()[0]!.proposal.ref)
@@ -164,8 +164,8 @@ describe("browser-local created DAO proposals", () => {
         (candidate) =>
           serializeDaoProposalRef(candidate.ref) ===
           serializeDaoProposalRef(proposal.ref)
-      )?.analysis.state
-    ).toBe("pending");
+      )?.analysis.error
+    ).toBeNull();
 
     resetDaoMockStore({ preserveCreatedProposals: true });
     expect(
@@ -188,7 +188,7 @@ describe("browser-local created DAO proposals", () => {
         (candidate) =>
           serializeDaoProposalRef(candidate.ref) ===
           serializeDaoProposalRef(proposal.ref)
-      )?.analysis.state
-    ).toBe("unavailable");
+      )?.analysis.error
+    ).toBeNull();
   });
 });
