@@ -8,7 +8,7 @@ Recover exact original script, compare keccak256 against current stored commitme
 
 ## Acceptance
 
-Acceptance: failure or unavailability of required reads/simulation blocks normal execute; standalone Executor-frame or historical simulation cannot pass; changed inputs/observations invalidate preparation; simulation success is no guarantee; shared useTx only; empty signals expose no execute action.
+Acceptance: failure or unavailability of required reads/simulation blocks normal execute; standalone Executor-frame or historical simulation cannot pass; a successful preflight records its simulation block number/hash/timestamp and binds it to the coherent live preparation context; missing data, changed inputs/configuration and canonical replacement (including at the same height) invalidate preparation; never bind the simulation to the older feed snapshot or accept only a recent simulatedAt; simulation success is no guarantee; shared useTx only; empty signals expose no execute action.
 
 ## Dependencies and validation
 

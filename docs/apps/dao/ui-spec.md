@@ -522,7 +522,7 @@ the exact lifecycle effect; flag and veto reasons are required and limited to
 256 UTF-8 bytes. Execute is present only for executable proposals, stays disabled
 with the client-supplied reason until its supplied capability is true, and never
 appears for a signal. Its review uses the accepted script hash, guard, and
-current-state preflight facts already in the mock client. It does not perform a
+current-state preflight facts already in the mock client. The displayed simulation reference comes from the preflight's live block observation. A changed or missing live preparation context disables execution; an old feed timestamp or recent simulatedAt alone cannot enable it. It does not perform a
 new simulation or submit an onchain transaction.
 
 All five actions prepare through the DAO client and execute through shared

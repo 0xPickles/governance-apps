@@ -14,8 +14,8 @@ repository environment sync tooling.
 - `npm run generate:dao-feed -- --check`
 - `npm run typecheck`, `npm run lint`, `npm run test`
 - `npm run test:e2e`, `npm run test:e2e:full -- --workers=1`
-- `npm run test:e2e:dao-feed` builds a local production-runtime consumer with synthetic trusted deployments, then renders saved V2 responses through real routes.
-- `npm run test:e2e:dao-feed -- --disabled` builds the default gated production runtime and checks GET/HEAD 404 behavior, security headers and the beta host.
+- `npm run test:e2e:dao-feed` builds a local production-runtime consumer with synthetic trusted deployments, then renders saved V2 responses through real routes and checks enabled GET/HEAD against a counted local upstream.
+- `npm run test:e2e:dao-feed -- --disabled` builds the default gated production runtime and checks GET/HEAD 404 behavior for pages and `/api/dao-data`, security headers and the beta host. A configured local upstream must receive zero requests.
 - Both production route runners perform a full Next production build; `npm run build` is also available for an ordinary build.
 - `npm run validate:deps`, `git diff --check`
 - `npm run measure:dao-feed` reports payload/schema size and parse/adapter cost.
@@ -28,7 +28,7 @@ uses preview/development runtime and the shared test bridge.
 ## Configuration for a later reviewed environment
 
 `DAO_DATA_URL` is a server-only fixed static feed URL consumed by
-`/api/dao-data`; absent configuration returns 503. Never accept this URL from
+`/api/dao-data`; disabled production returns 404 before configuration or fetch. When enabled, absent configuration returns 503. Never accept this URL from
 query parameters. Use HTTPS for a real remote endpoint. Both proxy and browser
 bound decompressed response bytes to 32 MiB and total request/body time to ten
 seconds, with no-store.

@@ -99,7 +99,9 @@ replayed by one language. A status mutation without contradictory flags can be
 wire-valid; only acquisition of the real status result establishes correctness.
 
 The read-only producer inventory contains a different source pin and a candidate
-Voting deployment. These are recorded in the handoff and remain unresolved.
+Voting deployment. Follow-up byte comparison confirms Voting, Voter and Executor
+are identical at both revisions; see the [comparison record](evidence/feed-v2/source-comparison.md).
+Live deployment verification and other relevant dependencies remain unresolved.
 Synthetic deployment addresses are never production defaults.
 
 ## Measurements and validation
@@ -183,16 +185,25 @@ relaxing assertions.
 No live deployment verification, actual producer-byte interoperability, newly
 contract-executed lifecycle/reorg tests, authenticated remote staging, OpenNext
 worker build/deployment, physical-device or manual screen-reader certification
-was performed. These are not claimed as passes. The source-pin discrepancy,
+was performed. These are not claimed as passes. Live deployment/dependency verification,
 growth cost and real provider/publication behavior remain later integration
 gates.
+
+## Review follow-up
+
+The review of `63978237..edf88b53` supported continuing with V2 and requested
+three P2 corrections before approval. The [follow-up record](feed-v2-review-fixes.md)
+tracks those fixes, added CI coverage, narrowed source-pin discrepancy and new
+validation. The original measurements and validation above describe the submitted
+reset tip; they have not been relabeled as measurements of these corrections.
+External approval remains pending.
 
 ## Remaining gates
 
 1. External review of the complete base-to-tip range; address findings.
 2. Explicit approval to begin Gov Apps Stats.
-3. Producer implementation against this reviewed V2 candidate, including source
-   reconciliation, bounded acquisition, durable scripts/content and publication.
+3. Producer implementation against this reviewed V2 candidate, including deployed-source/dependency
+   verification, bounded acquisition, durable scripts/content and publication.
 4. Actual producer bytes through this transport/parser/adapter and real routes,
    followed by cross-repository staging and contract-executed lifecycle/reorg UAT.
 5. Required production approval before any deployment or exposure change.
