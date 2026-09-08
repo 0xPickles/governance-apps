@@ -1,106 +1,32 @@
 # DAO Governance
 
-Status: M2 mock product accepted; M3 WP8 is the next package.
+DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.
 
-`DAO Governance` is the proposal, voting, and execution-review app for Yearn's
-onchain governance contracts.
+The feed V2 reset now implements the consumer read path in Governance Apps. External review is pending; Gov Apps Stats implementation needs explicit approval next. Production exposure remains gated and production transaction writes are disabled.
 
-## Canonical identity
+## Canonical references
 
-- Display name: `DAO Governance`
-- Shared-host route: `/dao`
-- Proposal detail: `/dao/proposals/[id]`
-- Proposal creation: `/dao/propose`
-- Internal preproduction review host: `dao-beta.dao-ops.com` (unlisted,
-  `noindex`, and noncanonical)
-- Planned production host: `dao.yearn.fi`
-- Forum: `gov.yearn.fi`, shown as the discussion site rather than the app name
+1. [Contract behavior and source pin](contract-reference.md).
+2. [Functional requirements](functional-requirements.md), [user stories](user-stories.md), and [UI specification](ui-spec.md).
+3. [Feed V2 specification](feed-schema-v2.md), [field/source mapping](feed-v2-field-sources.md), [generated schema](feed-schema-v2.schema.json), and [saved examples](examples/feed-v2/dao-feed-v2.example.json).
+4. [Internal domain and mocks](mock-data.md).
+5. [Producer handoff](delivery/producer-handoff.md), [dependency graph](delivery/dependency-graph.md), and [status](delivery/status.md).
+6. [Reset decision and evidence](delivery/feed-v2-reset.md).
 
-## Source-of-truth order
+## Product and trust boundaries
 
-Read these sources in order when implementing or reviewing:
+Global reads use one static cache of coherent contract state and canonical event history. The producer refreshes all proposals at each snapshot. The frontend derives display groups, status labels, percentages, content validity and supported script framing. Current wallet facts come from a separately dated live observation.
 
-1. [`contract-reference.md`](contract-reference.md) and the pinned contract commit
-2. [`functional-requirements.md`](functional-requirements.md)
-3. [`user-stories.md`](user-stories.md)
-4. [`ui-spec.md`](ui-spec.md)
-5. [`mock-data-schema-v1.md`](mock-data-schema-v1.md)
-6. the active package under [`delivery/work-packages`](delivery/work-packages)
-7. shared repository rules in `AGENTS.md` and `docs/shared`
+Proposal identity includes chain, Voting address and uint256 ID, including zero. The app explicitly configures supported deployments. It never accepts a transaction destination or RPC endpoint chosen by a feed.
 
-If the open contract branch changes, update the contract reference and affected
-requirements before changing application behavior. Do not silently treat a new
-contract revision as equivalent.
+Stored proposal thresholds and snapshot-effective configuration have distinct labels. There is no quorum: percentages say “of votes cast”; passing still requires positive total weight and the contract's integer arithmetic. Flag/Veto have unknown historical actors unless the event itself identifies one. Vetoed, nonretracted proposals may remain votable. Signal completion never invents an Execute transaction.
 
-## Product decisions
+The immutable format stays `yearn.dao.proposal.v1`. Canonical bytes, digest/CID commitments, safe Markdown and no-load attachment cards remain intact. Content failure does not hide a proposal or prohibit otherwise valid voting. Original script bytes and stored hash stay visible; missing/mismatched/malformed supported scripts block execution preparation. Historical simulations, build proofs, trace attribution and precise human voter counts are outside launch.
 
-- Governance has no quorum. The UI says `of votes cast` and explains the rule in
-  restrained supporting copy.
-- A veto before the first vote prevents voting and removes the proposal from
-  participation accounting.
-- A veto after votes exist prevents approval and execution but leaves Yea/Nay
-  voting open for participation credit during the voting window.
-- Empty-script proposals are `Signal` proposals. A passed signal displays
-  `Approved` and `No executable actions`, even when the raw contract status later
-  reports `EXECUTED`.
-- `yearn.dao.proposal.v1` contains one exact Markdown source and a bounded asset
-  manifest. Title and summary are parsed results, not duplicate stored fields.
-  The canonical JSON ends with one LF; its SHA-256 digest is the onchain value.
-  Immutable content `createdAt` remains distinct from the canonical Propose
-  block time. Digest-invalid fetched bytes retain both expected and computed
-  identities rather than replacing the onchain value.
-- Immutable images render as no-load attachment cards. Relative targets are
-  authenticated manifest lookups, direct targets are exact raw CIDs, and both
-  open the suffix-free trusted gateway URL only after user activation.
-- Executable proposal authoring accepts the full Executor script as hex. The
-  browser checks structure and limits only.
-- `gov-apps-stats` owns IPFS retrieval, event history, decoding, and the stored
-  proposal-time simulation. The frontend renders that analysis.
-- Lifecycle status, vote result, moderation, and execution are separate facts.
-  Event time comes from the block producer, verified sources are structured
-  HTTPS records, and the approval threshold is the only proposal-owned rule
-  snapshot. Vote timing, guard, contract, hook, and role values are ordered
-  historical observations.
-- One Voting generation retains its fixed genesis and 14-day epoch formula plus
-  ordered Voter, Executor, timing, guard, hook, and role history. Mutable
-  configuration changes do not invent replacement Voting deployments.
-- Proposal-level execution readiness covers exact script integrity only. Missing
-  event bytes and a stored-hash mismatch are hard blockers; lifecycle, account,
-  guard, schedule, and simulation facts stay separate.
-- Proposal identity is decoded from one matching successful `Propose` receipt.
-  A transaction link appears as soon as its hash is known; proposal links wait
-  for receipt-derived identity and retain it while indexing catches up. Delayed
-  indexing has an idempotent retry for that same identity.
-- Proposal creation receives the review panel's typed transaction outcome.
-  Rejection, revert, and network failure keep the immutable publication but
-  create no hash, receipt, proposal record, feed event, or indexing state.
-- Execution requires the exact event script, hash verification, and a fresh
-  current-state simulation.
-- The app is mock-first. Feed and onchain work starts only after mock UX review.
-- The guarded preproduction review remains mock-backed and is not production
-  approval. All six governance beta hosts require Cloudflare Access with the
-  approved GitHub organization/team policy; `noindex` is not authentication.
+Writes stay in domain clients and shared useTx. Mock authoring still separates content publication, receipt-confirmed creation and awaiting-index recovery. Production authoring and governance writes remain later packages; fresh real-call preflight is mandatory before signing.
 
-## Documentation map
+## Routes and rollout
 
-- Contract behavior: [`contract-reference.md`](contract-reference.md)
-- Functional scope: [`functional-requirements.md`](functional-requirements.md)
-- User outcomes: [`user-stories.md`](user-stories.md)
-- Layout and copy: [`ui-spec.md`](ui-spec.md)
-- Mock/domain data: [`mock-data-schema-v1.md`](mock-data-schema-v1.md)
-- Frozen feed contract: [`feed-schema-v1.md`](feed-schema-v1.md)
-- Feed JSON Schema: [`feed-schema-v1.schema.json`](feed-schema-v1.schema.json)
-- Delivery and agent workflow: [`delivery/README.md`](delivery/README.md)
-- Delivery ledger: [`delivery/status.md`](delivery/status.md)
-- Sol Ultra kickoff: [`delivery/kickoff-prompt.md`](delivery/kickoff-prompt.md)
+Shared hosts use `/dao`, `/dao/proposals/[id]`, and `/dao/propose`. Proposal links carry chain/Voting selection where needed. The existing internal `dao-beta.dao-ops.com` host stays unlisted, noindex and noncanonical; planned `dao.yearn.fi` exposure requires later approval. Forum discussion remains at `gov.yearn.fi`.
 
-## Current gate
-
-The user accepted the M2 mock UX represented by integration commit
-`8ffd3564f73ae5e0358c17c1d42a408eec2af92f` on 2026-08-26. Authenticated
-Cloudflare Access UAT also passed on all six beta hosts: `styfi-beta.dao-ops.com`,
-`veyfi-beta.dao-ops.com`, `yeth-beta.dao-ops.com`, `teams-beta.dao-ops.com`,
-`ybc-beta.dao-ops.com`, and `dao-beta.dao-ops.com`. M2 is complete.
-
-M3 WP8 is next. M3 WP9 and all `gov-apps-stats` changes remain blocked until
-the consumer-owned WP8 schema has been accepted.
+`NEXT_PUBLIC_ENABLE_DAO` gates production routes. Production mode has no mock fallback, including on the beta host. The existing production deployment flag remains off. Protected preview-mode environments may review mock actions. See the [runbook](delivery/dao-beta-runbook.md); this reset changes no infrastructure or deployed environment.

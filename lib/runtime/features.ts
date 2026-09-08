@@ -37,15 +37,11 @@ export function isDaoEnabled(
   return !isProductionRuntime(env) || isEnabled(env.NEXT_PUBLIC_ENABLE_DAO);
 }
 
-/**
- * DAO's unaccepted M2 review candidate remains mock-backed in production mode.
- * This is a route-local exception gated by the DAO surface flag, not a global
- * mock mode.
- */
+/** Mock actions are available only outside production runtime. */
 export function isDaoMockRuntimeEnabled(
   env: FeatureEnv = getPublicFeatureEnv()
 ) {
-  return isDaoEnabled(env);
+  return isDaoEnabled(env) && !isProductionRuntime(env);
 }
 
 /**
@@ -56,7 +52,7 @@ export function isDaoReviewControlsEnabled(
   env: FeatureEnv = getPublicFeatureEnv()
 ) {
   return (
-    isDaoEnabled(env) &&
+    isDaoMockRuntimeEnabled(env) &&
     isEnabled(env.NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS)
   );
 }

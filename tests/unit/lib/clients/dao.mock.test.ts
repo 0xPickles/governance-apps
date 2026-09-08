@@ -3,13 +3,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   sha256,
-  toFunctionSelector,
   toHex,
   type Address,
 } from "viem";
 import {
   assertDaoProposalInvariants,
-  countDaoHumanVoteEvents,
   createMockDaoClient,
   DAO_BLOCKED_REASONS,
   DAO_EMPTY_SCRIPT_HASH,
@@ -23,7 +21,6 @@ import {
   DAO_MOCK_GENESIS,
   DAO_MOCK_NOW,
   DAO_MOCK_VOTE_START_OFFSET_SECONDS,
-  DAO_MOCK_VERIFIED_CALL_REGISTRY,
   DAO_SNAPSHOT_CLIENT_READ_ONLY_ERROR,
   canonicalizeDaoProposalContent,
   createDaoRawSha256Cid,
@@ -35,7 +32,7 @@ import {
   parseDaoFeedJson,
   parseDaoProposalContent,
   serializeDaoFeedJson,
-  type DaoFeedV1Json,
+  type DaoSnapshotJson,
   type DaoMockFixtureId,
   type DaoProposalContent,
 } from "@/lib/clients/dao";
@@ -56,9 +53,9 @@ const requiredFixtures: DaoMockFixtureId[] = [
   "post-vote-veto",
   "content-unavailable",
   "content-invalid",
-  "analysis-pending",
+  "script-missing",
   "partial-decode",
-  "simulation-failed",
+  "script-malformed",
   "hash-mismatch",
   "direct-proposal",
   "guarded-execution",
@@ -108,7 +105,7 @@ describe("DAO deterministic mock feed", () => {
   });
 
   it("keeps every feed proposal inside the domain invariants", () => {
-    expect(DAO_MOCK_FEED.schemaVersion).toBe(1);
+    expect(DAO_MOCK_FEED.schemaVersion).toBe(2);
     expect(DAO_MOCK_FEED.proposals).toHaveLength(22);
     for (const proposal of DAO_MOCK_FEED.proposals) {
       expect(() => assertDaoProposalInvariants(proposal)).not.toThrow();
@@ -286,52 +283,22 @@ describe("DAO deterministic mock feed", () => {
       url: expect.stringContaining("gov.yearn.fi"),
     });
     expect(byId.get(15n)?.content.state).toBe("invalid");
-    expect(byId.get(16n)?.analysis.state).toBe("pending");
-    expect(byId.get(17n)?.analysis).toMatchObject({ state: "partial" });
+    expect(byId.get(16n)?.script.bytes).toBeNull();
+    expect(byId.get(17n)?.analysis.error).toBeNull();
     expect(
       byId.get(17n)?.analysis.calls.map((call) => call.decodeStatus)
-    ).toEqual(["verified", "unknown"]);
-    expect(byId.get(18n)?.analysis.proposalSimulation.state).toBe("failed");
+    ).toEqual(["unknown", "unknown"]);
+    expect(byId.get(18n)?.analysis.error).toMatch(/incomplete/i);
     expect(byId.get(19n)?.script.hashVerified).toBe(false);
     expect(byId.get(20n)?.discussion.state).toBe("unverified");
   });
 
-  it("keeps verified call provenance coherent with the pinned Voting source", () => {
-    const registry = new Map(
-      DAO_MOCK_VERIFIED_CALL_REGISTRY.map((entry) => [
-        `${entry.target.toLowerCase()}:${entry.selector}`,
-        entry,
-      ])
-    );
-
-    for (const entry of DAO_MOCK_VERIFIED_CALL_REGISTRY) {
-      expect(toFunctionSelector(entry.functionSignature)).toBe(entry.selector);
-    }
-
-    for (const proposal of DAO_MOCK_FEED.proposals) {
-      for (const call of proposal.analysis.calls) {
-        if (call.decodeStatus !== "verified") continue;
-        const entry = registry.get(
-          `${call.target.toLowerCase()}:${call.selector}`
-        );
-        expect(
-          entry,
-          `proposal ${proposal.ref.proposalId} call ${call.index}`
-        ).toBeDefined();
-        expect(call).toMatchObject(entry!);
-        expect(toFunctionSelector(call.functionSignature!)).toBe(call.selector);
-      }
-    }
-
-    const partial = DAO_MOCK_FEED.proposals.find(
-      (proposal) => proposal.analysis.state === "partial"
-    );
-    expect(partial?.analysis.calls.map((call) => call.decodeStatus)).toEqual([
-      "verified",
-      "unknown",
-    ]);
+  it("retains exact raw frames without claiming semantic verification", () => {
+    const calls = DAO_MOCK_FEED.proposals.find((p) => p.ref.proposalId === 2n)!.analysis.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls.map((call) => call.decodeStatus)).toEqual(["unknown", "unknown"]);
+    expect(calls.every((call) => call.verifiedSource === null && call.calldata.startsWith("0x"))).toBe(true);
   });
-
   it("carries proposal-specific rule snapshots and mutable-fact observation blocks", () => {
     const normal = DAO_MOCK_FEED.proposals.find(
       (proposal) => proposal.ref.proposalId === 2n
@@ -450,14 +417,14 @@ describe("DAO deterministic mock feed", () => {
     );
   });
 
-  it("parses the committed feed example through the real ingestion boundary", () => {
+  it("round-trips the committed internal mock snapshot (separate from public V2 acceptance)", () => {
     const example = readFileSync(
       resolve(process.cwd(), "docs/apps/dao/examples/mock-data.example.json"),
       "utf8"
     );
-    const feed = parseDaoFeedJson(JSON.parse(example) as DaoFeedV1Json);
+    const feed = parseDaoFeedJson(JSON.parse(example) as DaoSnapshotJson);
 
-    expect(feed.proposals).toHaveLength(1);
+    expect(feed.proposals).toHaveLength(22);
     expect(feed.proposals[0]?.thresholdBps).toBe(5_000);
     expect(feed.proposals[0]?.rules.approvalThresholdBps).toBe(5_000);
     expect(feed.proposals[0]?.events[0]?.log.timestamp).toBe(1_787_054_400);
@@ -476,69 +443,15 @@ describe("DAO deterministic mock feed", () => {
     });
   });
 
-  it("retains blended aggregate rewrites without inflating human participation", () => {
-    const voting = DAO_MOCK_FEED.proposals.find(
-      (proposal) => proposal.ref.proposalId === 2n
-    );
-    const voteEvents = voting?.events.filter((event) => event.type === "vote") ?? [];
-    const humanVotes = voteEvents.filter(
-      (event) => event.voteActorKind === "human"
-    );
-    const aggregateVotes = voteEvents.filter(
-      (event) => event.voteActorKind !== "human"
-    );
-
-    expect(humanVotes).toHaveLength(2);
-    expect(countDaoHumanVoteEvents(voteEvents)).toBe(2);
-    expect(
-      humanVotes.map((event) => ({
-        direction: event.direction,
-        yeaBps: event.yeaBps,
-      }))
-    ).toEqual([
-      { direction: "yea", yeaBps: 10_000 },
-      { direction: "nay", yeaBps: 0 },
-    ]);
-    expect(aggregateVotes).toHaveLength(4);
-    expect(
-      aggregateVotes.map((event) => ({
-        actorKind: event.voteActorKind,
-        direction: event.direction,
-        yeaBps: event.yeaBps,
-        weight: event.weight,
-      }))
-    ).toEqual([
-      {
-        actorKind: "styfix_aggregate",
-        direction: null,
-        yeaBps: 10_000,
-        weight: 4n * 10n ** 18n,
-      },
-      {
-        actorKind: "ybc_aggregate",
-        direction: null,
-        yeaBps: 10_000,
-        weight: 2n * 10n ** 18n,
-      },
-      {
-        actorKind: "styfix_aggregate",
-        direction: null,
-        yeaBps: 7_500,
-        weight: 4n * 10n ** 18n,
-      },
-      {
-        actorKind: "ybc_aggregate",
-        direction: null,
-        yeaBps: 7_500,
-        weight: 2n * 10n ** 18n,
-      },
-    ]);
-    expect(voting).toMatchObject({
-      totalWeight: 11n * 10n ** 18n,
-      yeaWeight: (15n * 10n ** 18n) / 2n,
-    });
+  it("retains raw replacement vote events without summing their weights", () => {
+    const voting = DAO_MOCK_FEED.proposals.find((p) => p.ref.proposalId === 2n)!;
+    const events = voting.events.filter((e) => e.type === "vote");
+    expect(events).toHaveLength(6);
+    expect(events.map((e) => e.yeaBps)).toEqual([10000, 10000, 10000, 0, 7500, 7500]);
+    expect(events.every((e) => !("voteActorKind" in e))).toBe(true);
+    expect(voting.totalWeight).toBe(11n * 10n ** 18n);
+    expect(events.reduce((sum, e) => sum + e.weight!, 0n)).toBeGreaterThan(voting.totalWeight);
   });
-
   it("groups each human vote and its aggregate rewrites in one transaction", () => {
     const voting = DAO_MOCK_FEED.proposals.find(
       (proposal) => proposal.ref.proposalId === 2n
@@ -546,14 +459,6 @@ describe("DAO deterministic mock feed", () => {
     const voteEvents = voting?.events.filter((event) => event.type === "vote") ?? [];
     const transactionGroups = [voteEvents.slice(0, 3), voteEvents.slice(3, 6)];
 
-    expect(voteEvents.map((event) => event.voteActorKind)).toEqual([
-      "human",
-      "styfix_aggregate",
-      "ybc_aggregate",
-      "human",
-      "styfix_aggregate",
-      "ybc_aggregate",
-    ]);
     expect(voteEvents.map((event) => event.log.logIndex)).toEqual([
       1, 2, 3, 4, 5, 6,
     ]);

@@ -94,9 +94,9 @@ const PROPOSAL_FIXTURES = [
     status: "Voting",
   },
   {
-    fixture: "analysis-pending",
+    fixture: "script-missing",
     proposalId: 16,
-    title: "Proposal awaiting analysis",
+    title: "Proposal with missing script bytes",
     status: "Voting",
   },
   {
@@ -106,9 +106,9 @@ const PROPOSAL_FIXTURES = [
     status: "Approved",
   },
   {
-    fixture: "simulation-failed",
+    fixture: "script-malformed",
     proposalId: 18,
-    title: "Proposal whose historical simulation failed",
+    title: "Proposal with malformed script bytes",
     status: "Approved",
   },
   {
@@ -500,11 +500,11 @@ test("keeps DAO status, purpose, and feedback text at AA contrast in both themes
 
     await page.goto("/dao/proposals/18");
     await page.evaluate(async () => {
-      await window.__TEST__?.setDaoFixture?.("simulation-failed");
+      await window.__TEST__?.setDaoFixture?.("script-malformed");
     });
     await measure(
-      page.getByText("The proposal-time atomic simulation reverted."),
-      `${theme} analysis error`
+      page.getByText(/The first Executor header is incomplete\./).first(),
+      `${theme} script framing error`
     );
 
     await page.goto("/dao");

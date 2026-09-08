@@ -232,7 +232,7 @@ test("does not retain a found detail outside the surfaced feed snapshot", async 
   ).toHaveCount(0);
 });
 
-test("contains proposal analysis and technical values at every review viewport", async ({
+test("contains proposed script and technical values at every review viewport", async ({
   page,
 }) => {
   for (const viewport of VIEWPORTS) {
@@ -258,14 +258,13 @@ test("contains proposal analysis and technical values at every review viewport",
     await expect(immutableHeading).toBeVisible();
     await expect(resultsHeading).toBeVisible();
     await expect(
-      page.getByText("Partially decoded · simulation succeeded")
+      page.getByRole("heading", { name: "Proposed script" })
     ).toBeVisible();
-    await expect(page.getByText("Unknown call")).toBeVisible();
+    await expect(page.getByText("Unknown call").first()).toBeVisible();
     await expect(
-      page.getByText("No verified source", { exact: true }),
+      page.getByText("No verified source", { exact: true }).first(),
     ).toBeVisible();
-    await expect(page.getByText("Reference block", { exact: true })).toBeVisible();
-    await expect(page.getByText("anvil", { exact: true })).toBeVisible();
+    await page.getByText("Proposal rules", { exact: true }).click();
     await expect(
       page
         .getByRole("link", { name: "Voting.vy at pinned stYFI revision" })
@@ -388,12 +387,12 @@ test("renders every terminal fixture with explicit status and vote rule copy", a
   await expect(page.getByText("No executable actions").first()).toBeVisible();
 
   await page.goto("/dao/proposals/11");
-  await expect(page.getByText("Flagged by operator", { exact: true })).toBeVisible();
+  await expect(page.getByText("Flagged", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("No community result", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(/moderation, not a community vote result/i)).toBeVisible();
+  await expect(page.getByText("Flagging retracts the proposal and blocks voting and execution. No community vote result is implied.")).toBeVisible();
 
   await page.goto("/dao/proposals/12");
-  await expect(page.getByText(/vetoed before participation began/i)).toBeVisible();
+  await expect(page.getByText("This proposal is retracted and vetoed. Voting and execution are blocked.")).toBeVisible();
   await page.goto("/dao/proposals/13");
   await expect(page.getByText(/Participation voting remains available/)).toBeVisible();
 
@@ -443,10 +442,10 @@ test("keeps onchain records and trust failures explicit", async ({ page }) => {
   await expect(page.getByText(/yearn\.dao\.proposal\.v1/).first()).toBeVisible();
 
   await page.goto("/dao/proposals/16");
-  await expect(page.getByText("Analysis pending", { exact: true })).toBeVisible();
+  await expect(page.getByText("Exact proposed script bytes are unavailable.", { exact: true })).toBeVisible();
 
   await page.goto("/dao/proposals/18");
-  await expect(page.getByText("Simulation failed").first()).toBeVisible();
+  await expect(page.getByText(/The first Executor header is incomplete\./).first()).toBeVisible();
 
   await page.goto("/dao/proposals/19");
   await expect(

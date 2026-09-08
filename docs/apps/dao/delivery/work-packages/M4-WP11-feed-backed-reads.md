@@ -1,51 +1,17 @@
-# M4 WP11: Feed-Backed Reads and Live Wallet Overlay
+# WP11: V2 reads and current wallet overlay
 
-Branch: `agent/dao/m4/wp11`
-
-## Objective
-
-Use the validated DAO feed for global history and live contract reads for current
-wallet-specific state.
-
-## Depends on
-
-- Accepted M3 staging validation.
-
-## Expected ownership
-
-- same-origin DAO feed route/proxy
-- typed feed client and onchain read client
-- query keys and DAO hooks
-- environment validation and saved-feed E2E fixtures
+Status: Implemented with revised WP8 in this reset, pending external review.
 
 ## Scope
 
-- Feed-backed proposal list/detail.
-- Last-good, stale, unavailable, and incompatible feed handling.
-- Live wallet network, weight, decay, voted, role, parameter, and capability
-  overlays.
-- Post-transaction invalidation seam.
+Real bounded proxy/transport, scoped client selection, queries, multi-deployment list/detail, ID zero, last-good/stale/unavailable/incompatible states, canonical replacement and separately observed wallet state. Production mock fallback is removed.
 
-## Non-goals
+## Acceptance
 
-- No writes.
-- No production mock fallback.
-- No browser historical event scan.
+Acceptance: saved V2 response uses real routes; disconnected global reads need no wallet RPC; controlled coherent RPC tests cover network/account/disconnect/error, current config/weight/voted/roles and stale eligibility invalidation. Actual producer integration remains WP10.
 
-## Acceptance criteria
+## Dependencies and validation
 
-- Disconnected users read global history without wallet RPC dependence.
-- Current account capability never trusts a feed action label.
-- Vetoed-but-votable remains representable from live reads.
-- Feed lag after a write can coexist with authoritative live voted/role state.
-- Production mode does not construct the DAO mock client.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Validation
-
-- Feed mapping, stale/failure, live-overlay, wrong-network, and RPC-failure tests.
-- Route E2E against the saved staging feed.
-- Standard repository checks.
-
-## Review
-
-Frontend data reviewer and contract-read auditor. Integrate before WP12.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

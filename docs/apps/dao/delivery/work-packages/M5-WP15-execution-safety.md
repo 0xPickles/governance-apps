@@ -1,46 +1,17 @@
-# M5 WP15: Execution Safety and Execute Write
+# WP15: fresh actual-call execution preflight
 
-Branch: `agent/dao/m5/wp15`
-
-## Objective
-
-Recover, verify, freshly simulate, and execute the exact approved event script.
-
-## Depends on
-
-- M5 WP14 merged into `agent/integration`.
+Status: Deferred; no production execution is added by the reset.
 
 ## Scope
 
-- Exact script retrieval from validated feed/event data.
-- Stored script-hash comparison.
-- Current execution window, delay, status, guard, and operator reads.
-- Fresh `Voting.execute` simulation against current state.
-- Atomic-call failure presentation and prepared execute write.
+Recover exact original script, compare keccak256 against current stored commitment, verify actual trusted Voting/current Executor support and status/flags/time/guard/role. Simulate actual Voting.execute(id, script) from the actual caller with exact transaction data against fresh state.
 
-## Non-goals
+## Acceptance
 
-- No automatic execution.
-- No bypass for missing or mismatched script.
-- No claim that proposal-time simulation remains current.
+Acceptance: failure or unavailability of required reads/simulation blocks normal execute; standalone Executor-frame or historical simulation cannot pass; a successful preflight records its simulation block number/hash/timestamp and binds it to the coherent live preparation context; missing data, changed inputs/configuration and canonical replacement (including at the same height) invalidate preparation; never bind the simulation to the older feed snapshot or accept only a recent simulatedAt; simulation success is no guarantee; shared useTx only; empty signals expose no execute action.
 
-## Acceptance criteria
+## Dependencies and validation
 
-- Missing or mismatched script blocks execution.
-- Current simulation runs before wallet submission and its reference state is
-  shown.
-- A failed current simulation blocks the normal execute action.
-- Guarded and permissionless modes use live configuration.
-- Empty-script signals never show an execution CTA.
-- The execute write uses shared `useTx` and exact bytes.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Validation
-
-- Hash vectors, window/delay boundaries, guard modes, stale state, revert, and
-  atomic multi-call tests.
-- Critical execution E2E and standard checks.
-
-## Review
-
-Execution/security auditor and transaction reviewer. Tag M5 after all write paths
-and the full integration gate pass.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

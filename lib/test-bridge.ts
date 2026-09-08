@@ -7,7 +7,7 @@ import type { YethClient, YethDebugPreset } from "@/lib/clients/yeth";
 import type {
   DaoExecutionGuard,
   DaoMockAccountState,
-  DaoMockAnalysisState,
+  DaoMockScriptState,
   DaoMockAuthoringState,
   DaoMockContentState,
   DaoMockExecutionState,
@@ -98,7 +98,7 @@ export interface DaoTestBridgeMethods {
   setDaoContentState?: (state: DaoMockContentState) => Promise<void>;
   setDaoLifecycle?: (state: DaoMockLifecycleState) => Promise<void>;
   setDaoVetoState?: (state: DaoMockVetoState) => Promise<void>;
-  setDaoAnalysisState?: (state: DaoMockAnalysisState) => Promise<void>;
+  setDaoAnalysisState?: (state: DaoMockScriptState) => Promise<void>;
   setDaoAccountState?: (state: DaoMockAccountState) => Promise<void>;
   setDaoAccountWeight?: (weight: string) => Promise<void>;
   setDaoAlreadyVoted?: (
@@ -150,7 +150,7 @@ export type DaoTestStateSnapshot = {
     displayStatus: string;
     contentState: string;
     scriptHashVerified: boolean | null;
-    analysisState: string;
+    scriptError: string | null;
   };
   capabilities: {
     canVote: boolean;

@@ -1,3 +1,4 @@
+import type { DaoReadContext } from "./onchain";
 import type { Address } from "viem";
 import type { PreparedTransaction } from "@/lib/tx/types";
 import type {
@@ -5,8 +6,8 @@ import type {
   DaoAnalysis,
   DaoAnalysisJson,
   DaoBigIntJson,
-  DaoFeedV1,
-  DaoFeedV1Json,
+  DaoSnapshot,
+  DaoSnapshotJson,
   DaoProposal,
   DaoProposalEvent,
   DaoProposalEventJson,
@@ -19,11 +20,12 @@ import type {
 import { validateDaoVerifiedSource } from "./content";
 
 export interface DaoClient {
-  getFeed(): Promise<DaoFeedV1>;
+  getFeed(): Promise<DaoSnapshot>;
   getProposal(ref: DaoProposalRef): Promise<DaoProposalLookup>;
   getAccountProposalState(
     ref: DaoProposalRef,
-    address: Address
+    address: Address,
+    context?: DaoReadContext
   ): Promise<DaoAccountProposalState>;
   getProposerState(address: Address): Promise<DaoProposerState>;
   prepareVote(
@@ -51,7 +53,8 @@ export interface DaoClient {
   ): Promise<PreparedTransaction>;
 }
 
-export function parseDaoFeedJson(feed: DaoFeedV1Json): DaoFeedV1 {
+// Internal mock/receipt persistence, not validation of the public wire feed.
+export function parseDaoFeedJson(feed: DaoSnapshotJson): DaoSnapshot {
   return {
     schemaVersion: feed.schemaVersion,
     chainId: feed.chainId,
@@ -68,7 +71,7 @@ export function parseDaoFeedJson(feed: DaoFeedV1Json): DaoFeedV1 {
   };
 }
 
-export function serializeDaoFeedJson(feed: DaoFeedV1): DaoFeedV1Json {
+export function serializeDaoFeedJson(feed: DaoSnapshot): DaoSnapshotJson {
   return {
     schemaVersion: feed.schemaVersion,
     chainId: feed.chainId,
@@ -190,13 +193,6 @@ function parseDaoAnalysisJson(analysis: DaoAnalysisJson): DaoAnalysis {
           ? null
           : { ...validateDaoVerifiedSource(call.verifiedSource) },
     })),
-    proposalSimulation: {
-      ...analysis.proposalSimulation,
-      blockNumber:
-        analysis.proposalSimulation.blockNumber === null
-          ? null
-          : parseDaoBigInt(analysis.proposalSimulation.blockNumber),
-    },
   };
 }
 
@@ -209,13 +205,7 @@ function serializeDaoAnalysisJson(analysis: DaoAnalysis): DaoAnalysisJson {
       verifiedSource:
         call.verifiedSource === null ? null : { ...call.verifiedSource },
     })),
-    proposalSimulation: {
-      ...analysis.proposalSimulation,
-      blockNumber:
-        analysis.proposalSimulation.blockNumber === null
-          ? null
-          : serializeDaoBigInt(analysis.proposalSimulation.blockNumber),
-    },
+
   };
 }
 

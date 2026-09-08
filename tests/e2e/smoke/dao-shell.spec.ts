@@ -9,85 +9,11 @@ import { DAO_MOCK_NOW } from "@/lib/clients/dao";
 
 const EXPECT_PRODUCTION_FAIL_CLOSED =
   process.env.E2E_EXPECT_DAO_PRODUCTION_FAIL_CLOSED === "true";
-const EXPECT_PRODUCTION_ENABLED =
-  process.env.E2E_EXPECT_DAO_PRODUCTION_ENABLED === "true" ||
-  process.env.E2E_EXPECT_DAO_PRODUCTION_COMPILED_PREVIEW === "true";
 const configuredBaseUrl = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 const configuredHostname = new URL(configuredBaseUrl).hostname;
 const IS_LOCAL_E2E = ["localhost", "127.0.0.1", "::1"].includes(
   configuredHostname
 );
-
-test("hydrates route-local mock DAO data in a flagged production runtime", async ({
-  page,
-}) => {
-  test.skip(!EXPECT_PRODUCTION_ENABLED);
-
-  const cspViolations: string[] = [];
-  page.on("console", (message) => {
-    if (
-      message.type() === "error" &&
-      /content security policy|script-src|nonce/i.test(message.text())
-    ) {
-      cspViolations.push(message.text());
-    }
-  });
-
-  const routes = [
-    {
-      path: "/dao",
-      readyText: "22 proposals are available.",
-      focusLink: "Create proposal",
-    },
-    {
-      path: "/dao/propose",
-      readyText: "Wallet not connected",
-      focusLink: "Proposals",
-    },
-    {
-      path: "/dao/proposals/2",
-      readyText: "Fund protocol research",
-      readyHeading: true,
-      focusLink: "Proposals",
-    },
-  ];
-
-  for (const route of routes) {
-    await page.goto(route.path);
-    const readyState =
-      "readyHeading" in route && route.readyHeading
-        ? page.getByRole("heading", { name: route.readyText, level: 1 })
-        : page.getByText(route.readyText, { exact: true });
-    await expect(readyState).toBeVisible();
-
-    const link = page.getByRole("link", { name: route.focusLink }).first();
-    await link.focus();
-    await expect(link).toBeFocused();
-    await expect(page.getByRole("button", { name: /debug/i })).toHaveCount(0);
-    await expect(page.locator("nextjs-portal")).toHaveCount(0);
-  }
-
-  if (IS_LOCAL_E2E) {
-    const betaUrl = new URL(configuredBaseUrl);
-    betaUrl.hostname = "dao-beta.dao-ops.com";
-    betaUrl.pathname = "/";
-    const betaResponse = await page.goto(betaUrl.toString());
-
-    expect(betaResponse?.status()).toBe(200);
-    await expect(
-      page.getByRole("heading", { name: "Proposals", level: 1 })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Create proposal" })
-    ).toHaveAttribute("href", "/propose");
-    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /debug/i })).toHaveCount(0);
-    await expect(page.locator("nextjs-portal")).toHaveCount(0);
-    expect(betaResponse?.headers()["x-robots-tag"]).toBe("noindex, nofollow");
-  }
-
-  expect(cspViolations).toEqual([]);
-});
 
 test("answers preview DAO HEAD probes without self-proxying", async ({
   request,
@@ -110,7 +36,7 @@ test("fails closed for production DAO requests without a server error", async ({
 }) => {
   test.skip(!EXPECT_PRODUCTION_FAIL_CLOSED);
 
-  for (const path of ["/dao", "/dao/propose", "/dao/proposals/2"]) {
+  for (const path of ["/dao", "/dao/propose", "/dao/proposals/2", "/api/dao-data"]) {
     for (const method of ["head", "get"] as const) {
       const response = await request[method](path);
 
@@ -306,7 +232,7 @@ test("preserves the board group through replace, reload, detail, and Back", asyn
     rowBox!.x + rowBox!.width - 24,
     rowBox!.y + rowBox!.height / 2
   );
-  await expect(page).toHaveURL(/\/dao\/proposals\/4\?from=closed$/);
+  await expect(page).toHaveURL(/\/dao\/proposals\/4\?from=closed&chain=1&voting=0x1111111111111111111111111111111111111111$/);
   await expect(page.getByRole("link", { name: "Closed" })).toHaveAttribute(
     "href",
     "/dao?group=closed"
@@ -454,7 +380,7 @@ test("uses clean client-side paths on the guarded DAO beta host", async ({
   });
   await expect(proposalLink).toHaveAttribute(
     "href",
-    "/proposals/2?from=active"
+    "/proposals/2?from=active&chain=1&voting=0x1111111111111111111111111111111111111111"
   );
   await proposalLink.click();
   await expect
@@ -462,7 +388,7 @@ test("uses clean client-side paths on the guarded DAO beta host", async ({
       const currentUrl = new URL(page.url());
       return `${currentUrl.pathname}${currentUrl.search}`;
     })
-    .toBe("/proposals/2?from=active");
+    .toBe("/proposals/2?from=active&chain=1&voting=0x1111111111111111111111111111111111111111");
   await expect(page.getByRole("link", { name: "Active" })).toHaveAttribute(
     "href",
     "/?group=active"
@@ -519,7 +445,7 @@ test("exposes the shared DAO debug section without route-local controls", async 
     "Content",
     "Lifecycle",
     "Veto",
-    "Analysis",
+    "Script",
     "Account",
     "Execution",
     "Authoring",

@@ -1,35 +1,27 @@
-# DAO Governance Dependency Graph
+# DAO delivery dependencies after the V2 reset
+
+The historical M0–M2 acceptance and V1 WP8 acceptance remain in [status](status.md).
+The user authorized replacing the V1 freeze and the old WP10-before-WP11 dependency.
 
 ```mermaid
 flowchart TD
-  WP0["M0 WP0: specification and tooling"] --> WP1["M1 WP1: domain model and mocks"]
-  WP1 --> WP2["M1 WP2: routes and navigation"]
-  WP2 --> WP3["M1 WP3: debug runtime"]
-  WP3 --> WP4["M2 WP4: proposal board and detail"]
-  WP3 --> WP6["M2 WP6: proposal authoring"]
-  WP4 --> WP5["M2 WP5: voting and lifecycle actions"]
-  WP4 --> WP7["M2 WP7: mock UAT"]
-  WP5 --> WP7
-  WP6 --> WP7
-  WP7 --> GateM2Initial{"User accepts mock UX"}
-  GateM2Initial -->|"Changes returned"| WP7A["M2 WP7A: navigation and authoring clarity"]
-  WP7A --> WP7B["M2 WP7B: content and lifecycle clarity"]
-  WP7B --> GateM2{"User accepts revised mock UX"}
-  GateM2Initial -->|"Accepted"| WP8["M3 WP8: feed schema"]
-  GateM2 --> WP8
-  WP8 --> WP9["M3 WP9: gov-apps-stats producer"]
-  WP9 --> WP10["M3 WP10: producer contract validation"]
-  WP10 --> WP11["M4 WP11: feed-backed reads"]
-  WP11 --> WP12["M4 WP12: analysis presentation"]
-  WP12 --> WP13["M5 WP13: forum and IPFS"]
-  WP13 --> WP14["M5 WP14: governance writes"]
-  WP14 --> WP15["M5 WP15: execution safety"]
-  WP15 --> WP16["M6 WP16: fork harness"]
-  WP16 --> WP17["M6 WP17: lifecycle UAT"]
-  WP17 --> GateM6{"User accepts fork UAT"}
-  GateM6 --> WP18["M7 WP18: rollout"]
+  M2["Accepted mock product and historical V1 contract"] --> Reset["Governance Apps reset: revised WP8 + WP11 + WP12"]
+  Reset --> Review{"External consumer review and findings addressed"}
+  Review --> Start{"Explicit approval to begin Gov Apps Stats"}
+  Start --> WP9["WP9: producer against reviewed V2 candidate"]
+  WP9 --> WP10["WP10: actual producer bytes through consumer and staging"]
+  WP10 --> WP13["WP13: forum and durable content publication"]
+  WP13 --> WP14["WP14: fresh governance write preparation"]
+  WP14 --> WP15["WP15: actual Voting.execute preflight"]
+  WP15 --> WP16["WP16: contract-executed integration harness"]
+  WP16 --> WP17["WP17: cross-repository lifecycle and reorg UAT"]
+  WP17 --> ForkReview{"Lifecycle UAT accepted"}
+  ForkReview --> Production{"Required production approval"}
+  Production --> WP18["WP18: gated rollout"]
 ```
 
-WP9 belongs to `gov-apps-stats`. All other packages belong to
-`governance-apps`. Cross-repository work does not share branches or integration
-worktrees.
+WP9 belongs to Gov Apps Stats; this reset changes Governance Apps only.
+A consumer fixture is not producer interoperability evidence. Small coordinated
+V2 amendments may follow real producer findings and require review.
+No merge, external approval, producer start, deployment or production approval
+is implied by completion of this branch.

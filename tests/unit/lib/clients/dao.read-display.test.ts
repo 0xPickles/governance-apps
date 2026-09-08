@@ -3,7 +3,6 @@ import {
   DAO_MOCK_FEED,
   deriveDaoProposalTimingDisplay,
   deriveDaoVoteDisplay,
-  formatDaoPublicAnalysisError,
   parseDaoProposalContent,
   resolveDaoProposalReadEnvelope,
 } from "@/lib/clients/dao";
@@ -17,17 +16,6 @@ function proposal(id: bigint) {
 }
 
 describe("DAO read display facts", () => {
-  it("maps only explicit producer error codes and preserves unknown messages", () => {
-    expect(formatDaoPublicAnalysisError("SIMULATION_REVERTED")).toBe(
-      "The proposal-time atomic simulation reverted."
-    );
-    expect(formatDaoPublicAnalysisError("TARGET_CALL_REVERTED")).toBe(
-      "Target call reverted during atomic simulation."
-    );
-    expect(formatDaoPublicAnalysisError("reth/v1 retained exact casing")).toBe(
-      "reth/v1 retained exact casing"
-    );
-  });
 
   it("resolves detail data only through its serialized composite feed identity", () => {
     const value = proposal(2n);
@@ -68,10 +56,7 @@ describe("DAO read display facts", () => {
       entry.content.value?.discussionUrl,
       entry.discussion.url,
       entry.discussion.title,
-      entry.analysis.registryVersion,
       entry.analysis.error,
-      entry.analysis.proposalSimulation.engine,
-      entry.analysis.proposalSimulation.error,
       ...entry.analysis.calls.flatMap((call) => [
         call.contractName,
         call.functionSignature,

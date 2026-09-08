@@ -14,6 +14,7 @@ import { useAccount } from "wagmi";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { UtcTime } from "@/components/ui/UtcTime";
 import {
   parseDaoProposalContent,
   serializeDaoProposalRef,
@@ -42,7 +43,7 @@ export function DaoProposalActionPanel({ proposal }: { proposal: DaoProposal }) 
   const { address } = useAccount();
   const isE2E = process.env.NEXT_PUBLIC_E2E === "true";
   const runtime = useDaoMockRuntime();
-  const effectiveAddress = isE2E
+  const effectiveAddress = isE2E && runtime
     ? (runtime?.account.address ?? E2E_MOCK_ADDRESS)
     : (address ?? null);
   const accountQuery = useDaoAccountProposalState(
@@ -60,6 +61,25 @@ export function DaoProposalActionPanel({ proposal }: { proposal: DaoProposal }) 
       : null
     : null;
 
+  if (!runtime) {
+    const current = accountQuery.data;
+    const live = current?.liveProposal;
+    const lagging = live && (live.protocolStatus !== proposal.protocolStatus || live.totalWeight !== proposal.totalWeight || live.yeaWeight !== proposal.yeaWeight || live.retracted !== proposal.retracted || live.rules.snapshotThresholdBps !== proposal.rules.snapshotThresholdBps || live.voteStartsAt !== proposal.voteStartsAt || live.rules.executionGuard !== proposal.rules.executionGuard);
+    return <Card className="min-w-0 space-y-3">
+      <h3 className="text-xl font-bold">{daoCopy.feed.currentWallet}</h3>
+      <p>{daoCopy.feed.writesDisabled}</p>
+      {!effectiveAddress ? <p>{daoCopy.feed.connect}</p> : accountQuery.isError ? <p role="alert">{accountQuery.error?.message}</p> :
+        accountQuery.isPending || accountQuery.isFetching ? <p role="status">{daoCopy.feed.checking}</p> : null}
+      {current && live ? <>
+        <p>{daoCopy.feed.currentStatus}: <strong>{live.protocolStatus.toUpperCase()}</strong></p>
+        <p className="font-number tabular-nums">{daoCopy.feed.liveWeight}: {formatTokenAmount(current.effectiveVotingWeight, 18, 2)}</p>
+        <p>{current.capabilities.canVote ? daoCopy.feed.eligible : current.capabilities.voteBlockedReason}</p>
+        <p className="text-sm">{daoCopy.feed.liveObserved}: {current.observation?.number.toString()} · <UtcTime timestamp={current.observation?.timestamp ?? null} /></p>
+        {lagging ? <p role="status">{daoCopy.feed.feedLag}</p> : null}
+      </> : null}
+      <p className="text-sm text-text-secondary">{daoCopy.feed.notSigning}</p>
+    </Card>;
+  }
   return (
     <DaoProposalActionPanelView
       account={accountQuery.data ?? null}
@@ -711,11 +731,11 @@ function ExecuteConfirmation({
           label={daoCopy.actions.currentSimulation}
           value={daoCopy.actions.simulationSucceeded}
         />
-        {preflight.blockNumber !== null ? (
+        {preflight.observation != null ? (
           <ActionFact
             label={daoCopy.actions.simulationReference}
             value={daoCopy.actions.simulationBlock(
-              preflight.blockNumber.toString()
+              preflight.observation.number.toString()
             )}
           />
         ) : null}

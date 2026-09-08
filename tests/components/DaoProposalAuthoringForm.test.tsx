@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import * as mockServices from "@/app/dao/propose/mock-services";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -224,7 +225,7 @@ describe("DAO proposal authoring form", () => {
     );
     expect(screen.getByRole("link", { name: "Open proposal" })).toHaveAttribute(
       "href",
-      expect.stringMatching(/^\/dao\/proposals\/\d+\?from=upcoming$/)
+      expect.stringMatching(/^\/dao\/proposals\/\d+\?from=upcoming&chain=1&voting=0x1111111111111111111111111111111111111111$/)
     );
     expect(
       screen.getByRole("link", { name: "View transaction" })
@@ -236,7 +237,15 @@ describe("DAO proposal authoring form", () => {
     const writeText = vi
       .spyOn(navigator.clipboard, "writeText")
       .mockResolvedValue(undefined);
-    renderAuthoring(80);
+    let releaseReceipt!: () => void;
+    const receiptGate = new Promise<void>(resolve => { releaseReceipt = resolve; });
+    const confirm = mockServices.confirmMockDaoProposalReceipt;
+    const receiptSpy = vi.spyOn(mockServices, "confirmMockDaoProposalReceipt")
+      .mockImplementationOnce(async (...args) => {
+        await receiptGate;
+        return confirm(...args);
+      });
+    renderAuthoring(0);
     await fillDraft(user, 1001);
     await user.click(screen.getByRole("button", { name: "Review proposal" }));
     await user.click(
@@ -268,9 +277,11 @@ describe("DAO proposal authoring form", () => {
       screen.queryByRole("button", { name: "Copy proposal link" })
     ).not.toBeInTheDocument();
 
+    await act(async () => releaseReceipt());
+    receiptSpy.mockRestore();
     const open = await screen.findByRole("link", { name: "Open proposal" });
     const decodedHref = open.getAttribute("href");
-    expect(decodedHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming$/);
+    expect(decodedHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming&chain=1&voting=0x1111111111111111111111111111111111111111$/);
     await user.click(
       screen.getByRole("button", { name: "Copy proposal link" })
     );
@@ -310,8 +321,8 @@ describe("DAO proposal authoring form", () => {
 
     const open = await screen.findByRole("link", { name: "Open proposal" });
     const proposalHref = open.getAttribute("href");
-    expect(proposalHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming$/);
-    await screen.findByText("Awaiting proposal indexing and analysis");
+    expect(proposalHref).toMatch(/^\/dao\/proposals\/\d+\?from=upcoming&chain=1&voting=0x1111111111111111111111111111111111111111$/);
+    await screen.findByText("Awaiting proposal indexing");
     resetDaoMockStore();
 
     expect(
@@ -546,7 +557,7 @@ describe("DAO proposal authoring form", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText("Transaction hash")).not.toBeInTheDocument();
     expect(
-      screen.queryByText("Awaiting proposal indexing and analysis")
+      screen.queryByText("Awaiting proposal indexing")
     ).not.toBeInTheDocument();
     expect(screen.queryByText("Proposal indexed")).not.toBeInTheDocument();
     expect(readDaoCreatedProposals()).toEqual([]);

@@ -10,7 +10,6 @@ import { IconLinkOut } from "@/components/icons/IconLinkOut";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { formatUtcDateTime } from "@/lib/date";
 import {
-  formatDaoPublicAnalysisError,
   formatDaoBasisPoints,
   deriveDaoLifecycleFacts,
   parseDaoProposalContent,
@@ -20,7 +19,6 @@ import {
   type DaoProposal,
   type DaoProposalReadEnvelope,
   type DaoProposalEvent,
-  type DaoSimulation,
   type DaoVerifiedSource,
 } from "@/lib/clients/dao";
 import {
@@ -319,6 +317,7 @@ function ProposalRules({ proposal }: { proposal: DaoProposal }) {
             label={daoCopy.detail.ruleLabels.threshold}
             value={daoCopy.detail.thresholdOfVotesCast(threshold)}
           />
+          <RuleFact label={daoCopy.detail.ruleLabels.snapshotThreshold} value={formatDaoBasisPoints(rules.snapshotThresholdBps)} />
           <RuleFact
             label={daoCopy.detail.ruleLabels.minimumTurnout}
             value={daoCopy.detail.noQuorum}
@@ -497,7 +496,7 @@ function ProposalLifecycle({
             {daoCopy.detail.lifecycleFacts.moderationDetails}
           </p>
           <p className="text-pretty text-sm leading-6">
-            {formatModerationExplanation(facts)}
+            {formatModerationExplanation(facts, proposal.retracted)}
           </p>
           {facts.moderation.reason ? (
             <p className="break-words text-pretty text-sm font-bold [overflow-wrap:anywhere]">
@@ -564,13 +563,18 @@ function ProposalEvent({ event }: { event: DaoProposalEvent }) {
         <span className="text-xs font-bold text-text-secondary">
           {getEventActorLabel(event)}
         </span>
-        <AddressLink
+        {event.actor ? <AddressLink
           address={event.actor}
           variant="compact"
           copyLabel={daoCopy.detail.copyValue(getEventActorLabel(event))}
           showCopyOnCoarsePointer
-        />
+        /> : <span className="text-sm text-text-secondary">{daoCopy.detail.unavailableValue}</span>}
       </div>
+      {event.type === "vote" ? <div className="min-w-0 space-y-1 text-xs text-text-secondary">
+        <p className="break-all font-number tabular-nums">{daoCopy.detail.eventWeight}: {event.weight?.toString() ?? daoCopy.detail.unavailableValue}</p>
+        <p className="font-number tabular-nums">{daoCopy.detail.eventYea}: {event.yeaBps === null ? daoCopy.detail.unavailableValue : formatDaoBasisPoints(event.yeaBps)}</p>
+        <p>{daoCopy.detail.replacementVotes}</p>
+      </div> : null}
       {event.reason ? (
         <p className="break-words text-pretty text-sm text-text-secondary [overflow-wrap:anywhere]">
           {event.reason}
@@ -586,14 +590,6 @@ function ProposalEvent({ event }: { event: DaoProposalEvent }) {
 }
 
 function getEventActorLabel(event: DaoProposalEvent): string {
-  if (event.type === "vote") {
-    if (event.voteActorKind === "ybc_aggregate") {
-      return daoCopy.detail.eventActors.ybcAggregate;
-    }
-    if (event.voteActorKind === "styfix_aggregate") {
-      return daoCopy.detail.eventActors.styfixAggregate;
-    }
-  }
   return daoCopy.detail.eventActors[event.type];
 }
 
@@ -614,14 +610,13 @@ function formatExecutionFacts(
 }
 
 function formatModerationExplanation(
-  facts: ReturnType<typeof deriveDaoLifecycleFacts>
+  facts: ReturnType<typeof deriveDaoLifecycleFacts>,
+  retracted: boolean,
 ): string {
   if (facts.moderation.kind === "flagged") {
     return daoCopy.detail.moderationExplanation.flagged;
   }
-  if (facts.moderation.phase === "before_participation") {
-    return daoCopy.detail.moderationExplanation.earlyVeto;
-  }
+  if (retracted) return daoCopy.detail.moderationExplanation.retractedVeto;
   return facts.moderation.votingAvailable
     ? daoCopy.detail.moderationExplanation.postVoteVetoOpen
     : daoCopy.detail.moderationExplanation.postVoteVetoClosed;
@@ -645,51 +640,13 @@ function LifecycleRow({
 }
 
 function ExecutionAnalysis({ proposal }: { proposal: DaoProposal }) {
-  const analysis = proposal.analysis;
-  const stateCopy = daoCopy.detail.analysisStates[analysis.state];
-  const analysisLabel =
-    proposal.type === "signal"
-      ? daoCopy.detail.noExecutableActions
-      : stateCopy.label;
-  const analysisBody =
-    proposal.type === "signal" ? daoCopy.detail.signalAnalysis : stateCopy.body;
-
   return (
     <Card className="min-w-0 space-y-5">
-      <SectionHeading
-        title={daoCopy.detail.analysis}
-        description={daoCopy.detail.analysisDescription}
-      />
-
-      <div className="space-y-2">
-        <Badge
-          variant={analysis.state === "failed" ? "error" : "neutral"}
-          className={cn(
-            "font-sans",
-            analysis.state === "failed" &&
-              "dark:bg-red-950 dark:text-red-200"
-          )}
-        >
-          {analysisLabel}
-        </Badge>
-        <p className="max-w-3xl text-pretty text-sm leading-6 text-text-secondary">
-          {analysisBody}
-        </p>
-        {analysis.error ? (
-          <p className="break-words text-pretty text-sm font-bold text-error-700 dark:text-red-300 [overflow-wrap:anywhere]">
-            {formatDaoPublicAnalysisError(analysis.error)}
-          </p>
-        ) : null}
-      </div>
-
+      <SectionHeading title={daoCopy.detail.analysis} description={daoCopy.detail.analysisDescription} />
+      {proposal.type === "signal" ? <p>{daoCopy.detail.signalAnalysis}</p> : null}
       <ScriptIntegrity proposal={proposal} />
-
-      {proposal.type === "executable" ? (
-        <>
-          <SimulationDetails simulation={analysis.proposalSimulation} />
-          <DecodedCalls analysis={analysis} />
-        </>
-      ) : null}
+      {proposal.analysis.error ? <p className="break-words text-sm text-text-secondary [overflow-wrap:anywhere]">{proposal.analysis.error}</p> : null}
+      <DecodedCalls analysis={proposal.analysis} />
     </Card>
   );
 }
@@ -714,65 +671,6 @@ function ScriptIntegrity({ proposal }: { proposal: DaoProposal }) {
           ? daoCopy.detail.scriptHashMismatch
           : daoCopy.detail.scriptUnavailable}
     </p>
-  );
-}
-
-function SimulationDetails({ simulation }: { simulation: DaoSimulation }) {
-  return (
-    <section className="min-w-0 space-y-3 border-t border-border pt-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <h4 className="text-balance text-base font-bold">
-          {daoCopy.detail.simulation}
-        </h4>
-        <Badge
-          variant={simulation.state === "failed" ? "error" : "neutral"}
-          className={cn(
-            "font-sans",
-            simulation.state === "failed" &&
-              "dark:bg-red-950 dark:text-red-200"
-          )}
-        >
-          {daoCopy.detail.simulationStates[simulation.state]}
-        </Badge>
-      </div>
-      <dl className="grid min-w-0 gap-4 sm:grid-cols-2">
-        <TechnicalFact
-          label={daoCopy.detail.simulationMethod}
-          value={simulation.method ?? daoCopy.detail.unavailableValue}
-        />
-        <TechnicalFact
-          label={daoCopy.detail.simulationEngine}
-          value={
-            simulation.engine ?? daoCopy.detail.unavailableValue
-          }
-        />
-        <TechnicalFact
-          label={daoCopy.detail.simulationBlock}
-          value={
-            simulation.blockNumber?.toString() ?? daoCopy.detail.unavailableValue
-          }
-          numeric
-        />
-        <TechnicalFact
-          label={daoCopy.detail.simulationTimestamp}
-          value={simulation.simulatedAt ?? daoCopy.detail.unavailableValue}
-          numeric
-        />
-        <TechnicalFact
-          label={daoCopy.detail.simulationCaller}
-          value={simulation.caller ?? daoCopy.detail.unavailableValue}
-          code
-        />
-        {simulation.error ? (
-          <TechnicalFact
-            label={daoCopy.detail.simulationError}
-            value={
-              formatDaoPublicAnalysisError(simulation.error)
-            }
-          />
-        ) : null}
-      </dl>
-    </section>
   );
 }
 

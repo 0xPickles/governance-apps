@@ -1,48 +1,17 @@
-# M6 WP16: Fork Harness and Deployment Configuration
+# WP16: contract-executed integration environment
 
-Branch: `agent/dao/m6/wp16`
-
-## Objective
-
-Create a repeatable fork environment that connects the governance contracts,
-`gov-apps-stats`, and frontend without production credentials.
-
-## Depends on
-
-- Accepted M5.
-- Deployable contracts or a stable deployed target.
+Status: Deferred.
 
 ## Scope
 
-- Fork start/reset commands and RPC gate.
-- Deploy or attach flow and versioned contract manifest.
-- Bind the configurable clients and producer to the actual fork addresses and
-  deployment blocks.
-- Deployment blocks, chain ID, role accounts, funded personas, and time controls.
-- Frontend and producer environment wiring.
-- Indexer reset/replay and content-provider test setup.
+Use the pinned/verified deployment contracts and a bounded existing fork/test environment. Record actual node responses and fixture origins outside the feed. Run the real producer and consumer; do not build a second indexer or require historical simulation engine infrastructure.
 
-## Non-goals
+## Acceptance
 
-- No production addresses presented as final unless they are deployed and
-  confirmed.
-- No manual-only environment that another developer cannot reproduce.
+Acceptance: resolve source/deployment pin, demonstrate EIP-1898/current-state and deployment-inclusive historical logs, deterministic reorg/restart cases, exact scripts/content and real receipt identity zero. Clearly separate source-based, synthetic, contract-executed and live evidence.
 
-## Acceptance criteria
+## Dependencies and validation
 
-- A clean developer can start, deploy/attach, configure, index, and reset the
-  environment from the runbook.
-- Contract, producer, and frontend identities agree.
-- Observer, voter, proposer, operator, guardian, and executor personas exist.
-- Fork time can cross discussion, vote, execution, and expiry boundaries.
-- No production secret is required.
+[Current dependency graph](../dependency-graph.md) and [status](../status.md) supersede the previous V1 sequence. Use the [V2 specification](../../feed-schema-v2.md) and [producer handoff](../producer-handoff.md). Preserve historical acceptance as recorded facts.
 
-## Validation
-
-- RPC/deployment smoke, address and ABI checks, producer first-scan smoke, and
-  frontend read smoke.
-- Standard repository checks.
-
-## Review
-
-Fork operator, deployment auditor, and feed integrator. Integrate before WP17.
+Run typecheck, lint, unit tests, applicable smoke/full E2E and production build. Add focused contract/transport/content/transaction checks appropriate to changed behavior. Record failures, skipped checks and environment limits accurately. External review is independent; the implementer must not mark it complete or merge its own branch.

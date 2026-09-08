@@ -1,3 +1,4 @@
+import { analyzeDaoScript } from "./script-analysis";
 import {
   parseDaoProposalJson,
   serializeDaoProposalJson,
@@ -19,7 +20,6 @@ import {
 import { checkDaoExecutorScript } from "./script";
 import { DAO_PINNED_VOTING_SOURCE } from "./provenance";
 import type {
-  DaoAnalysis,
   DaoCreatedProposalRecord,
   DaoDecodedProposeIdentity,
   DaoProposal,
@@ -28,7 +28,7 @@ import type {
 } from "./types";
 
 export const DAO_CREATED_PROPOSALS_STORAGE_KEY =
-  "yearn.dao.created-proposals.v1";
+  "yearn.dao.created-proposals.v2";
 
 type DaoStoredCreatedProposalRecord = {
   stage: DaoCreatedProposalRecord["stage"];
@@ -36,7 +36,7 @@ type DaoStoredCreatedProposalRecord = {
 };
 
 type DaoStoredCreatedProposals = {
-  version: 1;
+  version: 2;
   records: DaoStoredCreatedProposalRecord[];
 };
 
@@ -98,6 +98,7 @@ export function createDaoAwaitingIndexProposal({
     content.proposalType
   );
   const proposal: DaoProposal = {
+    retracted: false, executed: false, flagged: false, vetoed: false,
     ref: { ...identity.ref },
     proposer: identity.proposer,
     votingEpoch: identity.votingEpoch,
@@ -119,6 +120,7 @@ export function createDaoAwaitingIndexProposal({
     displayGroup: deriveDaoDisplayGroup(displayStatus, content.proposalType),
     type: content.proposalType,
     rules: {
+      snapshotThresholdBps: 5000,
       approvalThresholdBps: 5_000,
       thresholdSnapshottedAtCreation: true,
       minimumTurnout: null,
@@ -153,13 +155,12 @@ export function createDaoAwaitingIndexProposal({
       hash: scriptCheck.scriptHash,
       hashVerified: true,
     },
-    analysis: pendingAnalysis(),
+    analysis: analyzeDaoScript(identity.script, true),
     events: [
       {
         type: "propose",
         log: { ...identity.log },
         actor: identity.proposer,
-        voteActorKind: null,
         yeaBps: null,
         direction: null,
         weight: null,
@@ -200,6 +201,7 @@ export function indexDaoCreatedProposal(
   ref: DaoProposal["ref"],
   indexedAt: number
 ): DaoCreatedProposalRecord | null {
+  void indexedAt; // Indexing time does not change immutable content or script interpretation.
   const key = serializeDaoProposalRef(ref);
   const records = readDaoCreatedProposals();
   const record = records.find(
@@ -210,10 +212,7 @@ export function indexDaoCreatedProposal(
   record.stage = "indexed";
   record.proposal = {
     ...record.proposal,
-    analysis:
-      record.proposal.type === "signal"
-        ? unavailableSignalAnalysis()
-        : indexedExecutableAnalysis(record.proposal, indexedAt),
+    analysis: analyzeDaoScript(record.proposal.script.bytes, true),
   };
   assertDaoProposalInvariants(record.proposal);
   writeRecords(records);
@@ -228,7 +227,7 @@ export function readDaoCreatedProposals(): DaoCreatedProposalRecord[] {
   if (raw === null) return memoryRecords.map(cloneRecord);
   try {
     const value = JSON.parse(raw) as Partial<DaoStoredCreatedProposals>;
-    if (value.version !== 1 || !Array.isArray(value.records)) {
+    if (value.version !== 2 || !Array.isArray(value.records)) {
       throw new Error("Unsupported created-proposal storage.");
     }
     const records = value.records.map((record) => ({
@@ -258,7 +257,7 @@ export function clearDaoCreatedProposals(): void {
 function writeRecords(records: DaoCreatedProposalRecord[]): void {
   memoryRecords = records.map(cloneRecord);
   const stored: DaoStoredCreatedProposals = {
-    version: 1,
+    version: 2,
     records: records.map((record) => ({
       stage: record.stage,
       proposal: serializeDaoProposalJson(record.proposal),
@@ -281,91 +280,4 @@ function getSessionStorage(): Storage | null {
 
 function cloneRecord(record: DaoCreatedProposalRecord): DaoCreatedProposalRecord {
   return structuredClone(record);
-}
-
-function pendingAnalysis(): DaoAnalysis {
-  return {
-    state: "pending",
-    generatedAt: null,
-    registryVersion: null,
-    calls: [],
-    proposalSimulation: {
-      state: "pending",
-      method: null,
-      engine: null,
-      blockNumber: null,
-      blockHash: null,
-      simulatedAt: null,
-      stateTimestamp: null,
-      timestampMode: null,
-      timestampOverride: null,
-      caller: null,
-      stateOverrides: null,
-      error: null,
-    },
-    error: null,
-  };
-}
-
-function unavailableSignalAnalysis(): DaoAnalysis {
-  return {
-    state: "unavailable",
-    generatedAt: null,
-    registryVersion: null,
-    calls: [],
-    proposalSimulation: {
-      state: "unavailable",
-      method: null,
-      engine: null,
-      blockNumber: null,
-      blockHash: null,
-      simulatedAt: null,
-      stateTimestamp: null,
-      timestampMode: null,
-      timestampOverride: null,
-      caller: null,
-      stateOverrides: null,
-      error: "Signal proposals have no executable calls.",
-    },
-    error: null,
-  };
-}
-
-function indexedExecutableAnalysis(
-  proposal: DaoProposal,
-  indexedAt: number
-): DaoAnalysis {
-  const scriptCheck = checkDaoExecutorScript(
-    proposal.script.bytes ?? "0x",
-    proposal.type
-  );
-  return {
-    state: "partial",
-    generatedAt: new Date(indexedAt * 1_000).toISOString(),
-    registryVersion: "yearn-dao-registry/v1",
-    calls: scriptCheck.frames.map((frame) => ({
-      ...frame,
-      decodeStatus: "unknown",
-      contractName: null,
-      functionSignature: null,
-      arguments: [],
-      verifiedSource: null,
-      sourcePath: null,
-    })),
-    proposalSimulation: {
-      state: "unavailable",
-      method: null,
-      engine: null,
-      blockNumber: null,
-      blockHash: null,
-      simulatedAt: null,
-      stateTimestamp: null,
-      timestampMode: null,
-      timestampOverride: null,
-      caller: null,
-      stateOverrides: null,
-      error: "Historical execution analysis is unavailable.",
-    },
-    error: null,
-  };
 }

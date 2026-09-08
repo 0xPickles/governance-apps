@@ -785,7 +785,7 @@ function DaoProposalAuthoringFormState({
                 />
               </div>
               <p id="dao-script-help" className="text-pretty text-xs leading-5 text-text-secondary">
-                {daoProposeCopy.script.backendAnalysis}
+                {daoProposeCopy.script.indexedScript}
               </p>
               <ScriptStatus scriptCheck={scriptCheck} />
             </div>
@@ -802,7 +802,7 @@ function DaoProposalAuthoringFormState({
 
         <div className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-2xl text-pretty text-sm leading-6 text-text-secondary">
-            {daoProposeCopy.script.backendAnalysis}
+            {daoProposeCopy.script.indexedScript}
           </p>
           <Button
             type="submit"
@@ -858,7 +858,8 @@ function DaoFinalReview({
     ? createDaoProposalHref(
         proposalIdentity.ref.proposalId,
         "upcoming",
-        hostname
+        hostname,
+        proposalIdentity.ref
       )
     : null;
   const announcement =
@@ -986,7 +987,7 @@ function DaoFinalReview({
           <ScriptFrames scriptCheck={review.scriptCheck} />
         ) : null}
         <p className="text-pretty text-sm leading-6 text-text-secondary">
-          {daoProposeCopy.script.backendAnalysis}
+          {daoProposeCopy.script.indexedScript}
         </p>
       </ReviewSection>
 

@@ -63,7 +63,7 @@ describe("DAO MockControls", () => {
       "Content",
       "Lifecycle",
       "Veto",
-      "Analysis",
+      "Script",
       "Account",
       "Execution",
       "Authoring",
@@ -131,7 +131,7 @@ describe("DAO MockControls", () => {
     expect(screen.queryByRole("button", { name: /debug/i })).not.toBeInTheDocument();
   });
 
-  it("exposes DAO-only review controls on the beta host", () => {
+  it("excludes mock controls from the production beta host", () => {
     process.env.NEXT_PUBLIC_RUNTIME_MODE = "production";
     process.env.NEXT_PUBLIC_ENABLE_DAO = "true";
     process.env.NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS = "true";
@@ -140,7 +140,7 @@ describe("DAO MockControls", () => {
 
     renderControls(new QueryClient());
 
-    expect(screen.getByRole("button", { name: /debug/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /debug/i })).not.toBeInTheDocument();
   });
 
   it("does not expose DAO-only review controls on another preprod host", () => {

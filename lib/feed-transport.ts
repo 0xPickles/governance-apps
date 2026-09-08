@@ -8,6 +8,7 @@ export type FeedTransportPolicy = {
   createTimeoutError: () => Error;
   fetchOptions?: Omit<RequestInit, "signal">;
   maximumPayloadBytes: number;
+  fatalUtf8?: boolean;
   payloadTooLargeCancelReason: string;
   requestTimeoutMs: number;
   timeoutCancelReason: string;
@@ -128,7 +129,7 @@ export async function readBoundedJson(
     offset += chunk.byteLength;
   }
 
-  return JSON.parse(new TextDecoder().decode(payload)) as unknown;
+  return JSON.parse(new TextDecoder("utf-8", { fatal: policy.fatalUtf8 ?? false }).decode(payload)) as unknown;
 }
 
 async function readBeforeDeadline(

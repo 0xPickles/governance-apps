@@ -16,7 +16,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "generate:dao-feed": "node ./scripts/generate-dao-feed-v1.mjs",
+    "generate:dao-feed": "node ./scripts/generate-dao-feed-v2.mjs",
     "test:e2e": "playwright test --project=smoke --workers=1",
     "test:e2e:full": "playwright test --project=full",
     "check:veyfi-apr": "node ./scripts/check-veyfi-base-apr.mjs",
@@ -24,7 +24,9 @@
     "validate:prod-env": "node ./scripts/validate-prod-env.mjs",
     "validate:worker-size": "node ./scripts/check-worker-size.mjs",
     "agent:sync": "./scripts/sync-agent-env.sh",
-    "agent:bootstrap": "./scripts/agent-worktree.sh"
+    "agent:bootstrap": "./scripts/agent-worktree.sh",
+    "measure:dao-feed": "node ./scripts/measure-dao-feed-v2.mjs",
+    "test:e2e:dao-feed": "node ./scripts/test-dao-feed-v2.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.2",
@@ -61,7 +63,8 @@
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vitest": "4.1.5",
-    "wrangler": "4.120.0"
+    "wrangler": "4.120.0",
+    "ajv": "6.12.6"
   },
   "overrides": {
     "@coinbase/cdp-sdk": "1.52.0"

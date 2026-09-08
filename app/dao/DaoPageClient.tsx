@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { type ReactNode, useCallback, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 import { IconLinkOut } from "@/components/icons/IconLinkOut";
@@ -17,6 +17,7 @@ import {
   daoRouteControlClassName,
 } from "./components/DaoRouteFrame";
 import { daoCopy } from "./messages";
+import { DaoSnapshotNotice } from "./components/DaoSnapshotNotice";
 import { MockControls } from "./components/MockControls";
 import { ProposalBoard } from "./components/ProposalBoard";
 import type { DaoProposal } from "@/lib/clients/dao";
@@ -112,8 +113,9 @@ export function DaoPageClient({
   return (
     <>
       <DaoBoardView
+        snapshotNotice={!runtime ? <DaoSnapshotNotice snapshot={feedQuery.data} error={feedQuery.error} onRetry={() => { void feedQuery.refetch(); }} /> : null}
         isConnected={hasConnectedAccount}
-        isStale={isStale}
+        isStale={!!runtime && isStale}
         lastGoodSnapshotTimestamp={
           isStale ? (feedQuery.data?.canonicalBlock.timestamp ?? null) : null
         }
@@ -133,6 +135,7 @@ export function DaoPageClient({
 }
 
 export function DaoBoardView({
+  snapshotNotice = null,
   isConnected,
   isStale = false,
   lastGoodSnapshotTimestamp = null,
@@ -144,6 +147,7 @@ export function DaoBoardView({
   onSelectGroup,
   state,
 }: {
+  snapshotNotice?: ReactNode;
   isConnected: boolean;
   isStale?: boolean;
   lastGoodSnapshotTimestamp?: number | null;
@@ -163,6 +167,7 @@ export function DaoBoardView({
         showCount={state === "ready"}
       />
 
+      {snapshotNotice}
       {!isConnected ? <DaoWalletNotice /> : null}
 
       {isStale && lastGoodSnapshotTimestamp !== null ? (

@@ -17,7 +17,7 @@ import {
   readDaoMockProposerState,
   resetDaoMockStore,
   setDaoMockAccountState,
-  setDaoMockAnalysisState,
+  setDaoMockScriptState,
   setDaoMockAuthoringState,
   setDaoMockContentState,
   setDaoMockEmpty,
@@ -276,7 +276,7 @@ describe("DAO mutable mock store", () => {
     setDaoMockProposalVotes("100", "60");
     setDaoMockProposalThreshold(6_000);
     setDaoMockContentState("unavailable");
-    setDaoMockAnalysisState("partial");
+    setDaoMockScriptState("partial");
 
     const runtime = getDaoMockSnapshot();
     const proposal = runtime.feed.proposals.find(
@@ -294,7 +294,7 @@ describe("DAO mutable mock store", () => {
       yeaWeight: 60n,
       nayWeight: 40n,
       content: { state: "unavailable" },
-      analysis: { state: "partial" },
+      analysis: { error: null, calls: expect.arrayContaining([expect.objectContaining({ decodeStatus: "unknown" })]) },
     });
   });
 

@@ -1,3 +1,4 @@
+import { createDaoExecuteCall, daoExecutionContextKey } from "./execute-call";
 import { keccak256, stringToHex, type Address } from "viem";
 import type { DaoTestBridgeAdapter } from "@/lib/test-bridge";
 import { nowSeconds } from "@/lib/mocks/time";
@@ -39,7 +40,7 @@ import type {
   DaoCreatedProposalRecord,
   DaoExecutionGuard,
   DaoMockAccountState,
-  DaoMockAnalysisState,
+  DaoMockScriptState,
   DaoMockAuthoring,
   DaoMockAuthoringState,
   DaoMockContentState,
@@ -60,6 +61,7 @@ import type {
   DaoProposalEvent,
   DaoProposalLookup,
   DaoProposalRef,
+  DaoStateObservation,
   DaoProposerEligibilityInput,
   DaoProposerState,
   DaoVoteDirection,
@@ -199,6 +201,8 @@ function normalizeStoreState(next: DaoMockStoreState): DaoMockStoreState {
     const displayStatus = deriveDaoDisplayStatus(protocolStatus, proposal.type);
     const normalizedProposal: DaoProposal = {
       ...proposal,
+      retracted: runtime.retracted, executed: runtime.executed,
+      flagged: runtime.flagged, vetoed: runtime.vetoed,
       protocolStatus,
       displayStatus,
       displayGroup: deriveDaoDisplayGroup(displayStatus, proposal.type),
@@ -311,13 +315,10 @@ function createProposalRuntimes(
 ): DaoMockProposalRuntime[] {
   return proposals.map((proposal) => ({
     proposal,
-    retracted:
-      proposal.protocolStatus === "retracted" ||
-      proposal.protocolStatus === "flagged" ||
-      (proposal.protocolStatus === "vetoed" && proposal.totalWeight === 0n),
-    executed: proposal.protocolStatus === "executed",
-    flagged: proposal.protocolStatus === "flagged",
-    vetoed: proposal.protocolStatus === "vetoed",
+    retracted: proposal.retracted,
+    executed: proposal.executed,
+    flagged: proposal.flagged,
+    vetoed: proposal.vetoed,
     postVoteEpochEndsAt:
       proposal.executionEndsAt ?? proposal.voteEndsAt + 14 * DAY_SECONDS,
     vetoEndsAt:
@@ -585,6 +586,7 @@ export function syncDaoMockStoreToNow(timestamp: number = nowSeconds()) {
   }
   return updateStore((current) => {
     current.now = timestamp;
+    if (current.account.observation) current.account.observation = deriveMockCanonicalBlock(current.account.observation, timestamp);
     current.feed.canonicalBlock = deriveMockCanonicalBlock(
       current.feed.canonicalBlock,
       timestamp
@@ -696,7 +698,7 @@ export function setDaoMockVetoState(vetoState: DaoMockVetoState) {
   });
 }
 
-export function setDaoMockAnalysisState(analysisState: DaoMockAnalysisState) {
+export function setDaoMockScriptState(analysisState: DaoMockScriptState) {
   return updateStore((current) => {
     if (analysisState === "hash-mismatch") {
       const sourceId = getDaoMockFixture("hash-mismatch").proposalRef.proposalId;
@@ -715,13 +717,13 @@ export function setDaoMockAnalysisState(analysisState: DaoMockAnalysisState) {
     }
 
     const fixtureByAnalysis: Record<
-      Exclude<DaoMockAnalysisState, "hash-mismatch">,
+      Exclude<DaoMockScriptState, "hash-mismatch">,
       DaoMockFixtureId
     > = {
-      pending: "analysis-pending",
+      missing: "script-missing",
       decoded: "voting",
       partial: "partial-decode",
-      failed: "simulation-failed",
+      malformed: "script-malformed",
     };
     const sourceId = getDaoMockFixture(
       fixtureByAnalysis[analysisState]
@@ -732,9 +734,7 @@ export function setDaoMockAnalysisState(analysisState: DaoMockAnalysisState) {
     if (!source) throw new Error(`Unknown DAO analysis state: ${analysisState}.`);
     updateSelectedProposal(current, (selected) => {
       selected.proposal.analysis = cloneValue(source.proposal.analysis);
-      if (selected.proposal.type === "executable") {
-        selected.proposal.script.hashVerified = true;
-      }
+      if (selected.proposal.type === "executable") selected.proposal.script = cloneValue(source.proposal.script);
     });
   });
 }
@@ -828,11 +828,17 @@ export function setDaoMockExecutionState(executionState: DaoMockExecutionState) 
     current.executionGuard =
       executionState === "permissionless" ? "permissionless" : "guarded";
     current.account.isOperator = executionState !== "permissionless";
+    const selected = getSelectedProposalRuntime(current);
+    const observation = { number: 24_000_001n, hash: deriveDaoMockBlockHash(24_000_001n, current.now), timestamp: current.now };
+    current.account.observation = observation;
     current.account.executionPreflight = {
       ...current.account.executionPreflight,
+      call: createDaoExecuteCall(getSelectedProposalRuntime(current).proposal.ref, current.account.address, getSelectedProposalRuntime(current).proposal.script.bytes ?? "0x"),
       state: executionState === "simulation-failure" ? "failed" : "succeeded",
       scriptHash: getSelectedProposalRuntime(current).proposal.script.hash,
-      blockNumber: 24_000_001n,
+      observation: { ...observation },
+      contextKey: daoExecutionContextKey({ proposal: selected.proposal, account: current.account,
+        now: current.now, vetoEndsAt: selected.vetoEndsAt, executionGuard: current.executionGuard })!,
       simulatedAt: new Date(current.now * 1_000).toISOString(),
       error:
         executionState === "simulation-failure"
@@ -840,6 +846,11 @@ export function setDaoMockExecutionState(executionState: DaoMockExecutionState) 
           : null,
     };
   });
+}
+
+/** Synthetic live observation; advancing/replacing it does not rerun preflight. */
+export function setDaoMockLiveObservation(observation: DaoStateObservation | undefined) {
+  return updateStore(current => { current.account.observation = cloneValue(observation); });
 }
 
 export function setDaoMockExecutionGuard(guard: DaoExecutionGuard) {
@@ -1134,8 +1145,10 @@ function createPreparedDaoMockAction(
   input: PreparedDaoMockActionInput
 ): PreparedTransaction {
   const ref = cloneValue(input.ref);
+  const preparedContext = daoMockPreparationContext(ref, input.address);
   return async () => {
     assertDaoMockActionAllowed(input.action, ref, input.address);
+    if (daoMockPreparationContext(ref, input.address) !== preparedContext) throw new Error("DAO preparation changed. Review the current account, proposal and transaction again.");
     const checkedReason = validatePreparedModerationReason(
       input.action,
       input.reason
@@ -1263,8 +1276,7 @@ function createIndexedActionEvent(
       transactionIndex: 0,
       logIndex: 0,
     },
-    actor: pending.actor,
-    voteActorKind: pending.action === "vote" ? "human" : null,
+    actor: pending.action === "flag" || pending.action === "veto" || pending.action === "retract" ? null : pending.actor,
     yeaBps:
       pending.action === "vote"
         ? pending.direction === "yea"
@@ -1412,7 +1424,7 @@ export function createDaoTestBridgeAdapter(): DaoTestBridgeAdapter {
           displayStatus: proposal.displayStatus,
           contentState: proposal.content.state,
           scriptHashVerified: proposal.script.hashVerified,
-          analysisState: proposal.analysis.state,
+          scriptError: proposal.analysis.error,
         },
         capabilities: {
           canVote: account.capabilities.canVote,
@@ -1468,7 +1480,7 @@ export function createDaoTestBridgeAdapter(): DaoTestBridgeAdapter {
       setDaoMockVetoState(vetoState);
     },
     setDaoAnalysisState: async (analysisState) => {
-      setDaoMockAnalysisState(analysisState);
+      setDaoMockScriptState(analysisState);
     },
     setDaoAccountState: async (accountState) => {
       setDaoMockAccountState(accountState);
@@ -1528,4 +1540,11 @@ export function createDaoTestBridgeAdapter(): DaoTestBridgeAdapter {
       syncDaoMockStoreToNow(timestamp);
     },
   };
+}
+
+function daoMockPreparationContext(ref: DaoProposalRef, address: Address): string {
+  const current = getState();
+  const proposal = current.feed.proposals.find((p) => serializeDaoProposalRef(p.ref) === serializeDaoProposalRef(ref));
+  return JSON.stringify([ref, address.toLowerCase(), current.account, current.executionGuard, current.now, proposal],
+    (_key, value) => typeof value === "bigint" ? value.toString() : value);
 }

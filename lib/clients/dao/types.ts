@@ -127,37 +127,28 @@ export type DaoDecodedCall = DaoScriptFrame & {
   sourcePath: string | null;
 };
 
-export type DaoSimulation = {
-  state: "pending" | "succeeded" | "failed" | "unavailable";
-  method: "atomic_script_at_state" | null;
-  engine: string | null;
-  blockNumber: bigint | null;
-  blockHash: Hex | null;
-  simulatedAt: string | null;
-  stateTimestamp: number | null;
-  timestampMode: "block" | "override" | null;
-  timestampOverride: number | null;
-  caller: Address | null;
-  stateOverrides: string | null;
+export type DaoAnalysis = {
+  calls: DaoDecodedCall[];
   error: string | null;
 };
 
-export type DaoAnalysis = {
-  state: "pending" | "complete" | "partial" | "failed" | "unavailable";
-  generatedAt: string | null;
-  registryVersion: string | null;
-  calls: DaoDecodedCall[];
-  proposalSimulation: DaoSimulation;
-  error: string | null;
-};
+export type DaoStateObservation = { number: bigint; hash: Hex; timestamp: DaoUnixSeconds };
 
 export type DaoExecutionPreflight = {
-  state: "idle" | "simulating" | "succeeded" | "failed";
+  call: import("./execute-call").DaoExecuteCall | null;
   scriptHash: Hex;
-  blockNumber: bigint | null;
-  simulatedAt: string | null;
   error: string | null;
-};
+} & ({
+  state: "succeeded";
+  observation: DaoStateObservation;
+  contextKey: string;
+  simulatedAt: string;
+} | {
+  state: "idle" | "simulating" | "failed";
+  observation: DaoStateObservation | null;
+  contextKey: string | null;
+  simulatedAt: string | null;
+});
 
 export type DaoLogRef = {
   blockNumber: bigint;
@@ -235,8 +226,7 @@ export type DaoProposeReceiptDecodeResult =
 export type DaoProposalEvent = {
   type: "propose" | "vote" | "retract" | "flag" | "veto" | "execute";
   log: DaoLogRef;
-  actor: Address;
-  voteActorKind: "human" | "ybc_aggregate" | "styfix_aggregate" | null;
+  actor: Address | null;
   yeaBps: number | null;
   direction: DaoVoteDirection | null;
   weight: bigint | null;
@@ -244,28 +234,15 @@ export type DaoProposalEvent = {
 };
 
 export type DaoVoteResult = "approved" | "rejected";
-export type DaoModerationPhase =
-  | "before_participation"
-  | "after_participation";
-
 export type DaoLifecycleFacts = {
   status: DaoProtocolStatus;
   voteResult: DaoVoteResult | null;
-  moderation:
-    | {
-        kind: null;
-        phase: null;
-        reason: null;
-        votingAvailable: boolean;
-        executionBlocked: boolean;
-      }
-    | {
-        kind: "flagged" | "vetoed";
-        phase: DaoModerationPhase;
-        reason: string | null;
-        votingAvailable: boolean;
-        executionBlocked: true;
-      };
+  moderation: {
+    kind: "flagged" | "vetoed" | null;
+    reason: string | null;
+    votingAvailable: boolean;
+    executionBlocked: boolean;
+  };
   execution: {
     state:
       | "no_actions"
@@ -285,12 +262,14 @@ export type DaoProposalExecutionReadiness =
       state: "integrity_blocked";
       blocker:
         | "exact_script_unavailable"
-        | "stored_script_hash_mismatch";
+        | "stored_script_hash_mismatch"
+        | "malformed_script";
       reason: string;
     };
 
 export type DaoProposalRules = {
   approvalThresholdBps: number;
+  snapshotThresholdBps: number;
   thresholdSnapshottedAtCreation: true;
   minimumTurnout: null;
   passageRequiresPositiveTotal: true;
@@ -305,6 +284,10 @@ export type DaoProposalRules = {
 };
 
 export type DaoProposal = {
+  retracted: boolean;
+  executed: boolean;
+  flagged: boolean;
+  vetoed: boolean;
   ref: DaoProposalRef;
   proposer: Address;
   votingEpoch: bigint;
@@ -328,6 +311,7 @@ export type DaoProposal = {
     digest: Hex;
     value: DaoProposalContent | null;
     error: string | null;
+    computedDigest?: Hex | null;
   };
   discussion: {
     state: "verified" | "unverified" | "unavailable";
@@ -341,6 +325,7 @@ export type DaoProposal = {
     bytes: Hex | null;
     hash: Hex;
     hashVerified: boolean | null;
+    framing?: "supported" | "unsupported";
   };
   analysis: DaoAnalysis;
   events: DaoProposalEvent[];
@@ -351,6 +336,8 @@ export type DaoProposal = {
 };
 
 export type DaoAccountProposalFacts = {
+  /** Current account/preparation read block, independent of feed observation. */
+  observation?: DaoStateObservation;
   address: Address;
   connected: boolean;
   correctChain: boolean;
@@ -367,6 +354,8 @@ export type DaoAccountProposalFacts = {
 
 export type DaoAccountProposalState = DaoAccountProposalFacts & {
   capabilities: DaoCapabilities;
+  liveProposal?: DaoProposal;
+  writesEnabled?: boolean;
 };
 
 export type DaoAffectedBoostEpoch = {
@@ -412,8 +401,8 @@ export type DaoFeedContract = {
   active: boolean;
 };
 
-export type DaoFeedV1 = {
-  schemaVersion: 1;
+export type DaoSnapshot = {
+  schemaVersion: 2;
   chainId: number;
   generatedAt: string;
   canonicalBlock: {
@@ -437,13 +426,7 @@ export type DaoProposalLookup =
 /** Base-10 unsigned integer used only at a JSON boundary. */
 export type DaoBigIntJson = `${bigint}`;
 
-export type DaoSimulationJson = Omit<DaoSimulation, "blockNumber"> & {
-  blockNumber: DaoBigIntJson | null;
-};
-
-export type DaoAnalysisJson = Omit<DaoAnalysis, "proposalSimulation"> & {
-  proposalSimulation: DaoSimulationJson;
-};
+export type DaoAnalysisJson = DaoAnalysis;
 
 export type DaoProposalEventJson = Omit<DaoProposalEvent, "log" | "weight"> & {
   log: Omit<DaoLogRef, "blockNumber"> & { blockNumber: DaoBigIntJson };
@@ -487,11 +470,11 @@ export type DaoCreatedProposalRecord = {
   proposal: DaoProposal;
 };
 
-export type DaoFeedV1Json = Omit<
-  DaoFeedV1,
+export type DaoSnapshotJson = Omit<
+  DaoSnapshot,
   "canonicalBlock" | "contracts" | "proposals"
 > & {
-  canonicalBlock: Omit<DaoFeedV1["canonicalBlock"], "number"> & {
+  canonicalBlock: Omit<DaoSnapshot["canonicalBlock"], "number"> & {
     number: DaoBigIntJson;
   };
   contracts: Array<
@@ -571,9 +554,9 @@ export type DaoMockFixtureId =
   | "post-vote-veto"
   | "content-unavailable"
   | "content-invalid"
-  | "analysis-pending"
+  | "script-missing"
   | "partial-decode"
-  | "simulation-failed"
+  | "script-malformed"
   | "hash-mismatch"
   | "direct-proposal"
   | "guarded-execution"
@@ -612,11 +595,11 @@ export type DaoMockLifecycleState =
   | "retracted"
   | "flagged";
 export type DaoMockVetoState = "before-votes" | "after-votes";
-export type DaoMockAnalysisState =
-  | "pending"
+export type DaoMockScriptState =
+  | "missing"
   | "decoded"
   | "partial"
-  | "failed"
+  | "malformed"
   | "hash-mismatch";
 export type DaoMockAccountState =
   | "weight"
@@ -690,7 +673,7 @@ export type DaoMockRuntimeSnapshot = {
   selectedProposalId: bigint;
   persona: DaoMockPersona;
   now: DaoUnixSeconds;
-  feed: DaoFeedV1;
+  feed: DaoSnapshot;
   account: DaoAccountProposalFacts;
   proposer: DaoProposerEligibilityInput;
   executionGuard: DaoExecutionGuard;

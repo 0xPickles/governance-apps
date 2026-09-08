@@ -50,7 +50,7 @@ export function DaoProposePageClient({
   const { address, isConnected } = useAccount();
   const isE2E = process.env.NEXT_PUBLIC_E2E === "true";
   const runtime = useDaoMockRuntime();
-  const effectiveAddress = isE2E
+  const effectiveAddress = isE2E && runtime
     ? (runtime?.proposer.address ?? E2E_MOCK_ADDRESS)
     : (address ?? null);
   const hasConnectedAccount =
@@ -65,6 +65,8 @@ export function DaoProposePageClient({
       : proposerQuery.isError
         ? "error"
         : "ready";
+
+  if (!runtime) return <DaoRouteFrame><h1 className="text-3xl font-bold">{daoProposeCopy.page.title}</h1><Card><p>{daoCopy.feed.creationDisabled}</p></Card></DaoRouteFrame>;
 
   return (
     <>

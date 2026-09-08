@@ -1,3 +1,4 @@
+import { createDaoExecuteCall, daoExecutionContextKey } from "@/lib/clients/dao/execute-call";
 import { describe, expect, it } from "vitest";
 import type { Address } from "viem";
 import {
@@ -60,7 +61,8 @@ function capabilityAccount(
   proposalValue: DaoProposal,
   overrides: Partial<DaoAccountProposalFacts> = {}
 ): DaoAccountProposalFacts {
-  return {
+  const account: DaoAccountProposalFacts = {
+    observation: { number: 24_000_001n, hash: `0x${"ab".repeat(32)}`, timestamp: DAO_MOCK_NOW },
     address: DAO_MOCK_ACCOUNT_ADDRESS,
     connected: true,
     correctChain: true,
@@ -73,13 +75,27 @@ function capabilityAccount(
     isOperator: false,
     isGuardian: false,
     executionPreflight: {
-      state: "succeeded",
+      call: proposalValue.script.bytes ? createDaoExecuteCall(proposalValue.ref, DAO_MOCK_ACCOUNT_ADDRESS, proposalValue.script.bytes) : null,
+      state: "idle",
       scriptHash: proposalValue.script.hash,
-      blockNumber: 1n,
-      simulatedAt: "2026-08-18T12:00:00Z",
+      observation: null,
+      contextKey: null,
+      simulatedAt: null,
       error: null,
     },
     ...overrides,
+  };
+  refreshPreflight(proposalValue, account);
+  return account;
+}
+
+function refreshPreflight(value: DaoProposal, account: DaoAccountProposalFacts, now = DAO_MOCK_NOW) {
+  account.observation = { ...account.observation!, timestamp: now };
+  account.executionPreflight = {
+    ...account.executionPreflight, state: "succeeded", observation: { ...account.observation },
+    simulatedAt: new Date(now * 1000).toISOString(),
+    contextKey: daoExecutionContextKey({ proposal: value, account, now,
+      vetoEndsAt: value.voteEndsAt + 14 * DAY, executionGuard: value.rules.executionGuard ?? "guarded" })!,
   };
 }
 
@@ -177,7 +193,6 @@ describe("DAO proposal identity and lifecycle", () => {
       voteResult: null,
       moderation: {
         kind: "flagged",
-        phase: "before_participation",
         reason: "Malformed proposal content",
       },
       execution: { state: "blocked" },
@@ -189,7 +204,6 @@ describe("DAO proposal identity and lifecycle", () => {
       voteResult: null,
       moderation: {
         kind: "vetoed",
-        phase: "before_participation",
         votingAvailable: false,
         executionBlocked: true,
       },
@@ -198,7 +212,6 @@ describe("DAO proposal identity and lifecycle", () => {
       voteResult: null,
       moderation: {
         kind: "vetoed",
-        phase: "after_participation",
         votingAvailable: true,
         executionBlocked: true,
       },
@@ -242,9 +255,7 @@ describe("DAO proposal execution readiness", () => {
       9n,
       13n,
       14n,
-      16n,
       17n,
-      18n,
       21n,
       22n,
     ]) {
@@ -504,6 +515,73 @@ describe("DAO action capabilities", () => {
     });
   });
 
+  it.each(["caller", "destination", "arguments", "chain", "missing"] as const)("requires an exact Voting.execute preflight binding: %s", mutation => {
+    const value = proposal(22n);
+    const account = capabilityAccount(value);
+    const call = account.executionPreflight.call!;
+    if (mutation === "caller") call.caller = "0x9999999999999999999999999999999999999999";
+    if (mutation === "destination") call.to = "0x2222222222222222222222222222222222222222";
+    if (mutation === "arguments") call.data = "0x12345678";
+    if (mutation === "chain") call.chainId = 10;
+    if (mutation === "missing") account.executionPreflight.call = null;
+    expect(deriveDaoCapabilities({ proposal: value, account, now: DAO_MOCK_NOW,
+      vetoEndsAt: value.voteEndsAt + 1209600, executionGuard: "permissionless" })
+      .executeBlockedReason).toBe(DAO_BLOCKED_REASONS.executionSimulationMismatch);
+  });
+
+  it.each(["missing-live", "missing-simulation", "missing-number", "missing-hash", "missing-key", "invalid-hash", "negative-block", "stale-block", "new-block", "same-height-replacement", "configuration", "guard", "role", "proposal-state"] as const)(
+    "rejects execution preflight after %s", change => {
+      const value = proposal(22n);
+      const account = capabilityAccount(value);
+      const input = { proposal: value, account, now: DAO_MOCK_NOW,
+        vetoEndsAt: value.voteEndsAt + 14 * DAY, executionGuard: "permissionless" as const };
+      expect(deriveDaoCapabilities(input).canExecute).toBe(true);
+      if (change === "missing-live") account.observation = undefined;
+      if (change === "missing-simulation") Object.assign(account.executionPreflight, { observation: null });
+      if (change === "missing-number") Object.assign(account.executionPreflight.observation!, { number: null });
+      if (change === "missing-hash") Object.assign(account.executionPreflight.observation!, { hash: undefined });
+      if (change === "missing-key") Object.assign(account.executionPreflight, { contextKey: null });
+      if (change === "invalid-hash") account.executionPreflight.observation!.hash = "0xab";
+      if (change === "negative-block") account.executionPreflight.observation!.number = -1n;
+      if (change === "stale-block") {
+        account.observation!.timestamp = DAO_MOCK_NOW - 301;
+        account.executionPreflight.observation!.timestamp = DAO_MOCK_NOW - 301;
+        account.executionPreflight.contextKey = daoExecutionContextKey(input)!;
+      }
+      if (change === "new-block") account.observation!.number += 1n;
+      if (change === "same-height-replacement") account.observation!.hash = `0x${"cd".repeat(32)}`;
+      if (change === "configuration") value.rules.snapshotThresholdBps += 1;
+      if (change === "guard") value.rules.executionGuard = "guarded";
+      if (change === "role") account.isOperator = true;
+      if (change === "proposal-state") value.totalWeight += 1n;
+      expect(deriveDaoCapabilities(input)).toMatchObject({
+        canExecute: false, executeBlockedReason: DAO_BLOCKED_REASONS.executionSimulationRequired,
+      });
+    }
+  );
+
+  it("binds the simulation to live preparation, independently of the feed observation", () => {
+    const value = proposal(22n);
+    const account = capabilityAccount(value);
+    value.rules.observationBlockNumber = 1n;
+    const input = { proposal: value, account, now: DAO_MOCK_NOW,
+      vetoEndsAt: value.voteEndsAt + 14 * DAY, executionGuard: "permissionless" as const };
+    expect(deriveDaoCapabilities(input).canExecute).toBe(true);
+    account.observation!.hash = `0x${"cd".repeat(32)}`;
+    expect(deriveDaoCapabilities(input).canExecute).toBe(false);
+    refreshPreflight(value, account);
+    expect(deriveDaoCapabilities(input).canExecute).toBe(true);
+  });
+
+  it("rejects a stale successful execution simulation", () => {
+    const value = proposal(22n);
+    const account = capabilityAccount(value);
+    account.executionPreflight.simulatedAt = new Date((DAO_MOCK_NOW - 301) * 1000).toISOString();
+    expect(deriveDaoCapabilities({ proposal: value, account, now: DAO_MOCK_NOW,
+      vetoEndsAt: value.voteEndsAt + 1209600, executionGuard: "permissionless" })
+      .executeBlockedReason).toBe(DAO_BLOCKED_REASONS.executionSimulationRequired);
+  });
+
   it("requires operator access, an exact script, and fresh matching simulation", () => {
     const value = proposal(21n);
     const baseAccount = capabilityAccount(value);
@@ -519,7 +597,7 @@ describe("DAO action capabilities", () => {
       }).executeBlockedReason
     ).toBe(DAO_BLOCKED_REASONS.guardedExecution);
 
-    const operator = { ...baseAccount, isOperator: true };
+    const operator = capabilityAccount(value, { isOperator: true });
     expect(
       deriveDaoCapabilities({
         proposal: value,
@@ -545,6 +623,8 @@ describe("DAO action capabilities", () => {
   it("opens and closes execution at the configured exact boundaries", () => {
     const value = proposal(21n);
     const account = capabilityAccount(value, { isOperator: true });
+    // The successful actual-call preflight must be fresh at the tested boundary.
+    refreshPreflight(value, account, value.executionStartsAt!);
 
     expect(
       deriveDaoCapabilities({
@@ -588,10 +668,10 @@ describe("DAO action capabilities", () => {
     }
   });
 
-  it("keeps binary direction derived from human vote basis points only", () => {
+  it("keeps binary direction consistent with raw vote basis points", () => {
     const mismatchedHuman = proposal(2n);
     const humanVote = mismatchedHuman.events.find(
-      (event) => event.type === "vote" && event.voteActorKind === "human"
+      (event) => event.type === "vote" && event.direction === "yea"
     );
     if (!humanVote) throw new Error("Missing human vote fixture.");
     humanVote.yeaBps = 0;
@@ -602,12 +682,12 @@ describe("DAO action capabilities", () => {
     const directedAggregate = proposal(2n);
     const aggregateVote = directedAggregate.events.find(
       (event) =>
-        event.type === "vote" && event.voteActorKind === "ybc_aggregate"
+        event.type === "vote" && event.yeaBps === 7_500
     );
     if (!aggregateVote) throw new Error("Missing aggregate vote fixture.");
     aggregateVote.direction = "yea";
     expect(() => assertDaoProposalInvariants(directedAggregate)).toThrow(
-      /aggregate vote events/i
+      /direction must match/i
     );
   });
 });

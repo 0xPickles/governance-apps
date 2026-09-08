@@ -1,5 +1,7 @@
 # DAO Governance User Stories
 
+V2 reset: consumer reads are implemented for review. Production write/publication stories remain later gated packages; mock action flows remain available in preview. [Status](delivery/status.md) controls sequencing.
+
 ## Observers
 
 ### DAO-US-01: scan current proposals
@@ -31,19 +33,20 @@ Acceptance:
 
 - the snapshotted threshold is shown;
 - rules state that no minimum turnout is required;
+- stored threshold and snapshot-effective configuration are separately labeled; current defaults never replace the stored threshold;
 - the explanation stays secondary to the proposal content and vote action.
 
 ### DAO-US-03: verify proposal provenance
 
 As an observer, I want to distinguish immutable proposal content, forum
-discussion, onchain facts, and backend analysis so I know what each source
+discussion, onchain facts, and frontend script interpretation so I know what each source
 proves.
 
 Acceptance:
 
 - immutable IPFS content and the live forum link are labeled separately;
-- decoded actions identify structured verified-source records and unknown calls;
-- simulation results include their reference block;
+- supported frames show raw targets/calldata; optional local decoding identifies its reviewed source;
+- snapshot state and newer wallet observations each show their own block;
 - event rows show canonical block time, transaction when available, truthful
   actor attribution, and explicit missing-data fallbacks;
 - technical details expose complete block/log identity, transaction, contract,
@@ -57,8 +60,7 @@ separately so a flag or veto is not mistaken for a community decision.
 Acceptance:
 
 - a flagged proposal states that there is no community result;
-- an early veto says voting is blocked;
-- a post-participation veto says whether participation voting remains open;
+- stored retracted state and current timing determine whether a vetoed proposal remains votable; later totals do not establish historical veto phase;
 - an approved signal says `No executable actions` even when raw status is
   `EXECUTED`;
 - missing exact executable bytes or a stored script-hash mismatch shows
@@ -119,11 +121,11 @@ Acceptance:
 - the page states that approval and execution are no longer possible;
 - Yea and Nay remain available only during the voting window;
 - the page calls the action participation voting;
-- an early veto with no votes does not expose the action.
+- a vetoed proposal with stored retracted=true does not expose the action.
 
 ### DAO-US-13: act when content is unavailable
 
-As a voter, I want the option to vote when IPFS or analysis is unavailable so a
+As a voter, I want the option to vote when content or script interpretation is unavailable so a
 frontend outage does not remove a protocol action.
 
 Acceptance:
@@ -168,7 +170,7 @@ Acceptance:
 - structural errors identify the first failing offset;
 - the UI shows calls, bytes, targets, sizes, and script hash;
 - a passing structural check never claims the script is safe;
-- detailed decoding and simulation are expected after submission;
+- exact bytes can be inspected immediately; indexing is not a backend-simulation job;
 - the typed review outcome controls success, wallet rejection, revert, and
   network failure;
 - each failure preserves the publication and review so Step 2 can retry without
@@ -244,7 +246,9 @@ against current state before I sign.
 Acceptance:
 
 - event script hash must match the stored hash;
-- proposal-time and current simulation are shown separately;
+- the fresh preflight simulates actual Voting.execute with the actual account and arguments;
+- changed account, network, proposal, script or observations invalidate prepared data;
+- a successful simulation does not guarantee later execution;
 - a failed current simulation blocks the normal execute path;
 - the confirmation explains atomic execution.
 
@@ -269,9 +273,9 @@ effect of its current vote count.
 
 Acceptance:
 
-- confirmation distinguishes pre-vote and post-vote outcomes;
+- confirmation uses fresh current total weight to explain whether Veto will also retract;
 - execution is always disabled after veto;
-- post-vote participation behavior is stated accurately;
+- remaining participation eligibility is stated from stored flags and current timing;
 - the reason remains available from indexed event history.
 
 ## QA and operations
@@ -301,14 +305,13 @@ Acceptance:
   `noindex` `dao-beta.dao-ops.com` with clean nested paths;
 - preproduction reads `NEXT_PUBLIC_ENABLE_DAO` from its protected environment,
   while production hardcodes the flag false;
-- global mocks, E2E, and debug UI stay disabled; DAO controls require the
-  independent shared debug gate;
+- production mode never selects mock data, including beta hosts; preview mock controls require their existing debug gates;
 - all paths on the six exact `*-beta.dao-ops.com` governance hosts require the
   approved GitHub organization/team Cloudflare Access policy, with no wildcard,
   public bypass, or unrelated hostname in scope;
 - operators understand that the shared preprod flag is deployment-wide, that
   `noindex` is separate from authentication, and that a custom domain alone is
   not access control;
-- feed, IPFS, decode, and simulation health are monitored;
+- feed freshness, acquisition completeness, content availability and live RPC/preflight failures are monitored;
 - disabling the app does not lose indexed proposal data;
 - Snapshot cutover occurs only in the final approved rollout package.

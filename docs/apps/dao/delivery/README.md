@@ -1,29 +1,8 @@
 # DAO Governance Delivery Plan
 
-Status: M2 is complete; M3 WP8 is the next package. M3 WP9 remains blocked until
-WP8 is accepted.
+Status: Governance Apps V2 reset implements revised WP8/WP11/WP12 together. External review and explicit producer-start approval are next; producer interoperability remains pending.
 
-This plan is the task source for implementing DAO Governance. It uses the shared
-workflow in [`docs/shared/codex-usage-guide.md`](../../../shared/codex-usage-guide.md)
-and the product sources one directory above.
-
-## Delivery gates
-
-| Milestone | Outcome | Human gate |
-| --- | --- | --- |
-| M0 | Canonical requirements, tooling, and handoff | Accepted in discovery |
-| M1 | Domain model, routes, and shared debug runtime | Engineering review |
-| M2 | Complete mock proposal, voting, authoring, and UX | User accepts mock UX |
-| M3 | Feed contract, fixture-backed producer, and staging contract validation | Producer and consumer accept schema |
-| M4 | Feed-backed reads and analysis presentation | Read-path review |
-| M5 | Forum/IPFS publication and onchain writes | Write/security review |
-| M6 | Fork deployment and full lifecycle proof | User accepts fork UAT |
-| M7 | Preproduction and controlled production rollout | Explicit production approval |
-
-M2 was accepted on 2026-08-26 after authenticated Cloudflare Access UAT passed
-for all six beta hosts. Start M3 with consumer-owned WP8. Do not start WP9 in
-`gov-apps-stats` until WP8 is accepted. Do not start M7 before fork evidence is
-accepted.
+Use [the current dependency graph](dependency-graph.md), [milestones](milestone-plan.md), [status](status.md), and [reset evidence](feed-v2-reset.md). The V1 freeze and old producer-before-consumer requirement are superseded. Historical accepted commits remain recorded. No document authorizes starting producer implementation without the next explicit approval.
 
 ## Branches and worktrees
 
@@ -51,18 +30,14 @@ Create a package only after its dependencies are merged into integration.
 
 ## Integration sequence
 
-```text
-M1: WP1 -> WP2 -> WP3
-M2: WP4 -> WP6 -> WP5 -> WP7 -> user gate -> WP7A -> user gate -> WP7B -> user gate -> WP7C -> user gate
-M3: WP8 -> WP9 (gov-apps-stats) -> WP10
-M4: WP11 -> WP12
-M5: WP13 -> WP14 -> WP15
-M6: WP16 -> WP17 -> user gate
-M7: WP18 -> production approval
-```
+1. Complete Governance Apps V2 and external review.
+2. Obtain explicit approval to begin Gov Apps Stats.
+3. Implement WP9 against the reviewed candidate.
+4. Validate actual producer bytes and staging in WP10.
+5. Complete WP13–WP17 publication, write-safety and lifecycle gates.
+6. Obtain required production approval before WP18 exposure.
 
-WP4 and WP6 may run in parallel after M1 if they keep their owned files separate.
-Producer WP9 runs in the `gov-apps-stats` repository and its own integration lane.
+Read implementation is part of this reset; it no longer waits for the old producer gate. A consumer fixture is not interoperability evidence. Review practical coordinated amendments rather than declaring a permanent freeze.
 
 ## Human-gate iteration
 
@@ -77,7 +52,7 @@ M6 or begin rollout until the fork gate is accepted.
 
 ## Agent workflow
 
-The root orchestrator uses up to three sub-agents alongside itself:
+When explicitly authorized to orchestrate independent agents, use the existing workflow. The current reset is handed to an external reviewer; its implementer must not mark that review complete or merge its own branch:
 
 1. Assign one implementer as the only editing owner of a package worktree.
 2. Require a focused Conventional Commit and clean status.
@@ -157,6 +132,4 @@ without re-review.
 
 The new-session entry point is [`kickoff-prompt.md`](kickoff-prompt.md).
 
-The durable package ledger is [`status.md`](status.md). Before WP9, copy
-[`producer-handoff-template.md`](producer-handoff-template.md) to
-`producer-handoff.md` and fill every field.
+The durable ledger is [status](status.md). The current producer handoff is [producer-handoff](producer-handoff.md); the [template](producer-handoff-template.md) records actual later interoperability results.

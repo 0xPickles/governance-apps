@@ -11,7 +11,7 @@ import {
   DAO_MOCK_FIXTURE_IDS,
   getDaoMockFixture,
   type DaoMockAccountState,
-  type DaoMockAnalysisState,
+  type DaoMockScriptState,
   type DaoMockAuthoringState,
   type DaoMockContentState,
   type DaoMockExecutionState,
@@ -79,11 +79,11 @@ const VETO_STATES: readonly [DaoMockVetoState, string][] = [
   ["before-votes", "Before votes"],
   ["after-votes", "After votes"],
 ];
-const ANALYSIS_STATES: readonly [DaoMockAnalysisState, string][] = [
-  ["pending", "Pending"],
-  ["decoded", "Decoded"],
+const SCRIPT_STATES: readonly [DaoMockScriptState, string][] = [
+  ["missing", "Missing"],
+  ["decoded", "Framed"],
   ["partial", "Partial"],
-  ["failed", "Failed"],
+  ["malformed", "Malformed"],
   ["hash-mismatch", "Hash mismatch"],
 ];
 const ACCOUNT_STATES: readonly [DaoMockAccountState, string][] = [
@@ -278,8 +278,8 @@ export function MockControls() {
         />
         <StateGroup
           label={daoCopy.debug.analysis}
-          values={ANALYSIS_STATES}
-          onSelect={actions.setAnalysisState}
+          values={SCRIPT_STATES}
+          onSelect={actions.setScriptState}
         />
         <StateGroup
           label={daoCopy.debug.account}

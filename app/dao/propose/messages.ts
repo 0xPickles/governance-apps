@@ -91,8 +91,8 @@ export const daoProposeCopy = {
     call: (index: number) => `Call ${index + 1}`,
     target: "Target",
     calldataBytes: "Calldata bytes",
-    backendAnalysis:
-      "Backend decoding and simulation follow submission on the proposal page.",
+    indexedScript:
+      "The indexed proposal retains the exact script and content commitment on the proposal page.",
   },
   eligibility: {
     step: "5",
@@ -154,7 +154,7 @@ export const daoProposeCopy = {
     proposeStepCurrent: "Content published — proposal not created yet",
     proposeStepBody:
       "Create the onchain proposal with the published content fingerprint. A wallet cancellation or revert does not require republishing.",
-    indexStatus: "Awaiting proposal indexing and analysis",
+    indexStatus: "Awaiting proposal indexing",
     indexedStatus: "Proposal indexed",
   },
   publication: {

@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Address } from "viem";
+import { useAccount } from "wagmi";
+import { useOptionalProtocol } from "@/state/protocol";
+import { OnchainDaoClient, daoRpcFromPublicClient } from "@/lib/clients/dao/onchain";
+import { daoDeploymentScope, getDaoDeployments } from "@/lib/clients/dao/deployment";
 import {
   applyDaoMockFixture,
   createRuntimeMockDaoClient,
@@ -12,7 +16,7 @@ import {
   indexDaoMockPendingAction,
   resolveDaoProposalReadEnvelope,
   setDaoMockAccountState,
-  setDaoMockAnalysisState,
+  setDaoMockScriptState,
   setDaoMockAuthoringState,
   setDaoMockContentState,
   setDaoMockEmpty,
@@ -29,9 +33,9 @@ import {
   subscribeDaoMockStore,
   type DaoClient,
   type DaoActionType,
-  type DaoFeedV1,
+  type DaoSnapshot,
   type DaoMockAccountState,
-  type DaoMockAnalysisState,
+  type DaoMockScriptState,
   type DaoMockAuthoringState,
   type DaoMockContentState,
   type DaoMockExecutionState,
@@ -49,21 +53,26 @@ import {
   type DaoVoteDirection,
 } from "@/lib/clients/dao";
 import { daoKeys } from "@/lib/hooks/daoKeys";
-import { isDaoMockRuntimeEnabled } from "@/lib/runtime/features";
+import { isDaoEnabled, isDaoMockRuntimeEnabled } from "@/lib/runtime/features";
 import { useTx } from "@/lib/tx/useTx";
 import type { PreparedTransaction } from "@/lib/tx/types";
 
 let mockClient: DaoClient | null = null;
+let feedClient: { scope: string; client: DaoClient } | null = null;
 
 export function getDaoRouteClient(): DaoClient {
-  if (!isDaoMockRuntimeEnabled()) {
-    throw new Error(
-      "DAO mock reads are unavailable when the DAO route is disabled."
-    );
+  if (!isDaoEnabled()) throw new Error("DAO route is disabled.");
+  if (isDaoMockRuntimeEnabled()) {
+    mockClient ??= createRuntimeMockDaoClient({ latencyMs: 250 });
+    return mockClient;
   }
-
-  mockClient ??= createRuntimeMockDaoClient({ latencyMs: 250 });
-  return mockClient;
+  const deployments = getDaoDeployments();
+  const scope = daoDeploymentScope(deployments);
+  if (feedClient?.scope !== scope) feedClient = { scope, client: new OnchainDaoClient(deployments) };
+  return feedClient.client;
+}
+function daoReadScope() {
+  return isDaoMockRuntimeEnabled() ? "mock" : JSON.stringify(["yearn.dao.feed.v2", process.env.NEXT_PUBLIC_DAO_DEPLOYMENTS ?? ""]);
 }
 
 const subscribeNoop = () => () => undefined;
@@ -79,17 +88,25 @@ export function useDaoMockRuntime(enabled = true): DaoMockRuntimeSnapshot | null
 }
 
 export function parseDaoProposalId(value: string): bigint | null {
-  if (!/^(0|[1-9]\d*)$/.test(value)) return null;
-  return BigInt(value);
+  if (value.length > 78 || !/^(0|[1-9]\d*)$/.test(value)) return null;
+  const parsed = BigInt(value);
+  return parsed < 2n ** 256n ? parsed : null;
 }
 
 export function resolveActiveDaoProposalRef(
-  feed: DaoFeedV1 | undefined,
-  proposalId: bigint | null
+  feed: DaoSnapshot | undefined,
+  proposalId: bigint | null,
+  selection?: { chainId: string | null; votingAddress: string | null }
 ): DaoProposalRef | null {
   if (!feed || proposalId === null) return null;
 
-  const activeContract = feed.contracts.find((contract) => contract.active);
+  if (selection?.chainId || selection?.votingAddress) {
+    if (selection.chainId !== String(feed.chainId) || !selection.votingAddress) return null;
+    const selected = feed.contracts.find((c) => c.votingAddress.toLowerCase() === selection.votingAddress?.toLowerCase());
+    return selected ? { chainId: feed.chainId, votingAddress: selected.votingAddress, proposalId } : null;
+  }
+  if (feed.contracts.length !== 1) return null;
+  const activeContract = feed.contracts[0];
   if (!activeContract) return null;
 
   return {
@@ -106,7 +123,7 @@ export function useDaoFeed(enabled = true) {
     runtime?.surface === "error" || runtime?.surface === "loading";
   const canReadFeed = enabled && !surfaceBlocksRead;
   const query = useQuery({
-    queryKey: daoKeys.feed(),
+    queryKey: [...daoKeys.feed(), daoReadScope()],
     queryFn: () => {
       if (surfaceBlocksRead) {
         throw new Error(
@@ -116,12 +133,14 @@ export function useDaoFeed(enabled = true) {
       return getDaoRouteClient().getFeed();
     },
     enabled: canReadFeed,
-    staleTime: Infinity,
+    staleTime: isDaoMockRuntimeEnabled() ? Infinity : 30_000,
+    refetchInterval: isDaoMockRuntimeEnabled() ? false : 60_000,
+    retry: false,
   });
   useEffect(() => {
     if (!surfaceBlocksRead) return;
     void queryClient.cancelQueries({
-      queryKey: daoKeys.feed(),
+      queryKey: [...daoKeys.feed(), daoReadScope()],
       exact: true,
     });
   }, [queryClient, surfaceBlocksRead]);
@@ -131,18 +150,19 @@ export function useDaoFeed(enabled = true) {
     : surfaced;
 }
 
-export function useDaoProposal(proposalId: string) {
+export function useDaoProposal(proposalId: string, selection?: { chainId: string | null; votingAddress: string | null }) {
   const parsedProposalId = parseDaoProposalId(proposalId);
   const invalidProposalId = parsedProposalId === null;
   const feedQuery = useDaoFeed(!invalidProposalId);
   const proposalRef = resolveActiveDaoProposalRef(
     feedQuery.data,
-    parsedProposalId
+    parsedProposalId,
+    selection
   );
   const activeContractMissing =
     parsedProposalId !== null && feedQuery.data !== undefined && !proposalRef;
   const activeContractError = activeContractMissing
-    ? new Error("DAO proposal data has no active Voting contract.")
+    ? new Error("Select a configured chain and Voting deployment for this proposal.")
     : null;
   const envelope =
     proposalRef && feedQuery.data
@@ -183,7 +203,7 @@ export function useDaoProposerState(address: Address | null) {
   const query = useQuery({
     queryKey: daoKeys.proposer(address),
     queryFn: () => getDaoRouteClient().getProposerState(address as Address),
-    enabled: address !== null,
+    enabled: address !== null && isDaoMockRuntimeEnabled(),
     staleTime: Infinity,
   });
   return applyDaoSurfaceState(query, runtime);
@@ -194,17 +214,28 @@ export function useDaoAccountProposalState(
   address: Address | null
 ) {
   const runtime = useDaoMockRuntime();
+  const protocol = useOptionalProtocol();
+  const wallet = useAccount();
+  const publicClient = protocol?.mainnetPublicClient ?? null;
+  const scope = daoReadScope();
+  const feed = useDaoFeed();
+  const observationKey = feed.data?.canonicalBlock.hash ?? null;
   const query = useQuery({
-    queryKey: daoKeys.account(ref, address),
-    queryFn: () =>
-      getDaoRouteClient().getAccountProposalState(
-        ref as DaoProposalRef,
-        address as Address
-      ),
-    enabled: ref !== null && address !== null,
-    staleTime: Infinity,
+    queryKey: [...daoKeys.account(ref, address), scope, wallet.chainId ?? null, observationKey],
+    queryFn: () => {
+      if (!ref || !address) throw new Error("Connect a wallet to load eligibility.");
+      return getDaoRouteClient().getAccountProposalState(ref, address,
+        !runtime && publicClient ? { rpc: daoRpcFromPublicClient(publicClient), walletChainId: wallet.chainId } : undefined);
+    },
+    enabled: ref !== null && address !== null && (runtime !== null || wallet.isConnected),
+    staleTime: runtime ? Infinity : 0,
+    refetchInterval: runtime ? false : 15_000,
+    retry: false,
   });
-  return applyDaoSurfaceState(query, runtime);
+  // Old eligibility is never actionable while a refresh fails or is in flight.
+  const safe = !runtime && (query.isError || query.isFetching || !wallet.isConnected)
+    ? { ...query, data: undefined } : query;
+  return applyDaoSurfaceState(safe, runtime);
 }
 
 type DaoProposalActionOptions = {
@@ -343,8 +374,8 @@ export function useDaoDebugActions() {
     },
     setAccountState: (accountState: DaoMockAccountState) =>
       mutate(() => setDaoMockAccountState(accountState)),
-    setAnalysisState: (analysisState: DaoMockAnalysisState) =>
-      mutate(() => setDaoMockAnalysisState(analysisState)),
+    setScriptState: (analysisState: DaoMockScriptState) =>
+      mutate(() => setDaoMockScriptState(analysisState)),
     setAuthoringState: (authoringState: DaoMockAuthoringState) =>
       mutate(() => setDaoMockAuthoringState(authoringState)),
     setContentState: (contentState: DaoMockContentState) =>
