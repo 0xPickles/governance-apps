@@ -1,0 +1,26 @@
+{
+  "node": "v24.1.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "conditions": "Vite SSR module load, one warmup, 10 serial iterations per operation, wall time; JSON parse included; no RPC/network/rendering",
+  "schemaSourceBytes": 9292,
+  "schemaSourceLines": 232,
+  "generatedSchemaBytes": 10393,
+  "generatedSchemaMinifiedBytes": 4778,
+  "cases": [
+    {
+      "proposals": 27,
+      "events": 59,
+      "minifiedPayloadBytes": 47764,
+      "parseMeanMs": 0.6216750000000048,
+      "parseAndAdaptMeanMs": 4.4845542000000025
+    },
+    {
+      "proposals": 1000,
+      "events": 11000,
+      "minifiedPayloadBytes": 10122086,
+      "parseMeanMs": 52.78815420000001,
+      "parseAndAdaptMeanMs": 810.5430792
+    }
+  ]
+}

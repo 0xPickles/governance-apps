@@ -1,0 +1,11 @@
+{
+  "node": "v24.1.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "proposals": 27,
+  "minifiedPayloadBytes": 956317,
+  "generatedSchemaBytes": 2498040,
+  "schemaSourceBytes": 407612,
+  "schemaSourceLines": 11009,
+  "parseMeanMs": 132.91667900000007
+}
