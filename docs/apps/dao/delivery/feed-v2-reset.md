@@ -1,5 +1,17 @@
 # DAO feed reset — review candidate
 
+Integration update (2026-09-08): external consumer review is complete and producer
+handoff is approved for `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed`,
+integrated by merge `77a20d116c253a69945a85bd7213efb7f43cf2a8`. The
+[integration record](evidence/feed-v2/integration.md) and [current status](status.md)
+supersede the review-pending and unmerged statements in the historical submission
+below. Producer implementation is next in its own authorized task; actual producer
+interoperability, live deployment verification, contract-executed lifecycle
+evidence, staging validation and production approval remain pending. V2 remains
+open to small coordinated amendments supported by producer evidence.
+
+## Historical submission and follow-up
+
 The 2026-09-08 reset is based on clean integration commit
 `639782376bcaf05ab43ed9d9759c73154d0723b6`, exactly the reviewed baseline.
 Branch: `agent/dao/m3/feed-v2`. No intervening integration changes existed.

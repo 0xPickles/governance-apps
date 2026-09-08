@@ -2,7 +2,7 @@
 
 DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.
 
-The feed V2 reset now implements the consumer read path in Governance Apps. External review is pending; Gov Apps Stats implementation needs explicit approval next. Production exposure remains gated and production transaction writes are disabled.
+The feed V2 consumer read path is externally approved and integrated in Governance Apps, with producer handoff approved. WP9 Gov Apps Stats implementation is the next dependency; begin it in its own authorized producer task. Actual producer interoperability and later release gates remain pending; see the [current status](delivery/status.md). Production exposure remains gated and production transaction writes are disabled.
 
 ## Canonical references
 

@@ -1,6 +1,6 @@
 # WP12: content and script presentation
 
-Status: Implemented in the reset, pending external review. Historical analysis package scope is retired.
+Status (2026-09-08): implemented, externally approved and integrated with revised WP8/WP11; producer handoff approved. See the [exact approved range and integration record](../evidence/feed-v2/integration.md). Producer interoperability and later release gates remain pending. Historical analysis package scope is retired.
 
 ## Scope
 

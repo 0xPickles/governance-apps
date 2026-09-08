@@ -1,6 +1,6 @@
 # WP9: V2 producer
 
-Status: Not implemented by this task. Explicit producer-start approval is required after consumer external review.
+Status (2026-09-08): next dependency, ready to start in a separately authorized producer task after lane and target preflight. Consumer external review is complete and producer handoff is approved; see the [integration record](../evidence/feed-v2/integration.md). This Governance Apps integration does not implement or modify the producer. Actual interoperability and later release gates remain pending.
 
 ## Scope
 

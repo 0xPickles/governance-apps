@@ -1,5 +1,18 @@
 # DAO V2 review follow-up
 
+Integration update (2026-09-08): the external reviewer approved the complete
+`639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed`
+consumer range for integration and producer handoff, with all three P2 findings
+and both additional improvements resolved. Merge:
+`77a20d116c253a69945a85bd7213efb7f43cf2a8`. See the [integration
+record](evidence/feed-v2/integration.md) and [current status](status.md).
+The submission below preserves the findings, validation attempts and approval
+state before final external approval. Its pending-review statements are historical;
+actual producer interoperability, live deployment verification, contract-executed
+lifecycle evidence, staging validation and production approval remain pending.
+
+## Historical review follow-up submission
+
 The external review of `63978237..edf88b53` supported the V2 direction and
 requested three P2 fixes before approval. It independently passed 1,264 tests,
 typechecking, focused lint and generated-artifact comparison. It inspected

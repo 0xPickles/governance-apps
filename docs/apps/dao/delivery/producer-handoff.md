@@ -1,6 +1,12 @@
 # DAO feed V2 producer handoff
 
-Status: ready for external consumer review. Producer implementation is pending explicit approval. This handoff supersedes the V1 handoff at `fb8bbb8735b336b5eadd6d42b26e56696ad688de`; historical acceptance remains recorded in [status](status.md). V2 is a reviewable candidate, not a permanently frozen contract.
+Status (2026-09-08): consumer external review completed; producer handoff approved and consumer integrated. WP9 producer implementation is the next dependency and may start in its own authorized producer task after lane and target preflight. This handoff supersedes the V1 handoff at `fb8bbb8735b336b5eadd6d42b26e56696ad688de`; historical acceptance remains recorded in [status](status.md). V2 remains open to small coordinated amendments supported by producer evidence and reviewed across both repositories.
+
+Approved consumer range: `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed`.
+Integration merge: `77a20d116c253a69945a85bd7213efb7f43cf2a8` on `agent/integration`.
+The user supplied external approval for this exact implementation, with all three P2 findings and both additional improvements resolved. See the [integration record](evidence/feed-v2/integration.md).
+
+Actual producer interoperability, live deployment/dependency verification, contract-executed lifecycle/reorg evidence, staging validation and production approval remain pending. Approval of this consumer does not establish production readiness. This local integration performed no Gov Apps Stats changes, publication, deployment or production writes.
 
 ## Boundaries and inputs
 

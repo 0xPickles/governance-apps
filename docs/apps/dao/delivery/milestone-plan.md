@@ -15,10 +15,12 @@ field/source mapping, state-read contract, optional exact content, script
 integrity, real static-feed transport/adapter/routes, current-wallet read overlay,
 mock action consequences, tests, measured budgets and producer handoff.
 
-Exit: required local checks, mobile/desktop/keyboard review, clean review branch
-and external reviewer findings addressed. This task does not mark that external
-review complete or merge itself. The next human gate is explicit approval to
-begin Gov Apps Stats.
+Consumer external review and producer handoff approval are complete for the exact
+range recorded in [status](status.md). The approved consumer is integrated;
+the [integration record](evidence/feed-v2/integration.md) records its local checks.
+WP9 producer implementation is the next dependency in its own authorized task,
+with producer lane and target preflight still required. This consumer milestone
+does not complete actual producer interoperability or later release gates.
 
 ## Producer and interoperability
 

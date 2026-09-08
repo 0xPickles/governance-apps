@@ -1,8 +1,8 @@
 # DAO Governance Delivery Plan
 
-Status: Governance Apps V2 reset implements revised WP8/WP11/WP12 together. External review and explicit producer-start approval are next; producer interoperability remains pending.
+Status (2026-09-08): the externally approved Governance Apps V2 consumer is integrated, covering revised WP8/WP11/WP12 together. Consumer review is complete and producer handoff is approved. WP9 producer implementation is next; actual producer interoperability and later release gates remain pending.
 
-Use [the current dependency graph](dependency-graph.md), [milestones](milestone-plan.md), [status](status.md), and [reset evidence](feed-v2-reset.md). The V1 freeze and old producer-before-consumer requirement are superseded. Historical accepted commits remain recorded. No document authorizes starting producer implementation without the next explicit approval.
+Use [the current dependency graph](dependency-graph.md), [milestones](milestone-plan.md), [status](status.md), and [integration evidence](evidence/feed-v2/integration.md). The V1 freeze and old producer-before-consumer requirement are superseded. Historical accepted commits and [reset evidence](feed-v2-reset.md) remain recorded. Start producer implementation in its own authorized Gov Apps Stats task after lane and target preflight; this integration task changes Governance Apps only.
 
 ## Branches and worktrees
 
@@ -30,9 +30,9 @@ Create a package only after its dependencies are merged into integration.
 
 ## Integration sequence
 
-1. Complete Governance Apps V2 and external review.
-2. Obtain explicit approval to begin Gov Apps Stats.
-3. Implement WP9 against the reviewed candidate.
+1. Governance Apps V2 consumer external review, producer handoff approval and integration are complete for the exact range in [status](status.md).
+2. Begin the separately authorized Gov Apps Stats task and complete producer lane and target preflight.
+3. Implement WP9 against the approved V2 consumer contract.
 4. Validate actual producer bytes and staging in WP10.
 5. Complete WP13–WP17 publication, write-safety and lifecycle gates.
 6. Obtain required production approval before WP18 exposure.
@@ -52,7 +52,7 @@ M6 or begin rollout until the fork gate is accepted.
 
 ## Agent workflow
 
-When explicitly authorized to orchestrate independent agents, use the existing workflow. The current reset is handed to an external reviewer; its implementer must not mark that review complete or merge its own branch:
+When explicitly authorized to orchestrate independent agents, use the existing workflow. External review of the current consumer is complete and recorded by the integrator from the user-supplied approval. For future packages, the implementer must not mark its own external review complete or merge its own branch:
 
 1. Assign one implementer as the only editing owner of a package worktree.
 2. Require a focused Conventional Commit and clean status.

@@ -1,6 +1,6 @@
 # WP8: V2 contract reset
 
-Status: Implemented in the Governance Apps reset, pending external review.
+Status (2026-09-08): implemented, externally approved and integrated with WP11/WP12; producer handoff approved. See the [exact approved range and integration record](../evidence/feed-v2/integration.md). Producer interoperability and later release gates remain pending.
 
 ## Scope
 

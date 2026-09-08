@@ -5,14 +5,14 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current reset state (2026-09-08)
+## Current integration state (2026-09-08)
 
-- Governance Apps V2 consumer reset: implementation and local validation complete; ready for external review on `agent/dao/m3/feed-v2`, based exactly on reviewed integration `639782376bcaf05ab43ed9d9759c73154d0723b6`.
-- Revised WP8/WP11/WP12 are handled together. See [reset evidence](feed-v2-reset.md), [V2 contract](../feed-schema-v2.md), and [producer handoff](producer-handoff.md).
-- External review of `63978237..edf88b53`: direction accepted, three P2 fixes requested before branch approval. The [review follow-up](feed-v2-review-fixes.md) tracks endpoint gating, byte-exact canonical content, live-context execution binding, CI and source-comparison evidence. All three fixes and both handoff improvements are implemented and locally validated (1,287 unit/integration tests, smoke/full browser coverage and both production builds, including zero disabled upstream requests). External fix verification and final approval remain pending; no merge is authorized by this ledger.
-- Gov Apps Stats: read-only inspection at `943de11f539845200e23b02a61fbe1592bf90ed6`; no producer changes in this task. Resume only after external consumer review and explicit producer-start approval.
-- Producer-generated interoperability, contract-executed lifecycle/reorg evidence, staging and production approval remain pending.
-- The user-authorized reset supersedes V1 freeze and the old producer-before-consumer gate. Historical rows below describe decisions at their original time and are not current instructions. V2 remains open to reviewed coordinated amendments after producer findings.
+- Consumer external review is complete and producer handoff is approved for the exact range `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed` on `agent/dao/m3/feed-v2`. The user supplied the external review approval and authorized local integration of this exact range.
+- Integration merge: `77a20d116c253a69945a85bd7213efb7f43cf2a8` on `agent/integration`, using `--no-ff`. Both worktrees were clean at the expected base and approved tip. The merge has no conflicts and its tree exactly matches the approved consumer tip. See the [integration record](evidence/feed-v2/integration.md) for included commits and post-integration checks.
+- Revised WP8/WP11/WP12 are integrated together. The three P2 findings and both additional improvements are resolved. The [review follow-up](feed-v2-review-fixes.md) preserves the earlier findings and validation; [reset evidence](feed-v2-reset.md) preserves the initial submission. Use the [V2 contract](../feed-schema-v2.md) and [producer handoff](producer-handoff.md) for current implementation inputs.
+- WP9 producer implementation is the next dependency. The consumer review gate is cleared; producer work may start in a separately authorized Gov Apps Stats task after its lane and target preflight. The recorded read-only producer inspection remains `943de11f539845200e23b02a61fbe1592bf90ed6`; this integration neither revalidates nor modifies that checkout.
+- Actual producer interoperability, live deployment/dependency verification, contract-executed lifecycle/reorg evidence, staging validation and production approval remain pending. Consumer approval and local production-build tests do not establish these later gates or production readiness.
+- The user-authorized reset supersedes the V1 freeze and old producer-before-consumer gate. Historical sections below record decisions at their original time. V2 remains open to small coordinated amendments supported by producer evidence and reviewed across both consumers and producers.
 
 ## Historical state before reset
 

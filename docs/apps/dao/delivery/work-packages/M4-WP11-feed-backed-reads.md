@@ -1,6 +1,6 @@
 # WP11: V2 reads and current wallet overlay
 
-Status: Implemented with revised WP8 in this reset, pending external review.
+Status (2026-09-08): implemented, externally approved and integrated with revised WP8/WP12; producer handoff approved. See the [exact approved range and integration record](../evidence/feed-v2/integration.md). Actual producer interoperability remains WP10 and is pending.
 
 ## Scope
 
