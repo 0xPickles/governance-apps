@@ -5,7 +5,7 @@ const deployments = JSON.parse(await readFile("docs/apps/dao/examples/feed-v2/de
 const disabled = process.argv.includes("--disabled");
 const extraArgs = process.argv.slice(2).filter(arg => arg !== "--disabled");
 const port = process.env.E2E_PORT ?? "3131";
-const env = { ...process.env, E2E_PORT: port,
+const env = { ...process.env, E2E_PORT: port, E2E_BASE_URL: "http://127.0.0.1:" + port,
   NEXT_PUBLIC_RUNTIME_MODE: "production", NEXT_PUBLIC_ENABLE_DAO: String(!disabled),
   NEXT_PUBLIC_DAO_DEPLOYMENTS: JSON.stringify(disabled ? [] : deployments),
   NEXT_PUBLIC_USE_MOCKS: "false", NEXT_PUBLIC_E2E: "false",
