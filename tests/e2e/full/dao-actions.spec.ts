@@ -235,6 +235,12 @@ test("shows exact account, timing, and execution guard reasons", async ({
   await page.evaluate(async () => {
     await window.__TEST__?.setDaoRole?.("operator", true);
   });
+  await expect(execute).toBeDisabled();
+  await expect(page.getByText(DAO_BLOCKED_REASONS.executionSimulationRequired)).toBeVisible();
+  // Supply a newly simulated guarded mock scenario after the context change.
+  await page.evaluate(async () => {
+    await window.__TEST__?.setDaoExecutionState?.("guarded");
+  });
   await expect(execute).toBeEnabled();
 
   await loadFixture(page, "approved-signal", 4);
