@@ -3,11 +3,11 @@ import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
 import { DaoFeedReader, fetchDaoFeed, DAO_FEED_REQUEST_TIMEOUT_MS } from "@/lib/clients/dao/feed";
 import { parseDaoFeed, DAO_FEED_MAX_PAYLOAD_BYTES } from "@/lib/schemas/dao-feed";
 import { V2_DEPLOYMENTS, v2Hash } from "../../../fixtures/dao-feed-v2";
-import { GET } from "@/app/api/dao-data/route";
+import { GET, HEAD } from "@/app/api/dao-data/route";
 
 const originalUrl = process.env.DAO_DATA_URL;
 afterEach(() => {
-  vi.unstubAllGlobals(); vi.useRealTimers();
+  vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.useRealTimers();
   if (originalUrl === undefined) delete process.env.DAO_DATA_URL;
   else process.env.DAO_DATA_URL = originalUrl;
 });
@@ -117,15 +117,32 @@ describe("DAO real transport and snapshot retention", () => {
   });
 
   it("validates the fixed upstream in the real proxy and never uses a mock fallback", async () => {
+    vi.stubEnv("NEXT_PUBLIC_RUNTIME_MODE", "production");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_DAO", "true");
     delete process.env.DAO_DATA_URL;
     expect((await GET()).status).toBe(503);
     process.env.DAO_DATA_URL = "https://operator.example/dao.json";
     const fetchMock = vi.fn().mockResolvedValueOnce(respond(saved)).mockResolvedValueOnce(respond({ schema: "yearn.dao.feed.v1" }));
     vi.stubGlobal("fetch", fetchMock);
     const result = await GET();
+    expect(result.status).toBe(200);
     expect(result.headers.get("cache-control")).toBe("no-store");
     expect(parseDaoFeed(await result.json()).proposals[0].id).toBe("0");
     expect(fetchMock.mock.calls[0][0]).toBe("https://operator.example/dao.json");
     expect((await GET()).status).toBe(409);
+  });
+
+  it.each([undefined, "https://operator.example/dao.json"])("gates GET and HEAD before upstream configuration (%s)", async (url) => {
+    vi.stubEnv("NEXT_PUBLIC_RUNTIME_MODE", "production");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_DAO", "false");
+    vi.stubEnv("DAO_DATA_URL", url);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    for (const request of [GET, HEAD]) {
+      const response = await request();
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("");
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

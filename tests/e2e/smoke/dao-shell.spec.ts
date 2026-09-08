@@ -36,7 +36,7 @@ test("fails closed for production DAO requests without a server error", async ({
 }) => {
   test.skip(!EXPECT_PRODUCTION_FAIL_CLOSED);
 
-  for (const path of ["/dao", "/dao/propose", "/dao/proposals/2"]) {
+  for (const path of ["/dao", "/dao/propose", "/dao/proposals/2", "/api/dao-data"]) {
     for (const method of ["head", "get"] as const) {
       const response = await request[method](path);
 
