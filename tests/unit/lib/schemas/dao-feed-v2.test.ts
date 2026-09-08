@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { sha256 } from "viem";
 import Ajv from "ajv";
 import acceptance from "@/docs/apps/dao/examples/feed-v2/acceptance-cases.json";
 import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
@@ -7,7 +8,7 @@ import { parseDaoFeed, parseDaoFeedResponse, DAO_FEED_MAX_PAYLOAD_BYTES, type Da
 import { parseDaoDeployments } from "@/lib/clients/dao/deployment";
 import { adaptDaoFeed } from "@/lib/clients/dao/feed-adapter";
 import { deriveDaoLifecycleFacts, deriveDaoProposalExecutionReadiness } from "@/lib/clients/dao/domain";
-import { V2_DEPLOYMENTS, V2_ACCOUNT } from "@/tests/fixtures/dao-feed-v2";
+import { V2_DEPLOYMENTS, V2_ACCOUNT, v2Base64, v2Content } from "@/tests/fixtures/dao-feed-v2";
 
 const accepts = new Ajv({ allErrors: true }).compile(jsonSchema);
 const wire = () => structuredClone(saved) as DaoFeedWire;
@@ -138,6 +139,22 @@ describe("DAO V2 interpretation", () => {
     const content = adaptDaoFeed(parseDaoFeed(bad), V2_DEPLOYMENTS).proposals[0].content;
     expect(content.state).toBe("invalid");
     expect(content.digest).toBe(bad.proposals[0].contentDigest);
+  });
+
+  it.each([false, true])("checks original canonical bytes, including non-ASCII text (BOM: %s)", bom => {
+    const canonical = v2Content("# Café governance 日本語\n\nReview the treasury policy.\n\n## Details\n\nRecord the approved policy in the public forum.\n");
+    const bytes = bom ? new Uint8Array([0xef, 0xbb, 0xbf, ...canonical]) : canonical;
+    const feed = wire();
+    feed.proposals[0].contentBytes = v2Base64(bytes);
+    feed.proposals[0].contentDigest = sha256(bytes);
+    const parsed = adaptDaoFeed(parseDaoFeed(feed), V2_DEPLOYMENTS);
+    expect(parsed.proposals).toHaveLength(27);
+    expect(parsed.proposals[1].content.state).toBe("available");
+    const content = parsed.proposals[0].content;
+    expect(content.computedDigest).toBe(feed.proposals[0].contentDigest);
+    expect(content.state).toBe(bom ? "invalid" : "available");
+    if (bom) expect(content.error).toMatch(/not canonical JSON/);
+    else expect(content.value?.markdown).toContain("Café governance 日本語");
   });
 });
 

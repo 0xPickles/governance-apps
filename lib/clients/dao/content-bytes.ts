@@ -37,7 +37,8 @@ export function readDaoContentBytes(encoded: string | null, digest: Hex): DaoPro
     const value = contentSchema.parse(JSON.parse(source)) as DaoProposalContent;
     const parsed = parseDaoProposalContent(value);
     if (parsed.errors.length) throw new Error(parsed.errors[0].message);
-    if (new TextDecoder().decode(canonicalizeDaoProposalContent(value)) !== source) throw new Error("Proposal content is not canonical JSON with one final LF.");
+    const canonical = canonicalizeDaoProposalContent(value);
+    if (canonical.length !== bytes.length || canonical.some((byte, index) => byte !== bytes[index])) throw new Error("Proposal content is not canonical JSON with one final LF.");
     return { ...base, state: "available", value, error: null, computedDigest };
   } catch (error) {
     return { ...base, state: "invalid", error: error instanceof Error ? error.message : "Invalid proposal content.", computedDigest };
