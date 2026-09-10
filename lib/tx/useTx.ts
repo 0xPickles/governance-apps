@@ -16,6 +16,8 @@ import { useProtocol } from "@/state/protocol";
 import { isSimulationTransportFallbackEnabled } from "@/lib/runtime/features";
 
 type TxExecuteOptions = {
+  onSubmitted?: (hash: TransactionHash) => void | Promise<void>;
+  waitForReceipt?: (hash: TransactionHash) => Promise<void>;
   onSuccess?: (hash: TransactionHash) => void | Promise<void>;
   onError?: (error: unknown, hash?: TransactionHash) => void | Promise<void>;
   invalidate?: () => void | Promise<void>;
@@ -80,6 +82,8 @@ export function useTx() {
             hash,
           });
 
+          await options?.onSubmitted?.(hash);
+
           if (options?.skipWaitForReceipt) {
             toast.success(
               options.submittedMessage ?? "Transaction submitted (Mock)",
@@ -92,7 +96,9 @@ export function useTx() {
               hash,
             });
 
-            if (publicClient) {
+            if (options?.waitForReceipt) {
+              await options.waitForReceipt(hash);
+            } else if (publicClient) {
               try {
                 await publicClient.waitForTransactionReceipt({ hash });
               } catch (waitError) {

@@ -11,7 +11,7 @@ export const daoCopy = {
     stale: "This snapshot is stale. Current eligibility is checked separately.",
     lastGood: "Showing the last valid snapshot.",
     trust: "This feed is an operator-produced cache of chain observations.",
-    writesDisabled: "Production DAO transactions are not enabled.",
+    pendingCreation: "The saved transaction is awaiting proposal indexing. Refresh to check the feed.",
     eligible: "The observed voting conditions permit participation.",
     currentWallet: "Current wallet eligibility",
     currentStatus: "Current protocol status",
@@ -21,7 +21,7 @@ export const daoCopy = {
     connect: "Connect a wallet to load current eligibility.",
     checking: "Checking current wallet eligibility…",
     notSigning: "Eligibility is provisional. Every signing flow requires fresh action checks and transaction simulation.",
-    creationDisabled: "Onchain proposal creation and content publication are not enabled in production yet.",
+
   },
   app: {
     name: "DAO Governance",

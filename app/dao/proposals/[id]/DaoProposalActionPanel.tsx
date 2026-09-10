@@ -53,7 +53,7 @@ export function DaoProposalActionPanel({ proposal }: { proposal: DaoProposal }) 
   const writes = useDaoProposalActions(proposal.ref, effectiveAddress, {
     submittedMessage: daoCopy.actions.transaction.submittedToast,
   });
-  const runtimePendingAction = runtime?.pendingAction ?? null;
+  const runtimePendingAction = runtime?.pendingAction ?? writes.pendingAction ?? null;
   const pendingAction = runtimePendingAction
     ? serializeDaoProposalRef(runtimePendingAction.ref) ===
       serializeDaoProposalRef(proposal.ref)
@@ -61,41 +61,25 @@ export function DaoProposalActionPanel({ proposal }: { proposal: DaoProposal }) 
       : null
     : null;
 
-  if (!runtime) {
-    const current = accountQuery.data;
-    const live = current?.liveProposal;
-    const lagging = live && (live.protocolStatus !== proposal.protocolStatus || live.totalWeight !== proposal.totalWeight || live.yeaWeight !== proposal.yeaWeight || live.retracted !== proposal.retracted || live.rules.snapshotThresholdBps !== proposal.rules.snapshotThresholdBps || live.voteStartsAt !== proposal.voteStartsAt || live.rules.executionGuard !== proposal.rules.executionGuard);
-    return <Card className="min-w-0 space-y-3">
-      <h3 className="text-xl font-bold">{daoCopy.feed.currentWallet}</h3>
-      <p>{daoCopy.feed.writesDisabled}</p>
-      {!effectiveAddress ? <p>{daoCopy.feed.connect}</p> : accountQuery.isError ? <p role="alert">{accountQuery.error?.message}</p> :
-        accountQuery.isPending || accountQuery.isFetching ? <p role="status">{daoCopy.feed.checking}</p> : null}
-      {current && live ? <>
-        <p>{daoCopy.feed.currentStatus}: <strong>{live.protocolStatus.toUpperCase()}</strong></p>
-        <p className="font-number tabular-nums">{daoCopy.feed.liveWeight}: {formatTokenAmount(current.effectiveVotingWeight, 18, 2)}</p>
-        <p>{current.capabilities.canVote ? daoCopy.feed.eligible : current.capabilities.voteBlockedReason}</p>
-        <p className="text-sm">{daoCopy.feed.liveObserved}: {current.observation?.number.toString()} · <UtcTime timestamp={current.observation?.timestamp ?? null} /></p>
-        {lagging ? <p role="status">{daoCopy.feed.feedLag}</p> : null}
-      </> : null}
-      <p className="text-sm text-text-secondary">{daoCopy.feed.notSigning}</p>
-    </Card>;
-  }
   return (
+    <>
+    {!runtime && accountQuery.data?.observation ? <p className="text-sm text-text-secondary">{daoCopy.feed.liveObserved}: <UtcTime timestamp={accountQuery.data.observation.timestamp} />. {daoCopy.feed.notSigning}</p> : null}
     <DaoProposalActionPanelView
       account={accountQuery.data ?? null}
       accountError={accountQuery.isError}
-      accountLoading={effectiveAddress !== null && accountQuery.isPending}
+      accountLoading={effectiveAddress !== null && (accountQuery.isPending || accountQuery.isFetching)}
       activeAction={writes.activeAction}
-      executionGuard={runtime?.executionGuard ?? "guarded"}
+      executionGuard={runtime?.executionGuard ?? accountQuery.data?.liveProposal?.rules.executionGuard ?? "guarded"}
       onExecute={writes.executeProposal}
       onFlag={writes.flag}
       onRetract={writes.retract}
       onVeto={writes.veto}
       onVote={writes.vote}
       pendingAction={pendingAction}
-      proposal={proposal}
+      proposal={runtime ? proposal : accountQuery.data?.liveProposal ?? proposal}
       txState={writes.state}
     />
+    </>
   );
 }
 

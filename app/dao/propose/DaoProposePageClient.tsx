@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveDaoProposalAuthoringForm } from "./LiveDaoProposalAuthoringForm";
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import type {
@@ -66,7 +67,6 @@ export function DaoProposePageClient({
         ? "error"
         : "ready";
 
-  if (!runtime) return <DaoRouteFrame><h1 className="text-3xl font-bold">{daoProposeCopy.page.title}</h1><Card><p>{daoCopy.feed.creationDisabled}</p></Card></DaoRouteFrame>;
 
   return (
     <>
@@ -74,9 +74,10 @@ export function DaoProposePageClient({
         onRetry={() => {
           void proposerQuery.refetch();
         }}
+        live={!runtime}
         authoring={runtime?.authoring ?? null}
         hostname={hostname}
-        now={runtime?.now ?? 0}
+        now={runtime?.now ?? proposerQuery.data?.observation?.timestamp ?? 0}
         proposer={proposerQuery.data ?? null}
         state={state}
         transactionOutcome={runtime?.transactionOutcome ?? "success"}
@@ -87,6 +88,7 @@ export function DaoProposePageClient({
 }
 
 export function DaoProposeView({
+  live = false,
   authoring = null,
   hostname,
   now = 0,
@@ -95,6 +97,7 @@ export function DaoProposeView({
   state,
   transactionOutcome = "success",
 }: {
+  live?: boolean;
   authoring?: DaoMockAuthoring | null;
   hostname?: string;
   now?: number;
@@ -169,7 +172,9 @@ export function DaoProposeView({
         />
       ) : null}
 
-      {state === "ready" && proposer && isAuthoring ? (
+      {state === "ready" && proposer && isAuthoring ? live ? (
+        <LiveDaoProposalAuthoringForm key={proposer.address} address={proposer.address} proposer={proposer} hostname={hostname} now={now} />
+      ) : (
         <DaoProposalAuthoringForm
           address={proposer.address}
           authoringPreset={authoring}

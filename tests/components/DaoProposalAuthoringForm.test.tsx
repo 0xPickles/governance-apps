@@ -22,6 +22,26 @@ import {
 const NOW = getDaoMockFixture("discussion").now;
 
 describe("DAO proposal authoring form", () => {
+  it("keeps published bytes available when receipt recovery confirms a revert", async () => {
+    const user = userEvent.setup();
+    const receipt = vi.spyOn(mockServices, "confirmMockDaoProposalReceipt").mockRejectedValueOnce(
+      Object.assign(new Error("DAO transaction reverted."), { code: "DAO_TRANSACTION_REVERTED" })
+    );
+    renderAuthoring();
+    await fillDraft(user, 1001);
+    await user.click(screen.getByRole("button", { name: "Review proposal" }));
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed/ }));
+    await user.click(screen.getByRole("button", { name: "Publish immutable content" }));
+    await screen.findByRole("heading", { name: "Immutable content published" });
+    const fingerprint = screen.getByText("Content fingerprint").parentElement?.textContent;
+    await user.click(screen.getByRole("button", { name: "Create onchain proposal" }));
+    await screen.findByText("Proposal creation failed");
+    expect(screen.getByRole("button", { name: "Retry proposal creation" })).toBeEnabled();
+    expect(screen.getByText("Content fingerprint").parentElement?.textContent).toBe(fingerprint);
+    expect(screen.queryByRole("button", { name: "Retry receipt confirmation" })).toBeNull();
+    receipt.mockRestore();
+  });
+
   beforeEach(() => {
     resetDaoMockStore();
   });

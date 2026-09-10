@@ -4,6 +4,11 @@ import { wagmiConfig } from "@/web3/wagmi";
 import type { DaoTransactionCall } from "./writes";
 import type { DaoTransactionReceipt } from "./types";
 
+export class DaoTransactionRevertedError extends Error {
+  readonly code = "DAO_TRANSACTION_REVERTED";
+  constructor() { super("DAO transaction reverted."); }
+}
+
 /** Receipt confirmation uses the configured app RPC, with no alternate transport. */
 export async function waitForDaoReceipt(hash: Hex, chainId: number, sender: Address, call: DaoTransactionCall): Promise<DaoTransactionReceipt> {
   if (chainId !== 1) throw new Error("Unsupported DAO receipt chain.");
@@ -19,7 +24,7 @@ export async function waitForDaoReceipt(hash: Hex, chainId: number, sender: Addr
 export function validateDaoLiveReceipt(receipt: TransactionReceipt, expected: { hash: Hex; sender: Address; blockHash: Hex; blockTimestamp: number }): DaoTransactionReceipt {
   if (receipt.transactionHash.toLowerCase() !== expected.hash.toLowerCase() ||
       receipt.from.toLowerCase() !== expected.sender.toLowerCase()) throw new Error("DAO receipt transaction or sender differs from the submitted action.");
-  if (receipt.status !== "success") throw new Error("DAO transaction reverted.");
+  if (receipt.status !== "success") throw new DaoTransactionRevertedError();
   if (receipt.blockHash !== expected.blockHash) throw new Error("DAO receipt block is no longer canonical.");
   if (!Number.isSafeInteger(expected.blockTimestamp) || expected.blockTimestamp < 0) throw new Error("Invalid DAO receipt block time.");
   if (receipt.logs.some(log => log.removed || log.blockHash !== receipt.blockHash || log.transactionHash !== receipt.transactionHash)) throw new Error("DAO receipt contains inconsistent logs.");

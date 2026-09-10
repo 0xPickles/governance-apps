@@ -30,7 +30,7 @@ test("renders saved V2 through real routes without wallet RPC or mocks", async (
   }
   await zero.click();
   await expect(page.getByRole("heading", { name: "Immutable proposal content" })).toBeVisible();
-  await expect(page.getByText(/Production DAO transactions are not enabled/)).toBeVisible();
+  await expect(page.getByText(/Connect.*wallet.*(vote|eligibility|participate)/i).first()).toBeVisible();
   await expect(page.getByText("Vote account", { exact: true }).first()).toBeVisible();
 
   for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1280, height: 900 }, { width: 1280, height: 600 }]) {

@@ -51,10 +51,12 @@ import {
   type DaoProposalLookup,
   type DaoProposalRef,
   type DaoVoteDirection,
+  type DaoPendingAction,
 } from "@/lib/clients/dao";
 import { daoKeys } from "@/lib/hooks/daoKeys";
 import { isDaoEnabled, isDaoMockRuntimeEnabled } from "@/lib/runtime/features";
 import { useTx } from "@/lib/tx/useTx";
+import { daoPreparedCall, type DaoTransactionCall } from "@/lib/clients/dao/writes";
 import type { PreparedTransaction } from "@/lib/tx/types";
 
 let mockClient: DaoClient | null = null;
@@ -186,6 +188,7 @@ export function useDaoProposal(proposalId: string, selection?: { chainId: string
     ...feedQuery,
     data: lookup,
     envelope,
+    proposalRef,
     error: invalidProposalId
       ? null
       : feedQuery.error ?? activeContractError,
@@ -200,11 +203,16 @@ export function useDaoProposal(proposalId: string, selection?: { chainId: string
 
 export function useDaoProposerState(address: Address | null) {
   const runtime = useDaoMockRuntime();
+  const protocol = useOptionalProtocol();
+  const wallet = useAccount();
   const query = useQuery({
-    queryKey: daoKeys.proposer(address),
-    queryFn: () => getDaoRouteClient().getProposerState(address as Address),
-    enabled: address !== null && isDaoMockRuntimeEnabled(),
-    staleTime: Infinity,
+    queryKey: [...daoKeys.proposer(address), daoReadScope(), wallet.chainId ?? null],
+    queryFn: () => getDaoRouteClient().getProposerState(address as Address,
+      !runtime && protocol?.mainnetPublicClient ? { rpc: daoRpcFromPublicClient(protocol.mainnetPublicClient), walletChainId: wallet.chainId } : undefined),
+    enabled: address !== null && (runtime !== null || wallet.isConnected),
+    staleTime: runtime ? Infinity : 0,
+    refetchInterval: runtime ? false : 15_000,
+    retry: false,
   });
   return applyDaoSurfaceState(query, runtime);
 }
@@ -250,6 +258,8 @@ export function useDaoProposalActions(
   const queryClient = useQueryClient();
   const { execute, reset, state } = useTx();
   const [activeAction, setActiveAction] = useState<DaoActionType | null>(null);
+  const [pending, setPending] = useState<DaoPendingAction | null>(null);
+  const actionFeed = useDaoFeed();
   const invalidate = useCallback(
     () => invalidateDaoQueries(queryClient),
     [queryClient]
@@ -265,24 +275,37 @@ export function useDaoProposalActions(
       action: DaoActionType,
       prepare: (client: DaoClient, account: Address) => Promise<PreparedTransaction>
     ) => {
+      let call: DaoTransactionCall | undefined;
       setActiveAction(action);
       reset();
       await execute(
         async () => {
           const prepared = await prepare(getDaoRouteClient(), requireAddress());
+          if (!isDaoMockRuntimeEnabled()) call = daoPreparedCall(prepared);
           return prepared();
         },
         {
           invalidate,
-          skipWaitForReceipt: true,
+          onSuccess: isDaoMockRuntimeEnabled() ? undefined : hash => {
+            setPending({ action, ref, actor: address!, transactionHash: hash, submittedAt: Math.floor(Date.now() / 1000),
+              direction: null, effectiveVotingWeight: null, reason: null });
+          },
+          skipWaitForReceipt: isDaoMockRuntimeEnabled(),
+          waitForReceipt: isDaoMockRuntimeEnabled() ? undefined : async hash => {
+            const { waitForDaoReceipt } = await import("@/lib/clients/dao/live-receipt");
+            if (!call) throw new Error("Missing DAO transaction expectation.");
+            await waitForDaoReceipt(hash, ref.chainId, address!, call);
+          },
           submittedMessage: options.submittedMessage,
         }
       );
     },
-    [execute, invalidate, options.submittedMessage, requireAddress, reset]
+    [execute, invalidate, options.submittedMessage, requireAddress, reset, ref, address]
   );
 
   return {
+    pendingAction: pending && pending.ref.proposalId === ref.proposalId && pending.ref.votingAddress === ref.votingAddress && pending.actor === address &&
+      !actionFeed.data?.proposals.some(p => p.ref.proposalId === ref.proposalId && p.ref.votingAddress === ref.votingAddress && p.events.some(e => e.log.transactionHash === pending.transactionHash)) ? pending : null,
     activeAction,
     state,
     reset: () => {

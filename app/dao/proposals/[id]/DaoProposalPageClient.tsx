@@ -1,12 +1,14 @@
 "use client";
 
+import { readDaoPendingCreation } from "@/lib/clients/dao/authoring-recovery";
+import { getEtherscanTransactionUrl } from "@/lib/explorer";
 import type { ReactNode } from "react";
 import {
   serializeDaoProposalRef,
   type DaoProposalReadEnvelope,
 } from "@/lib/clients/dao";
 import { Card } from "@/components/ui/Card";
-import { getButtonClassName } from "@/components/ui/Button";
+import { Button, getButtonClassName } from "@/components/ui/Button";
 import Link from "next/link";
 import { useDaoMockRuntime, useDaoProposal } from "@/lib/hooks/useDao";
 import { useHostname } from "@/lib/hooks/useHostname";
@@ -61,6 +63,8 @@ export function DaoProposalPageClient({
         ? "error"
         : "not_found";
 
+  const pendingCreation = !runtime && !envelope && proposalQuery.proposalRef ? readDaoPendingCreation(proposalQuery.proposalRef) : null;
+  if (pendingCreation) return <DaoRouteFrame><h1 className="text-3xl font-bold">{pendingCreation.title}</h1><Card className="space-y-4"><p role="status">{daoCopy.feed.pendingCreation}</p><a href={getEtherscanTransactionUrl(pendingCreation.transactionHash) ?? undefined} target="_blank" rel="noopener noreferrer">{pendingCreation.transactionHash}</a><Button onClick={() => { void proposalQuery.refetch(); }}>{daoCopy.propose.retry}</Button></Card></DaoRouteFrame>;
   return (
     <>
       <DaoProposalView

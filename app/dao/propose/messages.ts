@@ -182,6 +182,7 @@ export const daoProposeCopy = {
     indexingDelayedTitle: "Proposal indexing is delayed",
     indexingDelayedBody:
       "The confirmed proposal address remains available while indexing catches up.",
+    retryReceipt: "Retry receipt confirmation",
     retryIndexing: "Retry indexing",
     submittedBody:
       "The transaction hash is known. Proposal actions appear after the confirmed receipt supplies its identity.",
