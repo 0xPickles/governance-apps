@@ -1,6 +1,6 @@
 # WP15: fresh actual-call execution preflight
 
-Status: Deferred; no production execution is added by the reset.
+Status: Acceptance coverage in the authorized combined `agent/dao/m5/live` implementation. Separate package sequencing is superseded by the [milestone plan](../milestone-plan.md).
 
 ## Scope
 

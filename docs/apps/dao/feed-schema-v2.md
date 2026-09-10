@@ -1,6 +1,6 @@
 # DAO feed V2 consumer contract
 
-Status (2026-09-08): Governance Apps consumer external review completed, integrated and approved for producer handoff. See the [approved range and integration record](delivery/evidence/feed-v2/integration.md). WP9 producer implementation is next in its own authorized task. Actual producer interoperability, live deployment verification, contract-executed lifecycle evidence, staging validation and production approval remain pending. V2 remains open to small coordinated amendments supported by producer evidence.
+Status (2026-09-08): Governance Apps consumer external review completed, integrated and approved for producer handoff. See the [approved range and integration record](delivery/evidence/feed-v2/integration.md). The producer is reported released and active. The [milestone plan](delivery/milestone-plan.md) governs combined live implementation and distinguishes inspected evidence from pending lifecycle and rollout gates. V2 remains open to small coordinated amendments supported by producer evidence.
 
 This replaces `yearn.dao.feed.v1`. The immutable content format remains `yearn.dao.proposal.v1`; the Executor frame format is unchanged. There is one active feed parser and one publication contract. Historical V1 code and accepted bytes are recoverable at the commits recorded in [the reset decision](delivery/feed-v2-reset.md).
 

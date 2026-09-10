@@ -5,14 +5,20 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current integration state (2026-09-08)
+## Current implementation state (2026-09-10)
 
-- Consumer external review is complete and producer handoff is approved for the exact range `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed` on `agent/dao/m3/feed-v2`. The user supplied the external review approval and authorized local integration of this exact range.
-- Integration merge: `77a20d116c253a69945a85bd7213efb7f43cf2a8` on `agent/integration`, using `--no-ff`. Both worktrees were clean at the expected base and approved tip. The merge has no conflicts and its tree exactly matches the approved consumer tip. See the [integration record](evidence/feed-v2/integration.md) for included commits and post-integration checks.
-- Revised WP8/WP11/WP12 are integrated together. The three P2 findings and both additional improvements are resolved. The [review follow-up](feed-v2-review-fixes.md) preserves the earlier findings and validation; [reset evidence](feed-v2-reset.md) preserves the initial submission. Use the [V2 contract](../feed-schema-v2.md) and [producer handoff](producer-handoff.md) for current implementation inputs.
-- WP9 producer implementation is the next dependency. The consumer review gate is cleared; producer work may start in a separately authorized Gov Apps Stats task after its lane and target preflight. The recorded read-only producer inspection remains `943de11f539845200e23b02a61fbe1592bf90ed6`; this integration neither revalidates nor modifies that checkout.
-- Actual producer interoperability, live deployment/dependency verification, contract-executed lifecycle/reorg evidence, staging validation and production approval remain pending. Consumer approval and local production-build tests do not establish these later gates or production readiness.
-- The user-authorized reset supersedes the V1 freeze and old producer-before-consumer gate. Historical sections below record decisions at their original time. V2 remains open to small coordinated amendments supported by producer evidence and reviewed across both consumers and producers.
+- The [milestone plan](milestone-plan.md) is the single active delivery plan. Older package ordering and producer-start gates are superseded.
+- The accepted M2 mock UX and reviewed V2 consumer remain the baseline. The consumer review range is `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed`.
+- The consumer integration merge is `77a20d116c253a69945a85bd7213efb7f43cf2a8`. Its [integration evidence](evidence/feed-v2/integration.md) remains historical evidence.
+- The user reports producer review, release, and active production service at https://data.dao-ops.com/prod/dao.json.
+- Task inspection found approved producer commit `7b67945253d91c495b148ee4f0a09a946a93390d` in the clean producer integration history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
+- A direct endpoint read returned one deployment and zero proposals at block `25947670`, observed at Unix second `1789051602`. Application-route and fork lifecycle evidence remain pending.
+- The combined application implementation uses `agent/dao/m5/live` from clean base `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
+- Integration remains unchanged. It differs from local master by 141 integration-only and 17 master-only commits. Separate release reconciliation is required.
+- WP13–WP17 requirements remain acceptance coverage in this package. They do not require separate packages or intermediate start approvals.
+- Durable publication provider, private credential references, approved publication test target, and reviewed consumer deployment configuration require operator identification.
+- Local fork setup and transactions are authorized. Production transactions, deployment, exposure, forum posts, merges, and tags remain outside this task.
+- Implementation, fork UAT, final validation, and independent review are pending. This alignment commit does not claim completion.
 
 ## Historical state before reset
 

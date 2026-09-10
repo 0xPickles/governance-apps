@@ -6,7 +6,7 @@ DAO Governance lets users find Yearn proposals, review their immutable content
 and onchain actions, vote, create proposals, and perform permitted lifecycle
 actions without hiding the contract's timing or trust boundaries.
 
-The accepted mock product is preserved. This reset implements feed V2 reads and live wallet overlays. Production publication, authoring, governance writes, fork proof and rollout retain the later gates in the delivery plan.
+The accepted mock product is preserved. This reset implements feed V2 reads and live wallet overlays. The authorized combined implementation covers live publication, authoring, writes, and fork UAT. Rollout remains separately approved.
 
 ## 2. Roles
 
@@ -28,7 +28,7 @@ it does not grant authority based on labels from the feed.
 
 ### Included
 
-These are overall product requirements. This reset completes consumer reads and preserves mock action flows; production writes/publication remain later packages.
+These are overall product requirements. The combined implementation preserves mock action flows and completes live application behavior under the milestone plan.
 
 - proposal directory and filtering;
 - proposal detail, immutable content, forum discussion, vote totals, timeline,

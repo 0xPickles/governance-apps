@@ -2,7 +2,9 @@
 
 DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.
 
-The feed V2 consumer read path is externally approved and integrated in Governance Apps, with producer handoff approved. WP9 Gov Apps Stats implementation is the next dependency; begin it in its own authorized producer task. Actual producer interoperability and later release gates remain pending; see the [current status](delivery/status.md). Production exposure remains gated and production transaction writes are disabled.
+The accepted mock product and reviewed V2 reads are integrated. The user reports that the reviewed producer is released and active at https://data.dao-ops.com/prod/dao.json.
+The combined live implementation follows the [single active milestone plan](delivery/milestone-plan.md). It covers publication, wallet transactions, disposable fork UAT, and review preparation.
+See [status](delivery/status.md) for inspected evidence and remaining inputs. Production rollout remains separately gated.
 
 ## Canonical references
 
@@ -23,7 +25,7 @@ Stored proposal thresholds and snapshot-effective configuration have distinct la
 
 The immutable format stays `yearn.dao.proposal.v1`. Canonical bytes, digest/CID commitments, safe Markdown and no-load attachment cards remain intact. Content failure does not hide a proposal or prohibit otherwise valid voting. Original script bytes and stored hash stay visible; missing/mismatched/malformed supported scripts block execution preparation. Historical simulations, build proofs, trace attribution and precise human voter counts are outside launch.
 
-Writes stay in domain clients and shared useTx. Mock authoring still separates content publication, receipt-confirmed creation and awaiting-index recovery. Production authoring and governance writes remain later packages; fresh real-call preflight is mandatory before signing.
+Writes stay in domain clients and shared useTx. Authoring separates content publication, receipt-confirmed creation, and awaiting-index recovery. The combined implementation retains fresh actual-call preflight before signing.
 
 ## Routes and rollout
 

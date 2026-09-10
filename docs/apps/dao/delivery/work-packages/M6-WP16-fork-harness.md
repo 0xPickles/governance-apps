@@ -1,10 +1,10 @@
 # WP16: contract-executed integration environment
 
-Status: Deferred.
+Status: Acceptance coverage in the authorized combined `agent/dao/m5/live` implementation. Separate package sequencing is superseded by the [milestone plan](../milestone-plan.md).
 
 ## Scope
 
-Use the pinned/verified deployment contracts and a bounded existing fork/test environment. Record actual node responses and fixture origins outside the feed. Run the real producer and consumer; do not build a second indexer or require historical simulation engine infrastructure.
+Use the pinned/verified deployment contracts and a bounded existing fork/test environment. Record actual node responses and fixture origins outside the feed. Use the released producer at optional checkpoints when practical. Do not build a second indexer or permanent fork infrastructure.
 
 ## Acceptance
 

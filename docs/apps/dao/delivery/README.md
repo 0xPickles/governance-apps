@@ -1,8 +1,9 @@
 # DAO Governance Delivery Plan
 
-Status (2026-09-08): the externally approved Governance Apps V2 consumer is integrated, covering revised WP8/WP11/WP12 together. Consumer review is complete and producer handoff is approved. WP9 producer implementation is next; actual producer interoperability and later release gates remain pending.
+Status (2026-09-10): the accepted mock UI and reviewed V2 reads are integrated. The producer is reported released and active.
 
-Use [the current dependency graph](dependency-graph.md), [milestones](milestone-plan.md), [status](status.md), and [integration evidence](evidence/feed-v2/integration.md). The V1 freeze and old producer-before-consumer requirement are superseded. Historical accepted commits and [reset evidence](feed-v2-reset.md) remain recorded. Start producer implementation in its own authorized Gov Apps Stats task after lane and target preflight; this integration task changes Governance Apps only.
+Use the [milestone plan](milestone-plan.md) as the single active delivery plan. [Status](status.md) separates inspected evidence from user-reported facts.
+Older package ordering and producer-start gates are superseded. WP13–WP17 retain acceptance requirements within the combined live package.
 
 ## Branches and worktrees
 
@@ -26,29 +27,13 @@ cd /Users/hydra/Developer/yearn/governance-apps.agent.integration
   --install
 ```
 
-Create a package only after its dependencies are merged into integration.
+The authorized combined package is `agent/dao/m5/live`, based on `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
 
-## Integration sequence
+## Current sequence
 
-1. Governance Apps V2 consumer external review, producer handoff approval and integration are complete for the exact range in [status](status.md).
-2. Begin the separately authorized Gov Apps Stats task and complete producer lane and target preflight.
-3. Implement WP9 against the approved V2 consumer contract.
-4. Validate actual producer bytes and staging in WP10.
-5. Complete WP13–WP17 publication, write-safety and lifecycle gates.
-6. Obtain required production approval before WP18 exposure.
-
-Read implementation is part of this reset; it no longer waits for the old producer gate. A consumer fixture is not interoperability evidence. Review practical coordinated amendments rather than declaring a permanent freeze.
-
-## Human-gate iteration
-
-User feedback at M2 creates a follow-up package from the latest integration head:
-`M2-WP7A`, `M2-WP7B`, then `M2-WP7C` if needed. Add the scoped package file before editing,
-then run the normal implementation, review, audit, fix, re-review, and integration
-loop. Present the gate again after each accepted follow-up. Do not tag M2 or begin
-M3 without explicit acceptance.
-
-Use the same suffix pattern after fork UAT (`M6-WP17A`, `M6-WP17B`). Do not tag
-M6 or begin rollout until the fork gate is accepted.
+The [milestone plan](milestone-plan.md) defines implementation, lightweight fork UAT, independent review, and separate release reconciliation/rollout.
+No intermediate package approvals are required within the authorized implementation.
+Historical M2 product gates are complete. User fork UAT acceptance and independent review remain required before release.
 
 ## Agent workflow
 

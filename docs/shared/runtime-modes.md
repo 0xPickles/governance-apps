@@ -30,12 +30,8 @@ sitemap or `llms.txt` discovery content.
 
 In `production` mode:
 
-- `NEXT_PUBLIC_ENABLE_DAO=true` exposes the temporary route-local DAO mock
-  review candidate. This exception is permitted only in the preproduction
-  workflow; the production workflow hardcodes it false.
-- `NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS=true` exposes the DAO fixture controls
-  only on `dao-beta.dao-ops.com`, and only when the DAO route is also enabled.
-  The production workflow hardcodes it false.
+- `NEXT_PUBLIC_ENABLE_DAO=true` enables real DAO routes after the required environment approval. The public production workflow keeps it false.
+- Production DAO never uses mock clients or fixture controls, including on the beta host.
 - `NEXT_PUBLIC_ENABLE_TEAMS=true` is required to expose Team Finances routes.
 - `NEXT_PUBLIC_ENABLE_YBC=true` is required to expose YBC routes.
 - `NEXT_PUBLIC_ENABLE_YETH=true` is required to expose yETH routes.
@@ -72,25 +68,22 @@ not an approved production app flag in this checklist.
 
 ## DAO internal preproduction review checklist
 
-The temporary M2 review candidate is production-shaped but mock-backed:
+DAO mock-first acceptance is complete. Real preproduction reads require these inputs:
 
 1. `NEXT_PUBLIC_RUNTIME_MODE=production`
-2. Protected preproduction environment sets `NEXT_PUBLIC_ENABLE_DAO=true`
-3. Protected preproduction environment sets
-   `NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS=true` when fixture controls are
-   needed for review
-4. `NEXT_PUBLIC_USE_MOCKS=false`
-5. `NEXT_PUBLIC_E2E=false`
-6. `NEXT_PUBLIC_ENABLE_DEBUG_UI=false`
-7. WalletConnect, global-data, and HTTPS RPC inputs satisfy production
-   validation; never use loopback RPC URLs
-8. `dao-beta.dao-ops.com` serves clean DAO paths and returns
-   `X-Robots-Tag: noindex, nofollow`
-9. DAO stays absent from canonical metadata, sitemap, and `llms.txt`
-10. Cloudflare Access protects every path on the six exact governance beta
-    hosts (`styfi-beta`, `veyfi-beta`, `yeth-beta`, `teams-beta`, `ybc-beta`,
-    and `dao-beta` under `dao-ops.com`) with the approved reusable GitHub
-    organization/team policy
+2. Protected preproduction configuration sets `NEXT_PUBLIC_ENABLE_DAO=true` only after approval.
+3. `NEXT_PUBLIC_USE_MOCKS=false`, `NEXT_PUBLIC_E2E=false`, and `NEXT_PUBLIC_ENABLE_DEBUG_UI=false`.
+4. `NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS=false`.
+5. Server configuration sets `DAO_DATA_URL=https://data.dao-ops.com/prod/dao.json`.
+6. Build configuration supplies independently reviewed `NEXT_PUBLIC_DAO_DEPLOYMENTS`. Feed data supplies no transaction authority.
+7. WalletConnect, global data, and HTTPS RPC inputs satisfy production validation.
+8. DAO remains absent from canonical metadata, sitemap, and `llms.txt`.
+9. Cloudflare Access protects every path on the six exact governance beta hosts with the approved reusable policy.
+
+Public `NEXT_PUBLIC_*` values are compiled into the browser build. Server `DAO_DATA_URL` and private service credentials remain server configuration.
+Protected preview/development environments can select deterministic mocks with `NEXT_PUBLIC_USE_MOCKS=true`.
+Local real-client work sets `NEXT_PUBLIC_USE_MOCKS=false`. Production errors never trigger a mock fallback.
+The [DAO milestone plan](../apps/dao/delivery/milestone-plan.md) governs implementation, fork UAT, review, and separately approved rollout.
 
 The DAO flag applies to the shared preproduction deployment, not only the beta
 hostname. Other hosts served by the same Worker can reach `/dao` while it is
