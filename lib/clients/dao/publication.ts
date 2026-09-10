@@ -12,7 +12,8 @@ export async function readDaoBoundedBytes(source: Request | Response, limit = DA
   let total = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const deadline = new Promise<never>((_, reject) => { timer = setTimeout(() => {
-    void reader.cancel().catch(() => undefined); reject(new Error("DAO content request timed out."));
+    reject(new Error("DAO content request timed out."));
+    void reader.cancel().catch(() => undefined);
   }, 15_000); });
   try {
     while (true) {

@@ -10,6 +10,16 @@ const identity = deriveDaoProposalContentIdentity(content);
 beforeEach(() => { vi.stubEnv("NEXT_PUBLIC_RUNTIME_MODE", "development"); vi.stubEnv("DAO_IPFS_API_URL", "http://127.0.0.1:15001"); });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 describe("durable raw-block publication adapter", () => {
+  it("rejects a timed-out stream even when its prefix is a complete canonical document", async () => {
+    vi.useFakeTimers();
+    try {
+      const stream = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(identity.bytes); } });
+      const failure = expect(readDaoBoundedBytes(new Response(stream))).rejects.toThrow("timed out");
+      await vi.advanceTimersByTimeAsync(15_000);
+      await failure;
+    } finally { vi.useRealTimers(); }
+  });
+
   it("requests pinning, publishes canonical bytes and verifies a separate exact retrieval", async () => {
     const calls: string[] = [];
     vi.stubGlobal("fetch", vi.fn(async (url: string, options: RequestInit) => {
