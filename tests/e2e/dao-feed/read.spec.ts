@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
 
-const captureDirectory = "docs/apps/dao/delivery/evidence/feed-v2/screenshots";
+const captureDirectory = "docs/apps/dao/delivery/evidence/m5-live/screenshots";
 test("renders saved V2 through real routes without wallet RPC or mocks", async ({ page }) => {
   let response = saved;
   let failed = false;

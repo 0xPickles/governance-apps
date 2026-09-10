@@ -1,0 +1,25 @@
+{
+  "schema": "yearn.dao.feed.v2",
+  "chainId": 1,
+  "observedAt": 1789054915,
+  "block": {
+    "number": "25947944",
+    "hash": "0x1a8bab971030b5aa1b9037f034b707ddb3e85d8f236b9308c0daef41691728e8",
+    "timestamp": 1789054811
+  },
+  "deployments": [
+    {
+      "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+      "proposalCount": "0",
+      "configuration": {
+        "voteStart": "604800",
+        "executeDelay": "0",
+        "executeGuard": true,
+        "threshold": "5000",
+        "voter": "0x5069bce8c8e371a45ab113604b128bbdf5ee5c11",
+        "executor": "0xac7d4a37ba61c2cac7f64d3e2b5773d85613fe7b"
+      }
+    }
+  ],
+  "proposals": []
+}

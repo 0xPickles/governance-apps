@@ -1,0 +1,100 @@
+
+> governance-apps@0.1.0 worker:build
+> opennextjs-cloudflare build
+
+
+┌─────────────────────────────┐
+│ OpenNext — Cloudflare build │
+└─────────────────────────────┘
+
+App directory: <package-worktree>
+Next.js version : 16.2.11
+@opennextjs/cloudflare version: 1.20.2
+@opennextjs/aws version: 4.1.0
+WARN workerd compatibility_date: 2026-01-22, consider updating your wrangler config to a more recent date to benefit from the latest features and fixes.
+
+┌─────────────────────────────────┐
+│ OpenNext — Building Next.js app │
+└─────────────────────────────────┘
+
+
+> governance-apps@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.2.11 (webpack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+Using secrets defined in .dev.vars
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.1s
+  Running TypeScript ...
+  Finished TypeScript in 13.0s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/12) ...
+  Generating static pages using 9 workers (3/12)
+  Generating static pages using 9 workers (6/12)
+  Generating static pages using 9 workers (9/12)
+✓ Generating static pages using 9 workers (12/12) in 293ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/dao-content
+├ ƒ /api/dao-data
+├ ƒ /api/dao-forum
+├ ƒ /api/global-data
+├ ƒ /api/teams-data
+├ ƒ /api/ybc-data
+├ ƒ /api/yeth-global-data
+├ ƒ /dao
+├ ƒ /dao/proposals/[id]
+├ ƒ /dao/propose
+├ ○ /debug/ui
+├ ƒ /llms.txt
+├ ƒ /robots.txt
+├ ƒ /sitemap.xml
+├ ƒ /styfi
+├ ○ /teams
+├ ƒ /veyfi
+├ ○ /ybc
+└ ○ /yeth
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+┌──────────────────────────────┐
+│ OpenNext — Generating bundle │
+└──────────────────────────────┘
+
+Bundling middleware function...
+Bundling static assets...
+Bundling cache assets...
+Building server function: default...
+Applying code patches: 2.639s
+# copyPackageTemplateFiles
+⚙️ Bundling the OpenNext server...
+
+▲ [WARNING] Comparison with -0 using the "===" operator will also match 0 [equals-negative-zero]
+
+    .open-next/server-functions/default/.next/server/chunks/6585.js:1:3787:
+      1 │ ....unsigned){if(h<0)h+=e;else if(-0===h)return 0}return h}}a.expor...
+        ╵                                   ~~
+
+  Floating-point equality is defined such that 0 and -0 are equal, so "x === -0" returns true for both 0 and -0. You need to use "Object.is(x, -0)" instead to test for -0.
+
+▲ [WARNING] The glob pattern import("./**/*.entry.js") did not match any files [empty-glob]
+
+    .open-next/server-functions/default/.next/server/chunks/5392.js:6:120825:
+      6 │ ...t(e,a),a[d]),lu):import(`./${e}.entry.js`).then(a=>(lv.set(e,a),...
+        ╵                            ~~~~~~~~~~~~~~~~~
+
+Worker saved in `.open-next/worker.js` 🚀
+
+OpenNext build complete.

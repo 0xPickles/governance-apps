@@ -36,7 +36,7 @@ test("fails closed for production DAO requests without a server error", async ({
 }) => {
   test.skip(!EXPECT_PRODUCTION_FAIL_CLOSED);
 
-  for (const path of ["/dao", "/dao/propose", "/dao/proposals/2", "/api/dao-data"]) {
+  for (const path of ["/dao", "/dao/propose", "/dao/proposals/2", "/api/dao-data", "/api/dao-forum", "/api/dao-content"]) {
     for (const method of ["head", "get"] as const) {
       const response = await request[method](path);
 
@@ -46,6 +46,9 @@ test("fails closed for production DAO requests without a server error", async ({
       expectNoSelfRewrite(response, path);
     }
   }
+
+  const publication = await request.post("/api/dao-content", { data: "disabled" });
+  expect(publication.status()).toBe(404);
 
   if (IS_LOCAL_E2E) {
     const betaUrl = new URL(configuredBaseUrl);
