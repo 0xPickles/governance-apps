@@ -379,6 +379,7 @@ export type DaoProposerEligibilityInput = {
 };
 
 export type DaoProposerState = {
+  observation?: DaoStateObservation;
   address: Address;
   connected: boolean;
   correctChain: boolean;

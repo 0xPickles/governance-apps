@@ -5,6 +5,8 @@ import { adaptDaoProposal } from "./feed-adapter";
 import { DaoFeedReader } from "./feed";
 import { type DaoDeployment } from "./deployment";
 import { deriveDaoCapabilities, deriveDaoVotingWeight, serializeDaoProposalRef } from "./domain";
+import { addDaoExecutionPreflight, prepareDaoLiveAction, prepareDaoLivePropose, readDaoLiveProposer, type DaoWalletContext } from "./writes";
+import type { DaoVoteDirection } from "./types";
 import type { DaoClient } from "./client";
 import type { DaoAccountProposalState, DaoProposalRef } from "./types";
 
@@ -31,14 +33,14 @@ export function daoRpcFromPublicClient(client: PublicClient): DaoRpc {
   return { request: (input) => client.request(input as Parameters<PublicClient["request"]>[0]) };
 }
 
-const blockSchema = z.object({
+export const daoBlockSchema = z.object({
   number: z.string().regex(/^0x[0-9a-f]+$/),
   hash: DaoHashSchema,
   timestamp: z.string().regex(/^0x[0-9a-f]+$/),
 });
 const protocolStatuses = ["PROPOSED", "RETRACTED", "VOTING", "PASSED", "FAILED", "EXECUTED", "EXPIRED", "INVALID", "FLAGGED", "VETOED"] as const;
 
-async function read(rpc: DaoRpc, address: Address, abi: Abi, name: string, args: readonly unknown[], blockHash: Hex) {
+export async function readDaoRpc(rpc: DaoRpc, address: Address, abi: Abi, name: string, args: readonly unknown[], blockHash: Hex) {
   const data = encodeFunctionData({ abi, functionName: name, args });
   const result = await rpc.request({ method: "eth_call", params: [{ to: address, data }, { blockHash, requireCanonical: true }] });
   if (typeof result !== "string" || !/^0x(?:[0-9a-fA-F]{2})*$/.test(result)) throw new Error("Invalid DAO RPC result.");
@@ -60,14 +62,14 @@ async function acquireDaoLiveAccount(
   const { rpc } = context;
   const chain = await rpc.request({ method: "eth_chainId" });
   if (typeof chain !== "string" || BigInt(chain) !== BigInt(ref.chainId)) throw new Error("DAO RPC is on the wrong chain.");
-  const block = blockSchema.parse(await rpc.request({ method: "eth_getBlockByNumber", params: ["latest", false] }));
+  const block = daoBlockSchema.parse(await rpc.request({ method: "eth_getBlockByNumber", params: ["latest", false] }));
   const number = BigInt(block.number);
   const timestamp = Number(BigInt(block.timestamp));
   if (!Number.isSafeInteger(timestamp) || timestamp > DAO_MAX_TIMESTAMP || timestamp < deployment.genesis) throw new Error("Invalid DAO live block time.");
   const now = Math.floor(Date.now() / 1000);
   if (timestamp < now - 300 || timestamp > now + 60) throw new Error("DAO RPC head is stale or has an invalid future time.");
   const hash = block.hash as Hex;
-  const call = (name: string, args: readonly unknown[] = []) => read(rpc, deployment.votingAddress, DAO_VOTING_ABI, name, args, hash);
+  const call = (name: string, args: readonly unknown[] = []) => readDaoRpc(rpc, deployment.votingAddress, DAO_VOTING_ABI, name, args, hash);
   const names = ["proposals", "status", "votes", "voter", "executor", "operator", "guardian", "weight_measure", "vote_start", "execute_delay", "execute_guard", "threshold"];
   const values = await Promise.all(names.map((name) => call(name,
     name === "proposals" || name === "status" ? [ref.proposalId] : name === "votes" ? [account, ref.proposalId] : [])));
@@ -98,9 +100,9 @@ async function acquireDaoLiveAccount(
   const supportedVoter = deployment.supportedVoters.includes(voter);
   if (!supportedVoter) throw new Error("Current Voter implementation is not supported for wallet eligibility.");
   const [weightValue, genesisValue, decayValue] = await Promise.all([
-    read(rpc, measure, WEIGHT_ABI, "weight", [account], hash),
-    read(rpc, voter, VOTER_ABI, "genesis", [], hash),
-    read(rpc, voter, VOTER_ABI, "decay_length", [], hash),
+    readDaoRpc(rpc, measure, WEIGHT_ABI, "weight", [account], hash),
+    readDaoRpc(rpc, voter, VOTER_ABI, "genesis", [], hash),
+    readDaoRpc(rpc, voter, VOTER_ABI, "decay_length", [], hash),
   ]);
   const votingWeight = weightValue as bigint;
   const voterGenesis = genesisValue as bigint;
@@ -112,7 +114,7 @@ async function acquireDaoLiveAccount(
   const liveProposal = adaptDaoProposal(proposal, { chainId: ref.chainId, block: { number: number.toString(), hash, timestamp } }, config, deployment);
   // Even with hash-pinned calls, reject a block that became noncanonical while
   // reading. A provider unable to serve EIP-1898 must not fall back to latest.
-  const canonical = blockSchema.parse(await rpc.request({ method: "eth_getBlockByNumber", params: [block.number, false] }));
+  const canonical = daoBlockSchema.parse(await rpc.request({ method: "eth_getBlockByNumber", params: [block.number, false] }));
   if (canonical.hash !== hash) throw new Error("DAO live block was replaced during the read.");
   const facts = {
     address: account, connected: true, correctChain: true, ...weight, observation,
@@ -124,7 +126,7 @@ async function acquireDaoLiveAccount(
     executionPreflight: { call: null, state: "idle" as const, scriptHash: stored.script_hash, observation: null, contextKey: null, simulatedAt: null, error: null },
   };
   return {
-    ...facts, observation, liveProposal, writesEnabled: false,
+    ...facts, observation, liveProposal, writesEnabled: true,
     capabilities: deriveDaoCapabilities({
       proposal: liveProposal, account: facts, now: timestamp,
       vetoEndsAt: liveProposal.voteEndsAt + DAO_EPOCH_SECONDS,
@@ -133,11 +135,9 @@ async function acquireDaoLiveAccount(
   };
 }
 
-export const DAO_WRITES_DISABLED = "Production DAO transactions are not enabled. Current eligibility is read-only.";
-
 export class OnchainDaoClient implements DaoClient {
   readonly reader: DaoFeedReader;
-  constructor(private readonly deployments: readonly DaoDeployment[], fetchFeed?: () => Promise<DaoFeedWire>) {
+  constructor(private readonly deployments: readonly DaoDeployment[], fetchFeed?: () => Promise<DaoFeedWire>, private readonly walletContext?: () => Promise<DaoWalletContext>) {
     this.reader = new DaoFeedReader(deployments, fetchFeed);
   }
   getFeed() { return this.reader.refresh(); }
@@ -150,14 +150,30 @@ export class OnchainDaoClient implements DaoClient {
     if (!context) throw new Error("DAO RPC is unavailable.");
     const feed = this.reader.wire();
     if (!feed) throw new DaoFeedError("unavailable", "Load a DAO snapshot before current eligibility.");
-    return readDaoLiveAccount(feed, this.deployments, ref, address, context);
+    return addDaoExecutionPreflight(await readDaoLiveAccount(feed, this.deployments, ref, address, context), context);
   }
-  async getProposerState(): Promise<never> { throw new Error(DAO_WRITES_DISABLED); }
-  async prepareVote(): Promise<never> { throw new Error(DAO_WRITES_DISABLED); }
-  async prepareRetract(): Promise<never> { throw new Error(DAO_WRITES_DISABLED); }
-  async prepareFlag(): Promise<never> { throw new Error(DAO_WRITES_DISABLED); }
-  async prepareVeto(): Promise<never> { throw new Error(DAO_WRITES_DISABLED); }
-  async prepareExecute(): Promise<never> { throw new Error(DAO_WRITES_DISABLED); }
+  private async context() {
+    if (this.walletContext) return this.walletContext();
+    return (await import("./wallet")).getDaoWalletContext();
+  }
+  async getProposerState(address: Address, context?: DaoReadContext) {
+    const deployment = this.deployments.find(d => d.active);
+    if (!deployment) throw new Error("No active trusted DAO deployment.");
+    return readDaoLiveProposer(deployment, address, context ?? await this.context());
+  }
+  private async prepare(action: import("./types").DaoActionType, ref: DaoProposalRef, address: Address, direction?: DaoVoteDirection, reason?: string) {
+    const feed = this.reader.wire();
+    if (!feed) throw new Error("Load a DAO snapshot before preparing an action.");
+    return prepareDaoLiveAction({ deployments: this.deployments, feed, action, ref, address, direction, reason, context: await this.context() });
+  }
+  prepareVote(ref: DaoProposalRef, address: Address, direction: DaoVoteDirection) { return this.prepare("vote", ref, address, direction); }
+  prepareRetract(ref: DaoProposalRef, address: Address) { return this.prepare("retract", ref, address); }
+  prepareFlag(ref: DaoProposalRef, address: Address, reason: string) { return this.prepare("flag", ref, address, undefined, reason); }
+  prepareVeto(ref: DaoProposalRef, address: Address, reason: string) { return this.prepare("veto", ref, address, undefined, reason); }
+  prepareExecute(ref: DaoProposalRef, address: Address) { return this.prepare("execute", ref, address); }
+  async preparePropose(address: Address, digest: Hex, script: Hex, expectedEpoch: bigint) {
+    return prepareDaoLivePropose(this.deployments, address, digest, script, expectedEpoch, await this.context());
+  }
 }
 
 export async function readDaoLiveAccount(...args: Parameters<typeof acquireDaoLiveAccount>): Promise<DaoAccountProposalState> {

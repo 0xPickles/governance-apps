@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
 import { parseDaoFeed } from "@/lib/schemas/dao-feed";
-import { OnchainDaoClient, readDaoLiveAccount, DAO_WRITES_DISABLED } from "@/lib/clients/dao/onchain";
+import { OnchainDaoClient, readDaoLiveAccount } from "@/lib/clients/dao/onchain";
 import { V2_ACCOUNT, V2_DEPLOYMENTS, V2_GENESIS, V2_NOW, V2_VOTING, v2Hash } from "../../../fixtures/dao-feed-v2";
 import { createDaoRpcFixture } from "../../../fixtures/dao-rpc-v2";
 
@@ -14,7 +14,7 @@ describe("DAO coherent live wallet reads", () => {
     const { rpc, calls, state } = createDaoRpcFixture();
     const live = await readDaoLiveAccount(feed, V2_DEPLOYMENTS, ref, V2_ACCOUNT, { rpc, walletChainId: 1 });
     expect(live).toMatchObject({
-      hasVoted: false, isOperator: true, isGuardian: true, writesEnabled: false,
+      hasVoted: false, isOperator: true, isGuardian: true, writesEnabled: true,
       capabilities: { canVote: true, votePurpose: "participation_only", canExecute: false },
       liveProposal: { vetoed: true, retracted: false, totalWeight: 0n, thresholdBps: 5000,
         rules: { snapshotThresholdBps: 8000 } },
@@ -75,12 +75,11 @@ describe("DAO coherent live wallet reads", () => {
     expect(rpc.request).toHaveBeenCalledTimes(1);
   });
 
-  it("reads global proposals without RPC and rejects every production write", async () => {
+  it("reads global proposals without RPC and requires current state for writes", async () => {
     const client = new OnchainDaoClient(V2_DEPLOYMENTS, async () => feed);
     expect((await client.getFeed()).proposals[0].ref).toEqual(ref);
     expect((await client.getProposal(ref)).state).toBe("found");
-    for (const action of ["prepareVote", "prepareRetract", "prepareFlag", "prepareVeto", "prepareExecute", "getProposerState"] as const) {
-      await expect(client[action]()).rejects.toThrow(DAO_WRITES_DISABLED);
-    }
+    const unloaded = new OnchainDaoClient(V2_DEPLOYMENTS, async () => feed);
+    await expect(unloaded.prepareVote(ref, V2_ACCOUNT, "yea")).rejects.toThrow("Load a DAO snapshot");
   });
 });
