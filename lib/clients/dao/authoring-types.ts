@@ -77,4 +77,3 @@ export type DaoProposalReceiptResult = {
   receipt: DaoTransactionReceipt;
   decoded: DaoProposeReceiptDecodeResult;
 };
-

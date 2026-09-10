@@ -1,7 +1,9 @@
-# DAO live integration continuation
+# DAO live integration review continuation
 
 ```text
-Continue the combined DAO live implementation in agent/dao/m5/live.
+Review the completed combined DAO live implementation in agent/dao/m5/live.
+Read docs/apps/dao/delivery/evidence/m5-live/README.md and docs/apps/dao/local-fork-uat.md first.
+Treat the requirements below as acceptance coverage. Do not restart completed implementation or claim independent review without performing it.
 Use docs/apps/dao/delivery/milestone-plan.md as the single active plan.
 Read AGENTS.md, DAO requirements, contract reference, V2 specification, field mapping, status, and current worktree changes.
 Preserve the accepted mock UI and both wire formats. Historical package sequencing and producer-start gates are superseded.

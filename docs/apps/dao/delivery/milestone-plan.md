@@ -12,6 +12,8 @@ The approved producer implementation is `7b67945253d91c495b148ee4f0a09a946a93390
 An inspection on 2026-09-10 found this commit in the clean producer integration history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
 A direct endpoint read returned one deployment and zero proposals. This proves endpoint availability, not lifecycle coverage or deployment identity.
 
+The combined package now implements these application flows and supplies local fork evidence. See [current evidence](evidence/m5-live/README.md) and the [runbook](../local-fork-uat.md). External publication configuration, independent review, user acceptance and rollout remain separate outstanding work.
+
 ## 1. Complete real application behavior
 
 Use one package: `agent/dao/m5/live`, based on `28dd8fff2e7ff00961174635715be8d18ecd8d42`.

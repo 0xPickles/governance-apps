@@ -7,18 +7,26 @@ package starts.
 
 ## Current implementation state (2026-09-10)
 
-- The [milestone plan](milestone-plan.md) is the single active delivery plan. Older package ordering and producer-start gates are superseded.
-- The accepted M2 mock UX and reviewed V2 consumer remain the baseline. The consumer review range is `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed`.
+- The [milestone plan](milestone-plan.md) remains the single active delivery plan. Older package ordering and producer-start gates are superseded.
+- The accepted M2 mock UX and reviewed V2 consumer remain the baseline. Historical acceptance and evidence below are unchanged.
 - The consumer integration merge is `77a20d116c253a69945a85bd7213efb7f43cf2a8`. Its [integration evidence](evidence/feed-v2/integration.md) remains historical evidence.
-- The user reports producer review, release, and active production service at https://data.dao-ops.com/prod/dao.json.
-- Task inspection found approved producer commit `7b67945253d91c495b148ee4f0a09a946a93390d` in the clean producer integration history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
-- A direct endpoint read returned one deployment and zero proposals at block `25947670`, observed at Unix second `1789051602`. Application-route and fork lifecycle evidence remain pending.
-- The combined application implementation uses `agent/dao/m5/live` from clean base `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
-- Integration remains unchanged. It differs from local master by 141 integration-only and 17 master-only commits. Separate release reconciliation is required.
-- WP13–WP17 requirements remain acceptance coverage in this package. They do not require separate packages or intermediate start approvals.
-- Durable publication provider, private credential references, approved publication test target, and reviewed consumer deployment configuration require operator identification.
-- Local fork setup and transactions are authorized. Production transactions, deployment, exposure, forum posts, merges, and tags remain outside this task.
-- Implementation, fork UAT, final validation, and independent review are pending. This alignment commit does not claim completion.
+- The user reports producer review, release and active service at [the live endpoint](https://data.dao-ops.com/prod/dao.json).
+- Inspection found approved producer commit `7b67945253d91c495b148ee4f0a09a946a93390d` in clean producer history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
+- Direct and application-route reads returned the real empty feed. The disconnected application check used no wallet RPC.
+- The combined implementation is on `agent/dao/m5/live`, from clean base `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
+- Real runtime selection, forum checks, pinned raw-content publication/retrieval, connected-wallet creation and all lifecycle actions are implemented.
+- Fresh canonical preparation, exact-call simulation, receipt identity, ID zero and same-session awaiting-index recovery are implemented.
+- Seven local fork checks passed. Strengthened moderation and canonicality assertions passed in five selected cases.
+- The released producer passed separate local empty and creation checkpoints. Later producer lifecycle and reorg/restart checkpoints were not run.
+- Kubo retained the exact pinned bytes after restart. No external publication service or retention policy has been validated.
+- Typecheck, lint, 1335 unit tests, smoke E2E, production route modes, production/Worker builds and generated-feed checks passed.
+- The serial full suite had 33 passes and one bridge-readiness failure. The corrected case passed on a standalone rerun.
+- Actual results, limitations and [retained evidence](evidence/m5-live/README.md) distinguish live, fork, producer and saved-fixture checks.
+- The [local runbook](../local-fork-uat.md) provides setup, scenario controls and manual UAT commands. [Live services](../live-services.md) records configuration and recovery boundaries.
+- WP13–WP17 remain acceptance coverage in this package. Their broader fixture vectors are not claimed as fresh fork or producer execution.
+- Integration remains clean and unchanged. Its 141 integration-only and 17 master-only commits require separate release reconciliation.
+- Operator inputs remain: reviewed consumer deployment values, selected external publication service, private credential references, retention policy and approved test target.
+- Independent review and user UAT acceptance remain pending. No merge, tag, app deployment, exposure, forum post or production blockchain transaction occurred.
 
 ## Historical state before reset
 

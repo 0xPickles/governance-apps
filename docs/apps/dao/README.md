@@ -4,7 +4,7 @@ DAO Governance lets users read Yearn proposals, review immutable content and exa
 
 The accepted mock product and reviewed V2 reads are integrated. The user reports that the reviewed producer is released and active at https://data.dao-ops.com/prod/dao.json.
 The combined live implementation follows the [single active milestone plan](delivery/milestone-plan.md). It covers publication, wallet transactions, disposable fork UAT, and review preparation.
-See [status](delivery/status.md) for inspected evidence and remaining inputs. Production rollout remains separately gated.
+See [live services](live-services.md), the [local fork runbook](local-fork-uat.md), and [status](delivery/status.md) for configuration, inspected evidence and remaining inputs. Production rollout remains separately gated.
 
 ## Canonical references
 
