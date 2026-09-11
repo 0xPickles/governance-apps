@@ -10,6 +10,9 @@ DAO uses real clients when `NEXT_PUBLIC_USE_MOCKS=false`. Production always uses
 | `NEXT_PUBLIC_DAO_DEPLOYMENTS` | Build-time public configuration | Independently reviewed chain, Voting address, deployment block, genesis, active flag, and supported Voter, Executor and proposal-hook addresses |
 | `NEXT_PUBLIC_RPC_URLS` | Build-time public configuration | App RPC for current reads, required simulation and receipts |
 | `DAO_DATA_URL` | Server configuration | Static V2 feed; live endpoint: https://data.dao-ops.com/prod/dao.json |
+| `DAO_PUBLICATION_ENABLED` | Private server configuration | Independent upload gate; absent or false disables publication even when DAO reads are enabled |
+| `DAO_PUBLICATION_POLICY` | Private server configuration | Fixed operator-approved uploader/digest/byte grants with document and total-byte ceilings |
+| `DAO_PUBLICATION_POLICY_FILE` | Loopback development only | Disposable local policy file; ignored in production and on public hosts |
 | `DAO_IPFS_API_URL` | Server configuration | Base URL of an operator-selected Kubo-compatible raw-block API |
 | `DAO_IPFS_AUTHORIZATION` | Private server secret | Full Authorization header value for that API; required for external services |
 | `DAO_FORUM_TEST_ORIGIN` | Local test configuration only | Loopback fixture origin; rejected in production |
@@ -24,7 +27,8 @@ The task tested an offline local Kubo node. This does not establish external ret
 ## Publication and forum validation
 
 The browser sends the exact reviewed canonical bytes to `POST /api/dao-content`.
-The server requires a same-origin request, limits the body, validates the content, and rechecks its public forum topic.
+The server first checks the independent publication gate, complete grant budget and uploader signature.
+It then checks the exact authorized bytes and revalidates the public forum topic.
 It sends those bytes to `block/put` with raw CID encoding, SHA-256 and `pin=true`.
 It verifies the returned CID and size, then retrieves the block separately and compares every byte.
 The browser retrieves the same commitment before it enables creation.
@@ -32,8 +36,26 @@ The browser retrieves the same commitment before it enables creation.
 `GET /api/dao-content?digest=<SHA-256>` retrieves and verifies the retained bytes.
 Provider errors do not expose credentials or upstream response bodies.
 The public error remains retriable with the same reviewed content.
-The publication route requires the DAO feature gate. Same-origin validation prevents cross-origin browser uploads; it does not authenticate an uploader.
-The operator must retain protected preview access until independent review approves public publication controls and the chosen service's limits.
+The publication route requires both the DAO gate and the independent publication gate.
+Origin is a browser request check, not uploader authentication.
+The approved uploader signs a message containing the origin, content digest, byte count, uploader address and server-issued time.
+The signature expires after five minutes. It stays outside the canonical content document.
+The current policy supports EOA signatures. Contract-wallet authorization requires a separately reviewed policy.
+
+The operator approves a fixed set of exact content digests.
+The complete grant set must fit both `maxDocuments` and `maxTotalBytes`.
+Each grant contains `uploader`, `digest` and the exact `bytes` count.
+Repeated requests can only pin the same raw CID; they cannot authorize another content document.
+No process-local counter or resettable time window controls storage authorization.
+
+Keep prior grants in the budget when authorizing additional content. Replacing a policy is an explicit operator budget decision.
+This policy bounds authorized unique content, not provider request charges or storage already created outside this application.
+A public service still requires operator approval of provider limits, retention and its complete grant set.
+Keep preview access protected until that review is complete.
+
+The author can download the exact reviewed content before requesting approval.
+The app obtains a short-lived challenge, then requests the uploader signature.
+Missing policy, an over-budget grant set, an unapproved digest or an invalid signature prevents all forum and pinning calls.
 
 `GET /api/dao-forum?url=<topic URL>` checks a public Yearn Discourse topic.
 It rejects credentials, suffixes, queries, fragments and ambiguous URL normalization.

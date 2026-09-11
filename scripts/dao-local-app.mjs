@@ -16,6 +16,7 @@ const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "
   env: { ...process.env, NEXT_PUBLIC_RUNTIME_MODE: "development", NEXT_PUBLIC_USE_MOCKS: "false", NEXT_PUBLIC_E2E: "false",
     NEXT_PUBLIC_RPC_URLS: rpc, NEXT_PUBLIC_DAO_DEPLOYMENTS: JSON.stringify(deployments),
     DAO_DATA_URL: process.env.DAO_UAT_LIVE_FEED === "true" ? "https://data.dao-ops.com/prod/dao.json" : "http://127.0.0.1:" + servicesPort + "/dao.json",
+    DAO_PUBLICATION_ENABLED: "true", DAO_PUBLICATION_POLICY_FILE: directory + "/publication-policy.json",
     DAO_FORUM_TEST_ORIGIN: "http://127.0.0.1:" + servicesPort, DAO_IPFS_API_URL: ipfs,
   },
 });

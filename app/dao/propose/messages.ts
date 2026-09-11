@@ -147,7 +147,7 @@ export const daoProposeCopy = {
     complete: "Complete",
     publishStep: "Publish immutable content",
     publishStepBody:
-      "Publishing fixes the reviewed snapshot. It does not create the proposal or open your wallet.",
+      "Publishing fixes the reviewed snapshot. Live publication asks your wallet to sign upload authorization; it does not send an onchain transaction.",
     proposeStep: "Create onchain proposal",
     proposeStepUpcoming:
       "This action becomes available only after the immutable content is published.",
@@ -158,6 +158,9 @@ export const daoProposeCopy = {
     indexedStatus: "Proposal indexed",
   },
   publication: {
+    authorizationTitle: "Publication authorization",
+    authorizationBody: "The operator must approve these exact content bytes before upload. Your wallet then signs upload authorization without sending a transaction.",
+    downloadBytes: "Download exact content for approval",
     publish: "Publish immutable content",
     retry: "Retry content publication",
     publishing: "Publishing immutable content",

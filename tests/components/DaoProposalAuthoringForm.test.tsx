@@ -192,7 +192,7 @@ describe("DAO proposal authoring form", () => {
     ).toBeVisible();
     expect(
       within(submissionSteps).getByText(
-        /does not create the proposal or open your wallet/i
+        /does not send an onchain transaction/i
       )
     ).toBeVisible();
     expect(

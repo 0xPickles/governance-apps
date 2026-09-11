@@ -42,6 +42,8 @@ The browser runner starts the app on port 3310 and local feed/forum fixtures on 
 It injects a throwaway wallet that sends every RPC request to the local fork.
 It sets `NEXT_PUBLIC_USE_MOCKS=false` and `NEXT_PUBLIC_E2E=false`.
 The accepted mock bridge is not involved.
+The test operator approves only the exact upload digest and byte count in a local policy file.
+The browser signs real upload authorization with the throwaway wallet; server verification remains active.
 
 Run one scenario visibly, with the Playwright inspector available for manual interaction:
 
@@ -108,6 +110,16 @@ npm run dao:local
 ```
 
 This serves the saved scenario file and local forum responses.
+For manual authoring, download the exact reviewed content from the form.
+Grant those bytes from another terminal, then retry publication:
+
+```fish
+npm run dao:scenario -- grant /absolute/downloaded-content.json
+```
+
+This command replaces the disposable local policy with one exact-content grant.
+The app asks the approved wallet to sign upload authorization.
+Production uses explicit server policy configuration; the local policy file cannot enable production uploads.
 Use only throwaway accounts from the disposable Anvil node.
 The scripts reject transaction RPC URLs outside loopback and verify the Anvil client and chain before writes.
 

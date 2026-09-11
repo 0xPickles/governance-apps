@@ -299,7 +299,7 @@ detail. It shows:
 
 The review states that two separate actions are required. Step 2 stays visibly
 upcoming and unavailable until immutable content is published, and publication
-copy says it neither creates a proposal nor opens a wallet. After publication,
+copy distinguishes an upload-authorization signature from the later onchain proposal transaction. After publication,
 Step 1 retains its fingerprint receipt and focus moves to a distinct current
 Step 2 surface. When the transaction hash is known, View transaction appears
 before any proposal action. A successful receipt must bind the exact expected
@@ -321,6 +321,10 @@ These outcomes preserve published content and require an explicit new action to 
 Only a successful matching Propose receipt supplies an accepted proposal identity. Registration applies its delay before persistence. An indexing delay
 shows `Retry indexing`, which re-registers and indexes the same receipt-derived
 reference without duplicate records or events.
+
+Publication requires a separate server gate, explicit uploader authorization and an approved content budget.
+Enabling DAO reads alone must not enable uploads. Authorization metadata stays outside the canonical proposal document.
+The configured policy must reject unauthorized and over-budget content before forum or publication requests.
 
 ### DAO-FR-036: bounded optional content retrieval
 

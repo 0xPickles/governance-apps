@@ -32,6 +32,7 @@ import {
 } from "@/lib/clients/dao";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { cn } from "@/lib/cn";
+import { deriveDaoProposalContentIdentity } from "@/lib/clients/dao/content";
 import { getEtherscanTransactionUrl } from "@/lib/explorer";
 import { formatTokenAmount } from "@/lib/format";
 import {
@@ -531,6 +532,7 @@ function DaoProposalAuthoringFormState({
   if (review) {
     return (
       <DaoFinalReview
+        live={Boolean(services)}
         confirmed={confirmed}
         confirmationError={confirmationError}
         onConfirm={(value) => {
@@ -850,6 +852,7 @@ function DaoProposalAuthoringFormState({
 }
 
 function DaoFinalReview({
+  live,
   confirmed,
   confirmationError,
   onConfirm,
@@ -865,6 +868,7 @@ function DaoFinalReview({
   hostname,
   wallet,
 }: {
+  live: boolean;
   confirmed: boolean;
   confirmationError: string | null;
   onConfirm: (value: boolean) => void;
@@ -1028,6 +1032,15 @@ function DaoFinalReview({
         <DaoProposalEligibility proposer={proposer} />
       </ReviewSection>
 
+      {live ? <ReviewSection title={daoProposeCopy.publication.authorizationTitle}>
+        <p className="text-sm text-text-secondary">{daoProposeCopy.publication.authorizationBody}</p>
+        <Button type="button" variant="secondary" size="sm" onClick={() => {
+          const identity = deriveDaoProposalContentIdentity(review.content);
+          const url = URL.createObjectURL(new Blob([new Uint8Array(identity.bytes)], { type: "application/json" }));
+          const link = document.createElement("a"); link.href = url; link.download = "dao-proposal-" + identity.digest + ".json"; link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }}>{daoProposeCopy.publication.downloadBytes}</Button>
+      </ReviewSection> : null}
       <ReviewSection title={daoProposeCopy.review.submissionSteps}>
         <p className="max-w-3xl text-pretty text-sm leading-6 text-text-secondary">
           {daoProposeCopy.review.submissionStepsBody}

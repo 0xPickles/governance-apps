@@ -76,6 +76,16 @@ test("publishes exact bytes, creates ID zero, recovers feed lag, votes and execu
   await page.getByLabel("Full Executor script").fill(state.script);
   await page.getByRole("button", { name: "Review proposal", exact: true }).click();
   await page.getByRole("checkbox", { name: /I reviewed/ }).check();
+  // The test operator grants only this exact signed document; the real route and Kubo still handle it.
+  await page.route("**/api/dao-content*", async route => {
+    const url = new URL(route.request().url());
+    if (url.searchParams.has("authorize")) {
+      const bytes = Number(url.searchParams.get("bytes"));
+      await writeFile(directory + "/publication-policy.json", JSON.stringify({ maxDocuments: 1, maxTotalBytes: bytes,
+        grants: [{ uploader: url.searchParams.get("uploader"), digest: url.searchParams.get("authorize"), bytes }] }));
+    }
+    await route.continue();
+  });
   await page.getByRole("button", { name: "Publish immutable content", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Immutable content published", exact: true })).toBeVisible();
   await page.evaluate(() => { window.daoTestWallet.reject = true; });

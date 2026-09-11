@@ -137,6 +137,15 @@ export async function scenario(command, args = []) {
     return state;
   }
   const state = await load();
+  if (command === "grant") {
+    const bytes = await readFile(args[0]);
+    assert.ok(bytes.length > 0 && bytes.length <= 131072, "Content exceeds the local grant byte limit.");
+    const content = JSON.parse(bytes);
+    assert.match(content.createdBy, /^0x[0-9a-f]{40}$/i);
+    const policy = { maxDocuments: 1, maxTotalBytes: bytes.length, grants: [{ uploader: content.createdBy, digest: sha256(bytes), bytes: bytes.length }] };
+    await writeFile(directory + "/publication-policy.json", json(policy));
+    return policy; // Replaces only this disposable local policy.
+  }
   if (command === "reset") {
     assert.equal(await rpc("evm_revert", [state.ready]), true, "Fork snapshot was lost; restart the node and run setup.");
     state.ready = await rpc("evm_snapshot"); state.proposals = {};
@@ -190,7 +199,7 @@ export async function scenario(command, args = []) {
       command === "vote" ? state.deployment.supportedVoters[0] : voting);
     await record(state, hash); return { hash };
   }
-  throw new Error("Use setup, reset, mine, phase vote|execute ID, propose CONTENT [signal|SCRIPT_FILE], record HASH [CONTENT], fixture, status, vote|retract|flag|veto|execute ID, or replace ID YEA_BPS.");
+  throw new Error("Use setup, grant CONTENT, reset, mine, phase vote|execute ID, propose CONTENT [signal|SCRIPT_FILE], record HASH [CONTENT], fixture, status, vote|retract|flag|veto|execute ID, or replace ID YEA_BPS.");
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log(json(await scenario(process.argv[2] ?? "status", process.argv.slice(3))));

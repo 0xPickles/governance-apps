@@ -1,4 +1,7 @@
 "use client";
+import { signMessage } from "wagmi/actions";
+import { wagmiConfig } from "@/web3/wagmi";
+import { daoPublicationMessage } from "@/lib/clients/dao/publication-authorization";
 import { useRef, useState } from "react";
 import type { Address, Hex } from "viem";
 import { useTx } from "@/lib/tx/useTx";
@@ -36,9 +39,20 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
     },
     async publish(review) {
       try {
+        if (!proposer.canPropose) throw new Error("Refresh proposal eligibility before continuing.");
         const identity = deriveDaoProposalContentIdentity(review.content);
+        const challengeResponse = await fetch("/api/dao-content?authorize=" + identity.digest + "&uploader=" + address + "&bytes=" + identity.bytes.length,
+          { cache: "no-store", signal: AbortSignal.timeout(15_000) });
+        if (!challengeResponse.ok) throw new Error("Publication is disabled or this content needs operator authorization. Keep the reviewed content and retry after approval.");
+        const challenge = await challengeResponse.json();
+        if (challenge.digest !== identity.digest || challenge.uploader.toLowerCase() !== address.toLowerCase() ||
+            challenge.bytes !== identity.bytes.length || !Number.isSafeInteger(challenge.issuedAt)) throw new Error("Invalid publication authorization.");
+        const issuedAt = challenge.issuedAt as number;
+        const signature = await signMessage(wagmiConfig, { account: address,
+          message: daoPublicationMessage({ origin: window.location.origin, uploader: address, digest: identity.digest, bytes: identity.bytes.length, issuedAt }) });
         const response = await fetch("/api/dao-content", {
-          method: "POST", headers: { "Content-Type": "application/octet-stream" },
+          method: "POST", headers: { "Content-Type": "application/octet-stream", "X-DAO-Content-Digest": identity.digest,
+            "X-DAO-Uploader": address, "X-DAO-Publication-Issued-At": String(issuedAt), "X-DAO-Publication-Signature": signature },
           body: new Uint8Array(identity.bytes), signal: AbortSignal.timeout(60_000),
         });
         if (!response.ok) throw new Error("Content publication failed. Retry the same content after checking the service.");
