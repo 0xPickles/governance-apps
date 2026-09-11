@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
 
-const captureDirectory = "docs/apps/dao/delivery/evidence/m5-live/screenshots";
 test("renders saved V2 through real routes without wallet RPC or mocks", async ({ page }) => {
+  const captureDirectory = process.env.DAO_EVIDENCE_DIR ? process.env.DAO_EVIDENCE_DIR + "/screenshots" : test.info().outputPath("screenshots");
   let response = saved;
   let failed = false;
   let failureStatus = 503;

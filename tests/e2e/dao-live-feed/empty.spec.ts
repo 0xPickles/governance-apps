@@ -13,6 +13,7 @@ test("renders the actual live empty feed through app routes without wallet RPC",
   await page.goto("/dao");
   await expect(page.getByRole("heading", { name: "No proposals yet", exact: true })).toBeVisible();
   expect(rpc).toEqual([]);
-  await mkdir("docs/apps/dao/delivery/evidence/m5-live", { recursive: true });
-  await writeFile("docs/apps/dao/delivery/evidence/m5-live/live-empty-app.json", JSON.stringify(feed, null, 2) + "\n");
+  const directory = process.env.DAO_EVIDENCE_DIR ?? test.info().outputPath("evidence");
+  await mkdir(directory, { recursive: true });
+  await writeFile(directory + "/live-empty-app.json", JSON.stringify(feed, null, 2) + "\n");
 });
