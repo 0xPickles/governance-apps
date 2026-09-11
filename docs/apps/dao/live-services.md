@@ -62,3 +62,9 @@ Existing read-only attachment handling and both wire schemas remain unchanged.
 Declared and streamed body limits reject immediately. The 15-second deadline also rejects before cleanup.
 Body cancellation is best-effort and never delays an error, including upstream HTTP failures.
 A stalled cancellation cannot turn oversized or incomplete bytes into accepted publication content.
+
+## Draft eligibility failures
+
+A live eligibility failure leaves the active draft and review mounted for the same author.
+Markdown, forum input, script and review confirmation remain intact.
+Publication and proposal submission stay blocked until a fresh eligibility result permits them.

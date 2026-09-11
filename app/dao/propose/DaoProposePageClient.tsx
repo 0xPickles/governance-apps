@@ -75,6 +75,7 @@ export function DaoProposePageClient({
           void proposerQuery.refetch();
         }}
         live={!runtime}
+        eligibilityFresh={!proposerQuery.isFetching && !proposerQuery.isError}
         authoring={runtime?.authoring ?? null}
         hostname={hostname}
         now={runtime?.now ?? proposerQuery.data?.observation?.timestamp ?? 0}
@@ -89,6 +90,7 @@ export function DaoProposePageClient({
 
 export function DaoProposeView({
   live = false,
+  eligibilityFresh = true,
   authoring = null,
   hostname,
   now = 0,
@@ -98,6 +100,7 @@ export function DaoProposeView({
   transactionOutcome = "success",
 }: {
   live?: boolean;
+  eligibilityFresh?: boolean;
   authoring?: DaoMockAuthoring | null;
   hostname?: string;
   now?: number;
@@ -107,8 +110,15 @@ export function DaoProposeView({
   transactionOutcome?: DaoMockTransactionOutcome;
 }) {
   const [isAuthoring, setIsAuthoring] = useState(false);
+  const [draftOwner, setDraftOwner] = useState<DaoProposerState | null>(null);
+  const current = proposer?.address.toLowerCase() === draftOwner?.address.toLowerCase() ? proposer : null;
+  const draftProposer = current ?? draftOwner;
+  const safeProposer = draftProposer && state === "ready" && eligibilityFresh && current
+    ? draftProposer
+    : draftProposer ? { ...draftProposer, canPropose: false, proposeBlockedReason: daoCopy.propose.errorBody } : null;
 
   const handleStart = () => {
+    setDraftOwner(proposer);
     setIsAuthoring(true);
     requestAnimationFrame(() => {
       const heading = document.getElementById("dao-proposal-authoring-heading");
@@ -172,9 +182,9 @@ export function DaoProposeView({
         />
       ) : null}
 
-      {state === "ready" && proposer && isAuthoring ? live ? (
-        <LiveDaoProposalAuthoringForm key={proposer.address} address={proposer.address} proposer={proposer} hostname={hostname} now={now} />
-      ) : (
+      {live && isAuthoring && safeProposer ? (
+        <LiveDaoProposalAuthoringForm key={safeProposer.address} address={safeProposer.address} proposer={safeProposer} hostname={hostname} now={safeProposer.observation?.timestamp ?? now} />
+      ) : !live && state === "ready" && proposer && isAuthoring ? (
         <DaoProposalAuthoringForm
           address={proposer.address}
           authoringPreset={authoring}

@@ -1,0 +1,37 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { DaoProposeView } from "@/app/dao/propose/DaoProposePageClient";
+import { deriveDaoProposerState, getDaoMockFixture, DAO_EXECUTOR_VALID_SCRIPT_VECTORS } from "@/lib/clients/dao";
+vi.mock("@/lib/hooks/useDaoAuthoring", () => ({ useDaoAuthoringServices: () => ({ services: undefined, recovery: null }) }));
+describe("live draft eligibility refresh", () => {
+  it("preserves fields and confirmed review through failure, refresh and recovery", async () => {
+    const fixture = getDaoMockFixture("discussion");
+    const proposer = deriveDaoProposerState(fixture.proposer);
+    const props = { live: true, proposer, now: fixture.now, onRetry: vi.fn() };
+    const { rerender } = render(<DaoProposeView {...props} state="ready" />);
+    fireEvent.click(screen.getByRole("button", { name: "Start proposal" }));
+    const markdown = "# Retained draft\n\nKeep my draft.\n\n## Scope\n\nKeep the full body.\n";
+    fireEvent.change(screen.getByLabelText("Proposal Markdown"), { target: { value: markdown } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Forum discussion" }), { target: { value: "https://gov.yearn.fi/t/topic/1001" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Executable/ }));
+    const script = DAO_EXECUTOR_VALID_SCRIPT_VECTORS.oneCall.script;
+    fireEvent.change(screen.getByLabelText("Full Executor script"), { target: { value: script } });
+    rerender(<DaoProposeView {...props} proposer={null} state="error" />);
+    expect(screen.getByLabelText("Proposal Markdown")).toHaveValue(markdown);
+    expect(screen.getByRole("textbox", { name: "Forum discussion" })).toHaveValue("https://gov.yearn.fi/t/topic/1001");
+    expect(screen.getByLabelText("Full Executor script")).toHaveValue(script);
+    rerender(<DaoProposeView {...props} state="ready" />);
+    fireEvent.click(screen.getByRole("button", { name: "Validate topic" }));
+    await waitFor(() => expect(screen.getByText("Forum topic accepted", { selector: "#dao-forum-status p" })).toBeVisible());
+    fireEvent.click(screen.getByRole("button", { name: "Review proposal" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /I reviewed/ }));
+    rerender(<DaoProposeView {...props} proposer={null} state="error" />);
+    expect(screen.getByRole("checkbox", { name: /I reviewed/ })).toBeChecked();
+    expect(screen.getByRole("button", { name: "Publish immutable content" })).toBeDisabled();
+    rerender(<DaoProposeView {...props} state="ready" eligibilityFresh={false} />);
+    expect(screen.getByRole("button", { name: "Publish immutable content" })).toBeDisabled();
+    rerender(<DaoProposeView {...props} state="ready" />);
+    expect(screen.getByRole("checkbox", { name: /I reviewed/ })).toBeChecked();
+    expect(screen.getByRole("button", { name: "Publish immutable content" })).toBeEnabled();
+  });
+});
