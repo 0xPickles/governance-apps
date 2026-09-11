@@ -61,6 +61,25 @@ describe("live action receipt recovery", () => {
   });
 });
 describe("creation replacement recovery", () => {
+  it.each(["reverted", "cancelled", "changed"] as const)("retains publication and the %s transaction link through creation reload", async kind => {
+    const fixture = getDaoMockFixture("discussion"), proposer = deriveDaoProposerState(fixture.proposer);
+    const result = createDaoAuthoringReview({ address: proposer.address, createdAt: fixture.now,
+      draft: { markdown: "# Terminal creation\n\nKeep published bytes.\n\n## Scope\n\nRecover terminal transactions.\n", proposalType: "signal", executableScript: "0x" },
+      topic: { topicId: 1001, normalizedUrl: "https://gov.yearn.fi/t/topic/1001", title: "Topic", category: "Proposals", categoryId: 5, author: "user", createdAt: 1 } });
+    if (result.state !== "valid") throw new Error("Invalid test review");
+    const review = result.review, identity = deriveDaoProposalContentIdentity(review.content);
+    const publication = { fingerprint: identity.digest, cid: identity.cid, canonicalBytes: identity.bytes, publishedAt: fixture.now };
+    const key = daoAuthoringStorageKey(daoDeploymentScope(getDaoDeployments()), proposer.address);
+    saveDaoAuthoringRecovery(key, review, publication, hash, proposer.expectedVotingEpoch);
+    vi.mocked(waitForDaoReceipt).mockRejectedValueOnce(kind === "reverted" ? new DaoTransactionRevertedError(hash) : new DaoTransactionReplacedError(replacement, kind));
+    const first = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
+    await act(async () => { await expect(first.result.current.services.confirm(review, publication, hash, proposer.expectedVotingEpoch)).rejects.toThrow(); });
+    first.unmount();
+    const second = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
+    expect(second.result.current.recovery).toMatchObject({ transactionHash: null, publication: { fingerprint: identity.digest },
+      lastFailure: { transactionHash: kind === "reverted" ? hash : replacement, code: kind === "reverted" ? "PROPOSAL_REVERTED" : "PROPOSAL_REPLACED" } });
+  });
+
   it("decodes proposal zero from the accepted hash and restores that hash on reload", async () => {
     const fixture = getDaoMockFixture("discussion"), proposer = deriveDaoProposerState(fixture.proposer);
     const result = createDaoAuthoringReview({ address: proposer.address, createdAt: fixture.now,

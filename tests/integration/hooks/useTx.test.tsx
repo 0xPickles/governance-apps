@@ -97,3 +97,24 @@ describe("useTx", () => {
     expect(result.current.state.status).toBe("success");
   });
 });
+
+describe("submitted transaction retries", () => {
+  it("never resends a known hash after a temporary receipt error, even when retries are configured", async () => {
+    const hash = ("0x" + "11".repeat(32)) as TransactionHash;
+    const send = vi.fn(async () => hash);
+    const confirm = vi.fn(async () => { throw new Error("Network request failed"); });
+    const { result } = renderHookWithProviders(() => useTx());
+    await act(async () => { await result.current.execute(send, { waitForReceipt: confirm, retries: 2, retryDelayMs: 0 }); });
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(result.current.state).toMatchObject({ status: "error", hash });
+  });
+  it("continues to retry network failures before submission when requested", async () => {
+    const hash = ("0x" + "22".repeat(32)) as TransactionHash;
+    const send = vi.fn().mockRejectedValueOnce(new Error("Network request failed")).mockResolvedValueOnce(hash);
+    const { result } = renderHookWithProviders(() => useTx());
+    await act(async () => { await result.current.execute(send, { skipWaitForReceipt: true, retries: 1, retryDelayMs: 0 }); });
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(result.current.state).toMatchObject({ status: "success", hash });
+  });
+});
