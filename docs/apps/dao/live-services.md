@@ -56,3 +56,9 @@ Another device, a cleared browser session or an unavailable wallet response need
 
 The authoring UI currently creates content with an empty attachment manifest, as in the accepted product.
 Existing read-only attachment handling and both wire schemas remain unchanged.
+
+## Bounded stream rejection
+
+Declared and streamed body limits reject immediately. The 15-second deadline also rejects before cleanup.
+Body cancellation is best-effort and never delays an error, including upstream HTTP failures.
+A stalled cancellation cannot turn oversized or incomplete bytes into accepted publication content.

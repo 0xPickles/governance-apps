@@ -1,3 +1,4 @@
+import { cancelDaoBody } from "./publication";
 import { z } from "@/lib/schemas/zod";
 import type { DaoForumValidationResult } from "./authoring-types";
 import { readBoundedJson, withFeedRequest, type FeedTransportPolicy } from "@/lib/feed-transport";
@@ -50,7 +51,7 @@ function forumOrigin(): string {
 }
 async function readForum(path: string) {
   return withFeedRequest(forumOrigin() + path, policy, async (response, context) => {
-    if (!response.ok) { await response.body?.cancel(); throw new Error(response.status === 404 ? "TOPIC_NOT_FOUND" : "FORUM_UNAVAILABLE"); }
+    if (!response.ok) { cancelDaoBody(response.body); throw new Error(response.status === 404 ? "TOPIC_NOT_FOUND" : "FORUM_UNAVAILABLE"); }
     return readBoundedJson(response, context, policy);
   });
 }

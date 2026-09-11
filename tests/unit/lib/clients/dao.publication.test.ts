@@ -20,6 +20,19 @@ describe("durable raw-block publication adapter", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it.each(["declared", "streamed"])("rejects %s oversize without awaiting cancellation", async kind => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(new Uint8Array(5)); },
+      cancel: () => new Promise(() => {}),
+    });
+    const response = new Response(stream, { headers: kind === "declared" ? { "content-length": "5" } : {} });
+    await expect(readDaoBoundedBytes(response, 4)).rejects.toThrow("byte limit");
+  });
+  it("rejects an upstream error even when its body cancellation never settles", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(new ReadableStream({ cancel: () => new Promise(() => {}) }), { status: 503 })));
+    await expect(readStoredDaoContent(identity.digest)).rejects.toThrow("request failed");
+  });
+
   it("requests pinning, publishes canonical bytes and verifies a separate exact retrieval", async () => {
     const calls: string[] = [];
     vi.stubGlobal("fetch", vi.fn(async (url: string, options: RequestInit) => {

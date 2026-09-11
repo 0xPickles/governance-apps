@@ -1,7 +1,7 @@
 import { sha256, type Hex } from "viem";
 import { isProductionMode } from "@/lib/runtime/runtime-mode";
 import { createDaoRawSha256Cid } from "@/lib/clients/dao/content";
-import { readDaoBoundedBytes, validateDaoPublicationBytes } from "@/lib/clients/dao/publication";
+import { cancelDaoBody, readDaoBoundedBytes, validateDaoPublicationBytes } from "@/lib/clients/dao/publication";
 
 /** Standard raw-block IPFS API. No provider or credentials are selected by the browser. */
 function serviceConfiguration() {
@@ -24,7 +24,7 @@ async function ipfs(path: string, body?: FormData) {
     headers: authorization ? { Authorization: authorization } : {},
     signal: AbortSignal.timeout(15_000),
   });
-  if (!response.ok) { await response.body?.cancel(); throw new Error("DAO content service request failed."); }
+  if (!response.ok) { cancelDaoBody(response.body); throw new Error("DAO content service request failed."); }
   return response;
 }
 export async function readStoredDaoContent(digest: Hex) {
