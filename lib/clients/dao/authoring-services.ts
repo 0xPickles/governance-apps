@@ -2,7 +2,7 @@ import type { Hex } from "viem";
 import type { DaoDecodedProposeIdentity, DaoProposalRef } from "./types";
 import type { DaoAuthoringReview, DaoForumValidationResult, DaoPublishedContent, DaoPublicationResult, DaoProposalSubmissionRequest, DaoProposalSubmissionResult, DaoProposalReceiptResult } from "./authoring-types";
 
-export type DaoAuthoringRecovery = { review: DaoAuthoringReview; publication: DaoPublishedContent; transactionHash: Hex | null; expectedEpoch: bigint | null };
+export type DaoAuthoringRecovery = { review: DaoAuthoringReview; publication: DaoPublishedContent; transactionHash: Hex | null; expectedEpoch: bigint | null; lastFailure?: { transactionHash: Hex; code: "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED"; message: string } };
 export type DaoAuthoringServices = {
   validateForum: (input: string, latency?: number) => Promise<DaoForumValidationResult>;
   publish: (review: DaoAuthoringReview, now: number, latency?: number) => Promise<DaoPublicationResult>;

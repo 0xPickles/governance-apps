@@ -168,6 +168,7 @@ export const daoProposeCopy = {
     failedTitle: "Proposal content was not published",
   },
   proposal: {
+    replacedTitle: "Transaction replaced",
     create: "Create onchain proposal",
     retry: "Retry proposal creation",
     waiting: "Waiting for wallet",

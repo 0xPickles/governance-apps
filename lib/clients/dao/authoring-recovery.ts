@@ -9,9 +9,9 @@ import { serializeDaoProposalRef } from "./domain";
 export function daoAuthoringStorageKey(scope: string, address: Address) {
   return "yearn.dao.live.authoring.v1:" + scope + ":" + address.toLowerCase();
 }
-export function saveDaoAuthoringRecovery(key: string, review: DaoAuthoringReview, publication: DaoPublishedContent, transactionHash: Hex | null = null, expectedEpoch: bigint | null = null) {
+export function saveDaoAuthoringRecovery(key: string, review: DaoAuthoringReview, publication: DaoPublishedContent, transactionHash: Hex | null = null, expectedEpoch: bigint | null = null, lastFailure?: DaoAuthoringRecovery["lastFailure"]) {
   sessionStorage.setItem(key, JSON.stringify({
-    content: review.content, topic: review.topic, script: review.scriptCheck.script,
+    lastFailure, content: review.content, topic: review.topic, script: review.scriptCheck.script,
     digest: publication.fingerprint, publishedAt: publication.publishedAt, transactionHash, expectedEpoch: expectedEpoch?.toString() ?? null,
   }));
 }
@@ -31,6 +31,9 @@ export function readDaoAuthoringRecovery(key: string, address: Address): DaoAuth
     return {
       review: { content: value.content, topic: value.topic, scriptCheck, parsedContent },
       publication: { fingerprint: identity.digest, cid: identity.cid, canonicalBytes: identity.bytes, publishedAt: value.publishedAt },
+      lastFailure: value.lastFailure && /^0x[0-9a-f]{64}$/i.test(value.lastFailure.transactionHash) &&
+        ["PROPOSAL_REVERTED", "PROPOSAL_REPLACED"].includes(value.lastFailure.code) && typeof value.lastFailure.message === "string" &&
+        value.lastFailure.message.length <= 1024 ? value.lastFailure : undefined,
       transactionHash: value.transactionHash,
       expectedEpoch: value.expectedEpoch === null ? null : BigInt(value.expectedEpoch),
     };

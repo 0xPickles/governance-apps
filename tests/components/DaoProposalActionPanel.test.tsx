@@ -21,6 +21,7 @@ import {
 import type { TxState } from "@/lib/tx/types";
 
 const handlers = {
+  onRetryReceipt: vi.fn(async () => undefined),
   onExecute: vi.fn(async () => undefined),
   onFlag: vi.fn(async () => undefined),
   onRetract: vi.fn(async () => undefined),
@@ -32,6 +33,21 @@ describe("DAO proposal action panel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetDaoMockStore({ now: DAO_MOCK_NOW });
+  });
+
+  it("shows a known hash and confirmation retry while locking an unresolved action", () => {
+    applyDaoMockFixture("voting");
+    const proposal = selectedProposal();
+    const hash = ("0x" + "ab".repeat(32)) as `0x${string}`;
+    renderSelected({ pendingAction: { action: "vote", ref: proposal.ref, actor: DAO_MOCK_ACCOUNT_ADDRESS,
+      transactionHash: hash, submittedAt: DAO_MOCK_NOW, direction: "yea", effectiveVotingWeight: null, reason: null, receiptState: "unknown" },
+      txState: { status: "error", hash, errorType: "network", errorMessage: "Receipt timeout" } });
+    expect(screen.getByText("Transaction submitted · receipt not confirmed")).toBeVisible();
+    expect(screen.getByRole("link", { name: "View transaction" })).toHaveAttribute("href", "https://etherscan.io/tx/" + hash);
+    expect(screen.getByRole("button", { name: "Review vote" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Retry receipt confirmation" }));
+    expect(handlers.onRetryReceipt).toHaveBeenCalledOnce();
+    expect(handlers.onVote).not.toHaveBeenCalled();
   });
 
   it("requires an explicit direction and confirms proposal, weight, and Voter irreversibility", async () => {

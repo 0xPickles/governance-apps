@@ -396,6 +396,10 @@ export const daoCopy = {
       signing: "Confirm in wallet",
       pending: "Transaction pending",
       confirmed: "Transaction confirmed",
+      receiptUnknown: "Transaction submitted · receipt not confirmed",
+      receiptUnknownBody: "The transaction hash is saved. Retry confirmation without submitting another transaction.",
+      retryReceipt: "Retry receipt confirmation",
+      viewTransaction: "View transaction",
       awaitingIndex: "Transaction confirmed · awaiting proposal indexing",
       awaitingIndexBody:
         "Live authorization has updated. Proposal history will update after the confirmed event is indexed.",

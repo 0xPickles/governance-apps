@@ -10,7 +10,7 @@ import { normalizeTxError } from "@/lib/tx/errors";
 import { daoContentBase64, retrieveDaoPublishedContent } from "@/lib/clients/dao/publication";
 import { readDaoContentBytes } from "@/lib/clients/dao/content-bytes";
 import { daoProposeCall } from "@/lib/clients/dao/writes";
-import { DaoTransactionRevertedError, waitForDaoReceipt } from "@/lib/clients/dao/live-receipt";
+import { DaoTransactionReplacedError, isDaoTerminalTransactionError, waitForDaoReceipt } from "@/lib/clients/dao/live-receipt";
 import { daoAuthoringStorageKey, readDaoAuthoringRecovery, saveDaoAuthoringRecovery, saveDaoPendingCreation } from "@/lib/clients/dao/authoring-recovery";
 import type { DaoAuthoringServices } from "@/lib/clients/dao/authoring-services";
 import type { DaoDecodedProposeIdentity, DaoProposerState } from "@/lib/clients/dao/types";
@@ -76,15 +76,26 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
           saveDaoAuthoringRecovery(key, review, publication, submitted, proposer.expectedVotingEpoch);
           onSubmitted?.(submitted);
         },
-        waitForReceipt: async submitted => { await waitForDaoReceipt(submitted, deployment!.chainId, address, daoProposeCall(deployment!.chainId, address, deployment!.votingAddress, publication.fingerprint, review.scriptCheck.script as Hex)); },
+        waitForReceipt: async submitted => {
+          const receipt = await waitForDaoReceipt(submitted, deployment!.chainId, address, daoProposeCall(deployment!.chainId, address, deployment!.votingAddress, publication.fingerprint, review.scriptCheck.script as Hex));
+          hash = receipt.transactionHash;
+          saveDaoAuthoringRecovery(key, review, publication, hash, proposer.expectedVotingEpoch);
+          onSubmitted?.(hash);
+          return hash;
+        },
         onError: error => { failure = error; },
       });
       submitting.current = false;
       const error = normalizeTxError(failure);
-      if (hash && error.code !== "revert") return { state: "submitted", transactionHash: hash };
-      if (hash && error.code === "revert") saveDaoAuthoringRecovery(key, review, publication);
+      if (hash && !isDaoTerminalTransactionError(failure) && error.code !== "revert") return { state: "submitted", transactionHash: hash };
+      if (hash && (isDaoTerminalTransactionError(failure) || error.code === "revert")) saveDaoAuthoringRecovery(key, review, publication, null, null, {
+        transactionHash: isDaoTerminalTransactionError(failure) ? failure.transactionHash ?? hash : hash,
+        code: failure instanceof DaoTransactionReplacedError ? "PROPOSAL_REPLACED" : "PROPOSAL_REVERTED",
+        message: error.message,
+      });
       return { state: "failed", error: {
-        code: error.code === "user_rejected" ? "WALLET_REJECTED" : error.code === "revert" ? "PROPOSAL_REVERTED" : "NETWORK_ERROR",
+        transactionHash: isDaoTerminalTransactionError(failure) ? failure.transactionHash ?? hash ?? undefined : hash ?? undefined,
+        code: failure instanceof DaoTransactionReplacedError ? "PROPOSAL_REPLACED" : isDaoTerminalTransactionError(failure) ? "PROPOSAL_REVERTED" : error.code === "user_rejected" ? "WALLET_REJECTED" : error.code === "revert" ? "PROPOSAL_REVERTED" : "NETWORK_ERROR",
         message: error.message,
       } };
     },
@@ -92,11 +103,14 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
       if (!deployment) throw new Error("No trusted DAO deployment.");
       const stored = readDaoAuthoringRecovery(key, address);
       const receipt = await waitForDaoReceipt(hash, deployment.chainId, address, daoProposeCall(deployment.chainId, address, deployment.votingAddress, publication.fingerprint, review.scriptCheck.script as Hex)).catch(error => {
-        if (error instanceof DaoTransactionRevertedError) saveDaoAuthoringRecovery(key, review, publication);
+        if (isDaoTerminalTransactionError(error)) saveDaoAuthoringRecovery(key, review, publication, null, null, {
+          transactionHash: error.transactionHash ?? hash, code: error instanceof DaoTransactionReplacedError ? "PROPOSAL_REPLACED" : "PROPOSAL_REVERTED", message: error.message,
+        });
         throw error;
       });
+      saveDaoAuthoringRecovery(key, review, publication, receipt.transactionHash, stored?.expectedEpoch ?? epoch);
       return { state: "confirmed", receipt, decoded: decodeDaoProposeReceipt(receipt, {
-        chainId: deployment.chainId, votingAddress: deployment.votingAddress, transactionHash: hash,
+        chainId: deployment.chainId, votingAddress: deployment.votingAddress, transactionHash: receipt.transactionHash,
         proposer: address, votingEpoch: stored?.expectedEpoch ?? epoch,
         contentDigest: publication.fingerprint, script: review.scriptCheck.script as Hex,
       }) };

@@ -35,6 +35,8 @@ import {
   useDaoProposalActions,
 } from "@/lib/hooks/useDao";
 import type { TxState } from "@/lib/tx/types";
+import { daoActionIsPending } from "@/lib/clients/dao/action-recovery";
+import { getEtherscanTransactionUrl } from "@/lib/explorer";
 import { daoCopy } from "../../messages";
 
 type DialogAction = DaoActionType | null;
@@ -70,6 +72,7 @@ export function DaoProposalActionPanel({ proposal }: { proposal: DaoProposal }) 
       accountLoading={effectiveAddress !== null && (accountQuery.isPending || accountQuery.isFetching)}
       activeAction={writes.activeAction}
       executionGuard={runtime?.executionGuard ?? accountQuery.data?.liveProposal?.rules.executionGuard ?? "guarded"}
+      onRetryReceipt={writes.retryConfirmation}
       onExecute={writes.executeProposal}
       onFlag={writes.flag}
       onRetract={writes.retract}
@@ -89,6 +92,7 @@ export function DaoProposalActionPanelView({
   accountLoading,
   activeAction,
   executionGuard,
+  onRetryReceipt,
   onExecute,
   onFlag,
   onRetract,
@@ -103,6 +107,7 @@ export function DaoProposalActionPanelView({
   accountLoading: boolean;
   activeAction: DaoActionType | null;
   executionGuard: DaoExecutionGuard;
+  onRetryReceipt?: () => Promise<void>;
   onExecute: () => Promise<void>;
   onFlag: (reason: string) => Promise<void>;
   onRetract: () => Promise<void>;
@@ -127,7 +132,7 @@ export function DaoProposalActionPanelView({
     "submitted",
     "mining",
   ].includes(txState.status);
-  const actionLocked = transactionBusy || pendingAction !== null;
+  const actionLocked = transactionBusy || daoActionIsPending(pendingAction);
 
   const openDialog = (
     action: Exclude<DialogAction, null>,
@@ -170,6 +175,7 @@ export function DaoProposalActionPanelView({
       </div>
 
       <TransactionNotice
+        onRetryReceipt={onRetryReceipt}
         activeAction={activeAction}
         pendingAction={pendingAction}
         state={txState}
@@ -784,6 +790,7 @@ function ReasonField({
 }
 
 function TransactionNotice({
+  onRetryReceipt,
   activeAction,
   pendingAction,
   state,
@@ -791,6 +798,7 @@ function TransactionNotice({
   activeAction: DaoActionType | null;
   pendingAction: DaoPendingAction | null;
   state: TxState;
+  onRetryReceipt?: () => Promise<void>;
 }) {
   if (pendingAction) {
     return (
@@ -800,11 +808,19 @@ function TransactionNotice({
         className="space-y-1 rounded-box bg-blue-50 p-3 text-blue-950 dark:bg-blue-950/40 dark:text-blue-100"
       >
         <p className="text-pretty text-sm font-bold">
-          {daoCopy.actions.transaction.awaitingIndex}
+          {pendingAction.receiptState === "unknown" ? daoCopy.actions.transaction.receiptUnknown :
+            pendingAction.receiptState === "reverted" || pendingAction.receiptState === "replaced" ? daoCopy.actions.transaction.failed : daoCopy.actions.transaction.awaitingIndex}
         </p>
         <p className="text-pretty text-xs leading-5">
-          {daoCopy.actions.transaction.awaitingIndexBody}
+          {pendingAction.confirmationError ?? (pendingAction.receiptState === "unknown"
+            ? daoCopy.actions.transaction.receiptUnknownBody : daoCopy.actions.transaction.awaitingIndexBody)}
         </p>
+        <a className="block break-all text-sm underline" href={getEtherscanTransactionUrl(pendingAction.transactionHash) ?? undefined} target="_blank" rel="noopener noreferrer">{daoCopy.actions.transaction.viewTransaction}</a>
+        {pendingAction.receiptState === "unknown" && onRetryReceipt ? (
+          <Button type="button" variant="secondary" size="sm" disabled={state.status === "mining" || state.status === "submitted"} onClick={() => { void onRetryReceipt(); }}>
+            {daoCopy.actions.transaction.retryReceipt}
+          </Button>
+        ) : null}
       </div>
     );
   }

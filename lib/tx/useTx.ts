@@ -17,7 +17,7 @@ import { isSimulationTransportFallbackEnabled } from "@/lib/runtime/features";
 
 type TxExecuteOptions = {
   onSubmitted?: (hash: TransactionHash) => void | Promise<void>;
-  waitForReceipt?: (hash: TransactionHash) => Promise<void>;
+  waitForReceipt?: (hash: TransactionHash) => Promise<void | TransactionHash>;
   onSuccess?: (hash: TransactionHash) => void | Promise<void>;
   onError?: (error: unknown, hash?: TransactionHash) => void | Promise<void>;
   invalidate?: () => void | Promise<void>;
@@ -97,7 +97,7 @@ export function useTx() {
             });
 
             if (options?.waitForReceipt) {
-              await options.waitForReceipt(hash);
+              hash = (await options.waitForReceipt(hash)) ?? hash;
             } else if (publicClient) {
               try {
                 await publicClient.waitForTransactionReceipt({ hash });
@@ -135,7 +135,7 @@ export function useTx() {
           const errorType = mapNormalizedCode(normalized.code);
 
           // Retry once for network errors if configured
-          if (normalized.code === "network" && attempt < maxRetries) {
+          if (!hash && normalized.code === "network" && attempt < maxRetries) {
             attempt += 1;
             await new Promise((r) => setTimeout(r, retryDelay));
             return attemptExecute();

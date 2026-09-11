@@ -81,7 +81,8 @@ type WalletState =
   | { state: "waiting" }
   | {
       state: "failed";
-      code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "NETWORK_ERROR";
+      code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED" | "NETWORK_ERROR";
+      failedTransactionHash?: Hex;
       message: string;
     }
   | { state: "receipt_pending"; transactionHash: Hex }
@@ -151,7 +152,7 @@ function DaoProposalAuthoringFormState({
   const [confirmed, setConfirmed] = useState(false);
   const [confirmationError, setConfirmationError] = useState<string | null>(null);
   const [publication, setPublication] = useState<PublicationState>(recovery ? { state: "published", publication: recovery.publication } : { state: "idle" });
-  const [wallet, setWallet] = useState<WalletState>({ state: "idle" });
+  const [wallet, setWallet] = useState<WalletState>(recovery?.lastFailure ? { state: "failed", code: recovery.lastFailure.code, message: recovery.lastFailure.message, failedTransactionHash: recovery.lastFailure.transactionHash } : { state: "idle" });
   const forumRequest = useRef(0);
   const publicationLock = useRef(Boolean(recovery));
   const forumInputRef = useRef<HTMLInputElement>(null);
@@ -392,6 +393,7 @@ function DaoProposalAuthoringFormState({
         state: "failed",
         code: result.error.code,
         message: result.error.message,
+        failedTransactionHash: result.error.transactionHash,
       });
       return;
     }
@@ -425,21 +427,23 @@ function DaoProposalAuthoringFormState({
       }
 
       const identity = receipt.decoded.identity;
+      const acceptedHash = receipt.receipt.transactionHash;
       setWallet({
         state: "identity_decoded",
-        transactionHash: hash,
+        transactionHash: acceptedHash,
         identity,
       });
 
       await indexProposal(
         review,
         publication.publication,
-        hash,
+        acceptedHash,
         identity
       );
     } catch (error) {
-      if (error instanceof Error && "code" in error && error.code === "DAO_TRANSACTION_REVERTED") {
-        setWallet({ state: "failed", code: "PROPOSAL_REVERTED", message: error.message });
+      if (error instanceof Error && "code" in error && (error.code === "DAO_TRANSACTION_REVERTED" || error.code === "DAO_TRANSACTION_REPLACED")) {
+        setWallet({ state: "failed", code: error.code === "DAO_TRANSACTION_REPLACED" ? "PROPOSAL_REPLACED" : "PROPOSAL_REVERTED", message: error.message,
+          failedTransactionHash: "transactionHash" in error ? error.transactionHash as Hex : hash });
       } else {
         setWallet({ state: "receipt_failed", transactionHash: hash, code: "RECEIPT_UNAVAILABLE", message: error instanceof Error ? error.message : "Receipt confirmation failed." });
       }
@@ -1184,11 +1188,11 @@ function DaoFinalReview({
                 </p>
               </div>
 
-              {wallet.state === "failed" ? (
+              {wallet.state === "failed" ? (<>
                 <StateNotice
                   tone="error"
                   title={
-                    wallet.code === "WALLET_REJECTED"
+                    wallet.code === "PROPOSAL_REPLACED" ? daoProposeCopy.proposal.replacedTitle : wallet.code === "WALLET_REJECTED"
                       ? daoProposeCopy.proposal.rejectedTitle
                       : wallet.code === "NETWORK_ERROR"
                         ? daoProposeCopy.proposal.networkErrorTitle
@@ -1196,7 +1200,8 @@ function DaoFinalReview({
                   }
                   body={wallet.message}
                 />
-              ) : null}
+                {wallet.failedTransactionHash ? <a className="block text-sm underline" href={getEtherscanTransactionUrl(wallet.failedTransactionHash) ?? undefined} target="_blank" rel="noopener noreferrer">{daoProposeCopy.proposal.viewTransaction}</a> : null}
+              </>) : null}
 
               <div className="space-y-3">
                 {!proposer.canPropose ? (

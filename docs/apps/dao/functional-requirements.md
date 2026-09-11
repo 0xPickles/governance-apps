@@ -311,10 +311,14 @@ with no trailing or dirty padding. Open proposal and Copy link appear only after
 that receipt supplies the composite identity. Receipt confirmation,
 awaiting-index, and indexed states retain the same identity. Publication failure
 never exposes Step 2. The typed review outcome controls proposal creation.
-Wallet rejection, onchain revert, and network failure preserve the published
-content and retry without republishing. They produce no hash, receipt, proposal
-identity, created record, pending action, feed event, proposal link, or index
-state. Registration applies its delay before persistence. An indexing delay
+Failures before wallet submission produce no transaction hash or proposal identity.
+Once the wallet returns a hash, temporary network or receipt failures retain that hash.
+Creation and ordinary actions retry confirmation without another wallet submission, including after reload.
+A successful fee replacement must consume the same nonce and preserve the exact intended call.
+Receipt decoding, recovery and indexing use the verified mined hash.
+A cancellation, changed call or canonical revert is a terminal outcome with its known transaction link.
+These outcomes preserve published content and require an explicit new action to retry.
+Only a successful matching Propose receipt supplies an accepted proposal identity. Registration applies its delay before persistence. An indexing delay
 shows `Retry indexing`, which re-registers and indexes the same receipt-derived
 reference without duplicate records or events.
 

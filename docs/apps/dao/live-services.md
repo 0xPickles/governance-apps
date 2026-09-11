@@ -48,7 +48,7 @@ DAO simulation and receipt checks have no alternate-transport shortcut.
 Receipt confirmation verifies success, sender, exact transaction input and destination, zero value, chain and canonical block.
 Creation also decodes and validates the actual Propose event, including ID zero.
 
-Published review data and a submitted creation hash survive reloads in the same browser tab.
+Published review data and submitted creation or action hashes survive reloads in the same browser tab.
 Wallet rejection and confirmed reverts retain the publication.
 A known hash is confirmed again; it is not submitted again while the feed lags.
 Only an exact proposal and Propose-log match completes indexing and retires that recovery record.
@@ -68,3 +68,15 @@ A stalled cancellation cannot turn oversized or incomplete bytes into accepted p
 A live eligibility failure leaves the active draft and review mounted for the same author.
 Markdown, forum input, script and review confirmation remain intact.
 Publication and proposal submission stay blocked until a fresh eligibility result permits them.
+
+## Replacement and receipt recovery
+
+A fee replacement is accepted only after its canonical mined transaction matches the original sender, nonce and exact prepared call.
+Recovery, receipt decoding and feed matching then use the accepted hash.
+A cancellation or changed call is a separate terminal outcome. The app retains its transaction link and does not infer a successful DAO action.
+
+Ordinary actions save their hash and prepared call when the wallet returns.
+Receipt timeouts retain an unknown receipt state and block another submission.
+The user can retry confirmation after a temporary error or reload. Confirmation retries never send a transaction.
+Confirmed actions remain separate from actions whose receipt is unknown.
+An action leaves the awaiting-index state only after its matching event and receipt block appear in the feed.

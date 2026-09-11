@@ -635,6 +635,8 @@ export type DaoMockTransactionOutcome =
   | "network-error";
 
 export type DaoPendingAction = {
+  receiptState?: "unknown" | "confirmed" | "reverted" | "replaced";
+  confirmationError?: string;
   action: DaoActionType;
   ref: DaoProposalRef;
   actor: Address;
