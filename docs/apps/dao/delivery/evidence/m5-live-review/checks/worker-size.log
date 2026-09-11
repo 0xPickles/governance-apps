@@ -1,0 +1,8 @@
+
+> governance-apps@0.1.0 validate:worker-size
+> node ./scripts/check-worker-size.mjs
+
+Worker upload size: 16006.23 KiB / gzip: 3253.18 KiB
+Worker gzip budget: 9216.00 KiB; warning threshold: 7680.00 KiB.
+Cloudflare Workers Paid compressed limit: 10240.00 KiB.
+Worker gzip upload size 3253.18 KiB is within budget.

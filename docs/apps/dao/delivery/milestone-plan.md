@@ -12,7 +12,10 @@ The approved producer implementation is `7b67945253d91c495b148ee4f0a09a946a93390
 An inspection on 2026-09-10 found this commit in the clean producer integration history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
 A direct endpoint read returned one deployment and zero proposals. This proves endpoint availability, not lifecycle coverage or deployment identity.
 
-The combined package now implements these application flows and supplies local fork evidence. See [current evidence](evidence/m5-live/README.md) and the [runbook](../local-fork-uat.md). External publication configuration, independent review, user acceptance and rollout remain separate outstanding work.
+The combined package now implements these application flows and supplies local fork evidence. See [current review evidence](evidence/m5-live-review/README.md) and the [runbook](../local-fork-uat.md). External publication configuration, independent review, user acceptance and rollout remain separate outstanding work.
+
+The five findings from independent review are addressed in the [finding tracker](evidence/m5-live-review/README.md#finding-tracker).
+The follow-up keeps this package and architecture. Independent re-review remains pending.
 
 ## 1. Complete real application behavior
 
@@ -24,12 +27,15 @@ Keep the integration worktree unchanged. WP13–WP15 remain acceptance requireme
 - Set `DAO_DATA_URL` to the live endpoint. Obtain independently reviewed `NEXT_PUBLIC_DAO_DEPLOYMENTS` values outside the feed.
 - Implement current proposer eligibility, hooks, shared capacity, and forum URL/category validation.
 - Publish and retrieve exact canonical content through the intended durable service. Keep credentials server-side.
+- Gate publication independently of reads. Require uploader authorization and an operator-approved document and byte budget before upstream requests.
 - Preserve publication after wallet rejection or transaction failure. Publication and creation are separate actions.
 - Prepare creation, vote, retract, flag, veto, and execute in domain clients through shared `useTx`.
 - Verify actual account, network, trusted deployment, and action-specific state before signing. Simulate the exact transaction.
 - Bind preparation to current inputs and a coherent canonical observation. Fail closed on required simulation errors.
 - For execute, compare the original script with the current stored commitment and simulate actual `Voting.execute` with the actual caller.
-- Distinguish submission, successful receipt, awaiting-index, and indexed states. Preserve ID zero and prevent duplicate creation during feed lag.
+- Distinguish submission, unknown receipt, successful receipt, awaiting-index, and indexed states. Preserve hashes through timeouts and reloads.
+- Follow verified identical-call fee replacements. Identify cancellations and changed calls. Preserve ID zero and prevent duplicate submission during feed lag.
+- Retain unpublished draft and review state when eligibility refresh fails. Reject oversized bodies without waiting for cancellation.
 - Keep missing content independent of protocol-permitted voting. Preserve both wire formats unchanged.
 
 ## 2. Perform lightweight fork UAT and focused regression tests

@@ -6,6 +6,9 @@ The accepted mock product and reviewed V2 reads are integrated. The user reports
 The combined live implementation follows the [single active milestone plan](delivery/milestone-plan.md). It covers publication, wallet transactions, disposable fork UAT, and review preparation.
 See [live services](live-services.md), the [local fork runbook](local-fork-uat.md), and [status](delivery/status.md) for configuration, inspected evidence and remaining inputs. Production rollout remains separately gated.
 
+The [review-fix tracker](delivery/evidence/m5-live-review/README.md) records publication controls, receipt recovery, draft retention and bounded cleanup.
+Independent re-review and operator configuration remain pending.
+
 ## Canonical references
 
 1. [Contract behavior and source pin](contract-reference.md).
@@ -31,4 +34,4 @@ Writes stay in domain clients and shared useTx. Authoring separates content publ
 
 Shared hosts use `/dao`, `/dao/proposals/[id]`, and `/dao/propose`. Proposal links carry chain/Voting selection where needed. The existing internal `dao-beta.dao-ops.com` host stays unlisted, noindex and noncanonical; planned `dao.yearn.fi` exposure requires later approval. Forum discussion remains at `gov.yearn.fi`.
 
-`NEXT_PUBLIC_ENABLE_DAO` gates production routes. Production mode has no mock fallback, including on the beta host. The existing production deployment flag remains off. Protected preview-mode environments may review mock actions. See the [runbook](delivery/dao-beta-runbook.md); this reset changes no infrastructure or deployed environment.
+`NEXT_PUBLIC_ENABLE_DAO` gates production routes. `DAO_PUBLICATION_ENABLED` independently gates uploads, which also require an operator grant policy and uploader signatures. Production mode has no mock fallback, including on the beta host. The existing production deployment flag remains off. Protected preview-mode environments may review mock actions. See the [runbook](delivery/dao-beta-runbook.md); this reset changes no infrastructure or deployed environment.

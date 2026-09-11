@@ -1,0 +1,67 @@
+
+> governance-apps@0.1.0 test:e2e:dao-feed
+> node ./scripts/test-dao-feed-v2.mjs --disabled --output=/tmp/dao-fixes-disabled-results
+
+▲ Next.js 16.2.11 (webpack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Using secrets defined in .dev.vars
+✓ Compiled successfully in 6.3s
+  Running TypeScript ...
+  Finished TypeScript in 11.4s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/12) ...
+  Generating static pages using 9 workers (3/12)
+  Generating static pages using 9 workers (6/12)
+  Generating static pages using 9 workers (9/12)
+✓ Generating static pages using 9 workers (12/12) in 323ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/dao-content
+├ ƒ /api/dao-data
+├ ƒ /api/dao-forum
+├ ƒ /api/global-data
+├ ƒ /api/teams-data
+├ ƒ /api/ybc-data
+├ ƒ /api/yeth-global-data
+├ ƒ /dao
+├ ƒ /dao/proposals/[id]
+├ ƒ /dao/propose
+├ ○ /debug/ui
+├ ƒ /llms.txt
+├ ƒ /robots.txt
+├ ƒ /sitemap.xml
+├ ƒ /styfi
+├ ○ /teams
+├ ƒ /veyfi
+├ ○ /ybc
+└ ○ /yeth
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+[WebServer] (node:123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+
+Running 1 test using 1 worker
+
+(node:125) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:125) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:33:5 › fails closed for production DAO requests without a server error (2.6s)
+
+  1 passed (4.4s)
+DAO upstream requests (disabled): 0

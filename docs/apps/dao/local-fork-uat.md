@@ -134,11 +134,38 @@ env DAO_RPC_TRANSPORT=http DAO_RPC_URL=http://127.0.0.1:18545 /absolute/gov-apps
 Use temporary state and reviewed identity fields appropriate to the fork.
 A real producer acquisition is distinct from `fixture`.
 Do not change the producer or production clock checks to accommodate future fork timestamps.
-The [evidence record](delivery/evidence/m5-live/README.md) records what actually ran.
+To retrieve published content, set a positive `limits.contentRequests` value in the temporary producer configuration.
+Set `DAO_CONTENT_GATEWAY` to an approved gateway base URL ending in `/ipfs/`.
+For the offline local node, expose its native gateway only on loopback port 18080.
+If the existing container lacks that mapping, stop it and use a temporary container with its pin volume:
+
+```fish
+docker stop governance-dao-live-ipfs
+docker run --rm --detach --name governance-dao-live-gateway --volumes-from governance-dao-live-ipfs --publish 127.0.0.1:15001:5001 --publish 127.0.0.1:18080:8080 ipfs/kubo:v0.40.1 daemon --offline
+env DAO_RPC_TRANSPORT=http DAO_RPC_URL=http://127.0.0.1:18545 DAO_CONTENT_GATEWAY=http://127.0.0.1:18080/ipfs/ /absolute/gov-apps-dao local /absolute/temporary-config.json /absolute/temporary-state /absolute/producer-feed.json
+```
+
+Do not run both containers against the same pin volume.
+Use a fresh state file after a fork reset. Recreate a proposal with the UI-published bytes, then mine a confirmation block.
+Verify the producer's decoded `contentBytes` against `/tmp/governance-dao-uat/ui-content.json`.
+To display this producer output through the real app, copy it without modification to the local feed path:
+
+```fish
+cp /absolute/producer-feed.json /tmp/governance-dao-uat/feed.json
+env DAO_UAT_PRODUCER_CHECKPOINT=true DAO_EVIDENCE_DIR=/tmp/dao-producer-evidence E2E_PORT=3310 E2E_WEB_SERVER_COMMAND="node scripts/dao-local-app.mjs" npx playwright test --project=dao-live-feed --workers=1 --grep "published bytes"
+```
+
+This optional browser check expects proposal zero and the content created by the `publishes exact` UI scenario.
+It checks actual app responses and rendered content without wallet RPC or mocked feed responses.
+The producer checkpoint is optional; ordinary saved-fixture checks remain independent.
+`DAO_EVIDENCE_DIR` selects retained browser captures. Without it, captures go to the current test output directory.
+
+The [original evidence](delivery/evidence/m5-live/README.md) and [review-fix evidence](delivery/evidence/m5-live-review/README.md) record what actually ran.
 
 ## Stop
 
 Stop the local app and Anvil terminals with Ctrl-C.
 Stop the disposable content node with `docker stop governance-dao-live-ipfs`.
+If the temporary gateway container is running, stop it with `docker stop governance-dao-live-gateway`.
 Retain its container for local pin checks, or remove it when that test content is no longer needed.
 No command in this runbook publishes an app, merges a branch, or posts a forum topic.

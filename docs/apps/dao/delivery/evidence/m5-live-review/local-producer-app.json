@@ -1,0 +1,57 @@
+{
+  "schema": "yearn.dao.feed.v2",
+  "chainId": 1,
+  "observedAt": 1789132756,
+  "block": {
+    "number": "25954326",
+    "hash": "0x3387025cec2775b6d456ff13a1068c5558ec9bbc18ff25486ef3c8be18f7ac10",
+    "timestamp": 1789131661
+  },
+  "deployments": [
+    {
+      "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+      "proposalCount": "1",
+      "configuration": {
+        "voteStart": "604800",
+        "executeDelay": "0",
+        "executeGuard": true,
+        "threshold": "5000",
+        "voter": "0x5069bce8c8e371a45ab113604b128bbdf5ee5c11",
+        "executor": "0xac7d4a37ba61c2cac7f64d3e2b5773d85613fe7b"
+      }
+    }
+  ],
+  "proposals": [
+    {
+      "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+      "id": "0",
+      "proposer": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "epoch": "16",
+      "contentDigest": "0xda4dbf23f390d04e33d502e0deafd15be4143b4b2d3e8af9229e2b01bccad668",
+      "scriptHash": "0x2641535e6ceeea27e7d7a533f141a98d33bf938a52ea40076793ee97a83afd86",
+      "threshold": "5000",
+      "votes": "0",
+      "yea": "0",
+      "retracted": false,
+      "executed": false,
+      "flagged": false,
+      "vetoed": false,
+      "status": "PROPOSED",
+      "scriptBytes": "0x8c08e9672be9edb9c61ab97f08be4c0d34f2c7630000000000000000000000242c16cd8a000000000000000000000000000000000000000000000000000000000000002a",
+      "contentBytes": "eyJzY2hlbWEiOiJ5ZWFybi5kYW8ucHJvcG9zYWwudjEiLCJtYXJrZG93biI6IiMgTG9jYWwgZXhlY3V0aW9uIFVBVFxuXG5WZXJpZnkgdGhlIGRlcGxveWVkIGdvdmVybmFuY2UgY29udHJhY3RzIG9uIGEgZGlzcG9zYWJsZSBmb3JrLlxuXG4jIyBFeGVjdXRpb25cblxuU2V0IHRoZSBsb2NhbCBtYXJrZXIgdG8gNDIuXG4iLCJkaXNjdXNzaW9uVXJsIjoiaHR0cHM6Ly9nb3YueWVhcm4uZmkvdC9sb2NhbC1mb3JrLXVhdC8xMjM0IiwicHJvcG9zYWxUeXBlIjoiZXhlY3V0YWJsZSIsImNyZWF0ZWRCeSI6IjB4ZjM5RmQ2ZTUxYWFkODhGNkY0Y2U2YUI4ODI3Mjc5Y2ZmRmI5MjI2NiIsImNyZWF0ZWRBdCI6IjIwMjYtMDktMTFUMTM6MDE6MDEuMDAwWiIsImFzc2V0cyI6W119Cg==",
+      "events": [
+        {
+          "type": "propose",
+          "log": {
+            "blockNumber": "25954326",
+            "blockHash": "0x3387025cec2775b6d456ff13a1068c5558ec9bbc18ff25486ef3c8be18f7ac10",
+            "timestamp": 1789131661,
+            "transactionHash": "0xa16b5135061e59e8adf3219805d8a57140143f1c45bb69edf1d1fe54379da085",
+            "transactionIndex": 0,
+            "logIndex": 0
+          }
+        }
+      ]
+    }
+  ]
+}

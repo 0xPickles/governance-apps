@@ -5,28 +5,30 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current implementation state (2026-09-10)
+## Current implementation state (2026-09-11)
 
-- The [milestone plan](milestone-plan.md) remains the single active delivery plan. Older package ordering and producer-start gates are superseded.
-- The accepted M2 mock UX and reviewed V2 consumer remain the baseline. Historical acceptance and evidence below are unchanged.
-- The consumer integration merge is `77a20d116c253a69945a85bd7213efb7f43cf2a8`. Its [integration evidence](evidence/feed-v2/integration.md) remains historical evidence.
-- The user reports producer review, release and active service at [the live endpoint](https://data.dao-ops.com/prod/dao.json).
-- Inspection found approved producer commit `7b67945253d91c495b148ee4f0a09a946a93390d` in clean producer history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
-- Direct and application-route reads returned the real empty feed. The disconnected application check used no wallet RPC.
-- The combined implementation is on `agent/dao/m5/live`, from clean base `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
-- Real runtime selection, forum checks, pinned raw-content publication/retrieval, connected-wallet creation and all lifecycle actions are implemented.
-- Fresh canonical preparation, exact-call simulation, receipt identity, ID zero and same-session awaiting-index recovery are implemented.
-- Seven local fork checks passed. Strengthened moderation and canonicality assertions passed in five selected cases.
-- The released producer passed separate local empty and creation checkpoints. Later producer lifecycle and reorg/restart checkpoints were not run.
-- Kubo retained the exact pinned bytes after restart. No external publication service or retention policy has been validated.
-- Typecheck, lint, 1335 unit tests, smoke E2E, production route modes, production/Worker builds and generated-feed checks passed.
-- The serial full suite had 33 passes and one bridge-readiness failure. The corrected case passed on a standalone rerun.
-- Actual results, limitations and [retained evidence](evidence/m5-live/README.md) distinguish live, fork, producer and saved-fixture checks.
-- The [local runbook](../local-fork-uat.md) provides setup, scenario controls and manual UAT commands. [Live services](../live-services.md) records configuration and recovery boundaries.
-- WP13–WP17 remain acceptance coverage in this package. Their broader fixture vectors are not claimed as fresh fork or producer execution.
+- The [milestone plan](milestone-plan.md) remains the single active plan. Older sequencing and producer-start gates are superseded.
+- Accepted mock UX, reviewed V2 reads, historical acceptance and [original evidence](evidence/m5-live/README.md) remain unchanged.
+- The package remains on `agent/dao/m5/live`, based on `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
+- Independent review of the original package requested five focused fixes before integration. The incremental review base is `f4f7e49bace1c26d2ba01d9c786cc92841e65d61`.
+- All five corrections are implemented. The [finding tracker](evidence/m5-live-review/README.md) records tests, evidence and pending re-review.
+- Publication is independently disabled by default. Configured uploads require an exact-content operator grant, uploader signature and finite unique-content budget.
+- Receipt recovery follows verified identical-call fee replacements. Cancellation and changed calls retain terminal transaction links.
+- Ordinary actions are saved when the hash arrives. Receipt timeouts retain a confirmation retry and prevent duplicate submission, including after reload.
+- Unpublished Markdown, forum input, scripts and review state survive eligibility refresh failures. Submission remains blocked until eligibility is fresh.
+- Oversized and failed response bodies reject without waiting for cancellation. DAO-FR-035 now distinguishes failures before and after submission.
+- Typecheck, lint and all 1364 tests in 151 files passed. Smoke E2E passed 44 tests with one expected skip.
+- The complete serial full suite passed all 34 cases in one run. Enabled/disabled production routes, production build, Worker build and size check passed.
+- The fork run passed six checks. Its creation/vote/execution case passed on a fresh-server rerun after a development browser script error.
+- The released producer retrieved the exact 382 UI-published bytes through native offline Kubo and emitted them in a local feed.
+- The producer-to-app browser check passed through actual routes, with zero wallet RPC and page errors. External provider and production configuration remain unverified.
+- The producer source remains clean at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`, with approved commit `7b67945253d91c495b148ee4f0a09a946a93390d` in its history.
+- The user reports producer release at [the live endpoint](https://data.dao-ops.com/prod/dao.json). Earlier direct and app reads verified its empty feed without wallet RPC.
+- The [local runbook](../local-fork-uat.md) covers signed uploads, scenario controls and optional producer content checks. [Live services](../live-services.md) defines configuration and recovery limits.
+- Operator inputs remain: reviewed deployment values, external provider, private credentials, retention policy, approved test target and production uploader-policy approval.
+- Independent re-review, user local UAT acceptance and external publication verification remain pending.
 - Integration remains clean and unchanged. Its 141 integration-only and 17 master-only commits require separate release reconciliation.
-- Operator inputs remain: reviewed consumer deployment values, selected external publication service, private credential references, retention policy and approved test target.
-- Independent review and user UAT acceptance remain pending. No merge, tag, app deployment, exposure, forum post or production blockchain transaction occurred.
+- No merge, tag, app deployment, public exposure, forum post or production blockchain transaction occurred.
 
 ## Historical state before reset
 

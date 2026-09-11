@@ -14,6 +14,6 @@ flowchart TD
   Approval --> Rollout["WP18 gated rollout"]
 ```
 
-The implementation and UAT use one package. The [current evidence](evidence/m5-live/README.md) and [local runbook](../local-fork-uat.md) record its delivered behavior and validation. A continuous producer and permanent fork infrastructure are unnecessary.
+The implementation and UAT use one package. The [current review evidence](evidence/m5-live-review/README.md) and [local runbook](../local-fork-uat.md) record its delivered behavior and validation. A continuous producer and permanent fork infrastructure are unnecessary.
 Producer checkpoints are optional. Fixture refresh is not indexing proof, and fixture tests are not producer interoperability evidence.
 Production transaction and deployment authority remain separate from local fork authorization.
