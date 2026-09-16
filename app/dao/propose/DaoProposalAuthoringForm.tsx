@@ -1032,8 +1032,8 @@ function DaoFinalReview({
         <DaoProposalEligibility proposer={proposer} />
       </ReviewSection>
 
-      {live ? <ReviewSection title={daoProposeCopy.publication.authorizationTitle}>
-        <p className="text-sm text-text-secondary">{daoProposeCopy.publication.authorizationBody}</p>
+      {live ? <ReviewSection title={daoProposeCopy.publication.downloadTitle}>
+        <p className="text-sm text-text-secondary">{daoProposeCopy.publication.downloadBody}</p>
         <Button type="button" variant="secondary" size="sm" onClick={() => {
           const identity = deriveDaoProposalContentIdentity(review.content);
           const url = URL.createObjectURL(new Blob([new Uint8Array(identity.bytes)], { type: "application/json" }));

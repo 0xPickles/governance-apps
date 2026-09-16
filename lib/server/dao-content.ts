@@ -2,7 +2,7 @@ import type { Hex } from "viem";
 import { isProductionMode } from "@/lib/runtime/runtime-mode";
 import { cancelDaoBody, readDaoBoundedBytes, validateDaoPublicationBytes } from "@/lib/clients/dao/publication";
 import { validateDaoForumTopic } from "@/lib/clients/dao/forum";
-import { DaoPublicationPolicyError, daoPublicationLimits, requireDaoPublicationEnabled } from "./dao-publication-policy";
+import { DAO_PUBLICATION_DEFAULT_LIMITS, DaoPublicationPolicyError, daoPublicationLimits, requireDaoPublicationEnabled } from "./dao-publication-policy";
 import { DaoPublicationStore, daoPublicationDatabase } from "./dao-publication-store";
 
 const PINATA_UPLOAD = "https://api.pinata.cloud/pinning/pinFileToIPFS";
@@ -98,7 +98,8 @@ export async function publishDaoContent(bytes: Uint8Array) {
   }
 }
 export async function readStoredDaoContent(digest: Hex) {
-  const store = new DaoPublicationStore(await daoPublicationDatabase(), daoPublicationLimits());
+  // Recovery is independent of upload configuration, credentials, and the publication switch.
+  const store = new DaoPublicationStore(await daoPublicationDatabase(), DAO_PUBLICATION_DEFAULT_LIMITS);
   const row = await store.read(digest);
   if (!row) throw new DaoPublicationPolicyError("unavailable", 503);
   const bytes = new Uint8Array(row.content);

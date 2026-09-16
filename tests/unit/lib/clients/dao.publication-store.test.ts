@@ -103,6 +103,8 @@ describe("publication with durable recovery", () => {
     await platform.dispose(); await start();
     expect(await publishDaoContent(i.bytes)).toMatchObject({ state: "already_published" });
     vi.stubEnv("DAO_PUBLICATION_ENABLED", "false");
+    vi.stubEnv("DAO_PUBLICATION_LIMITS", "invalid configuration");
+    vi.stubEnv("DAO_PINATA_JWT", ""); vi.stubEnv("DAO_IPFS_GATEWAY_URL", "");
     expect(await readStoredDaoContent(i.digest)).toEqual(i.bytes);
     expect(fetcher).toHaveBeenCalledTimes(2);
     await expect(publishDaoContent(identity(1).bytes)).rejects.toMatchObject({ code: "disabled" });

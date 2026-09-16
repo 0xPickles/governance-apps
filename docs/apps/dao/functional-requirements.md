@@ -299,7 +299,7 @@ detail. It shows:
 
 The review states that two separate actions are required. Step 2 stays visibly
 upcoming and unavailable until immutable content is published, and publication
-copy distinguishes an upload-authorization signature from the later onchain proposal transaction. After publication,
+copy distinguishes public content publication from the later wallet-authorized onchain proposal transaction. Publication requests no wallet signature. After publication,
 Step 1 retains its fingerprint receipt and focus moves to a distinct current
 Step 2 surface. When the transaction hash is known, View transaction appears
 before any proposal action. A successful receipt must bind the exact expected
@@ -322,9 +322,13 @@ Only a successful matching Propose receipt supplies an accepted proposal identit
 shows `Retry indexing`, which re-registers and indexes the same receipt-derived
 reference without duplicate records or events.
 
-Publication requires a separate server gate, explicit uploader authorization and an approved content budget.
-Enabling DAO reads alone must not enable uploads. Authorization metadata stays outside the canonical proposal document.
-The configured policy must reject unauthorized and over-budget content before forum or publication requests.
+Publication requires a separate default-off server gate and durable global admission against configured content and attempt budgets.
+Enabling DAO reads alone must not enable uploads. Admission metadata stays outside the canonical proposal document.
+The server must reject invalid and over-budget content before forum or publication requests.
+Authors need no provider account, publication signature, or per-document operator approval.
+The durable ledger must preserve canonical bytes, spent allowances, and recoverable reservations across replicas and restarts.
+Verified content must be reused without another provider request. Ambiguous uploads and gateway retries must have finite durable allowances.
+See [publication operations](pinata-publication.md) for the selected Pinata path and exact accounting.
 
 ### DAO-FR-036: bounded optional content retrieval
 
