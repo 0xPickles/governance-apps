@@ -1,0 +1,12 @@
+{
+  "proposals": 1,
+  "id": "0",
+  "bytes": 382,
+  "digest": "0x71ef88a77e301d47957b438c72aa010773908caa1a85dfe88aadd863dcd57add",
+  "block": {
+    "number": "25990611",
+    "hash": "0x70c2bb58184b6e199ef93584c60cfaa21d80cba725a87f3a61c87a2755fc9795",
+    "timestamp": 1789568635
+  },
+  "observedAt": 1789570519
+}

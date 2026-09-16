@@ -1,0 +1,6 @@
+
+> governance-apps@0.1.0 typecheck
+> tsc --noEmit
+
+tests/integration/hooks/useDaoLiveRecovery.test.tsx(45,72): error TS2554: Expected 2-3 arguments, but got 1.
+tests/integration/hooks/useDaoLiveRecovery.test.tsx(57,57): error TS2554: Expected 2-3 arguments, but got 1.

@@ -12,18 +12,21 @@ The approved producer implementation is `7b67945253d91c495b148ee4f0a09a946a93390
 An inspection on 2026-09-10 found this commit in the clean producer integration history at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`.
 A direct endpoint read returned one deployment and zero proposals. This proves endpoint availability, not lifecycle coverage or deployment identity.
 
-The combined package now implements these application flows and supplies local fork evidence. See [current review evidence](evidence/m5-live-review/README.md) and the [runbook](../local-fork-uat.md). External publication configuration, independent review, user acceptance and rollout remain separate outstanding work.
+The combined package implements these application flows and supplies local fork evidence.
+See [inherited M5 review evidence](evidence/m5-live-review/README.md), [publication evidence](evidence/m5-pinata/README.md), and the [runbook](../local-fork-uat.md).
+External publication configuration, independent review, user acceptance, and rollout remain separate outstanding work.
 
 The five findings from independent review are addressed in the [finding tracker](evidence/m5-live-review/README.md#finding-tracker).
 The follow-up keeps this package and architecture. Independent re-review remains pending.
 
-## 1. Complete public publication through Pinata
+## 1. Review public publication through Pinata
 
-The next package is `codex/dao/m5/pinata`, based on M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
+The implemented publication package is `codex/dao/m5/pinata`, based on M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
 Follow [the implementation task](pinata-publication-task.md) and [the accepted implementation decision](../experiments/pinata-free/decision.md).
 The earlier M5 implementation remains its dependency. Keep integration unchanged during implementation.
 WP13–WP15 remain acceptance requirements, with per-document publication grants superseded by bounded public admission.
-The experiment is closed. Its missing permission/revocation evidence moves to the small final staging session, without blocking code work.
+The experiment is closed. [Current implementation evidence](evidence/m5-pinata/README.md) records local results.
+The small [operator session](../pinata-acceptance.md) remains a release gate.
 
 - Reuse the proxy, V2 parser, adapter, routes, and live wallet overlay.
 - Select real clients with `NEXT_PUBLIC_USE_MOCKS=false`. Production never falls back to mocks.
@@ -51,12 +54,12 @@ Assert receipts and resulting state independently. Refreshing a fixture does not
 Cover creation/ID zero, signals, voting, replacement and zero contributions, retract, Flag, both Veto paths, and execution.
 Include wallet rejection, reverts, wrong network, stale preparation, time/configuration changes, indexing delay, and canonical replacement.
 Confine time controls to local tests. Preserve production freshness and canonicality checks.
-Optionally run the released producer at useful checkpoints with temporary configuration, state, and locally served output.
+This publication package requires one released-producer checkpoint with temporary configuration, state, and locally served output.
 Record checkpoint limits without modifying the producer or claiming fixture coverage as producer interoperability.
 No continuous producer or permanent fork infrastructure is required.
 
 Run typecheck, lint, unit tests, smoke E2E, serial full E2E, build, and the generated-feed check.
-Run enabled/disabled production route checks, applicable Worker checks, and dependency validation if dependencies change.
+Run enabled/disabled production route checks, applicable Worker checks, and dependency validation.
 Record actual results and separate fixture, contract-executed fork, and live endpoint evidence. Unperformed tests remain pending.
 
 ## 3. Obtain independent review

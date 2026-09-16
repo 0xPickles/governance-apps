@@ -1,0 +1,262 @@
+
+> governance-apps@0.1.0 test:e2e
+> playwright test --project=smoke --workers=1
+
+[WebServer] (node:70564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:70565) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:70565) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[WebServer] ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+[WebServer] (node:70690) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:70690) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+
+Running 45 tests using 1 worker
+
+(node:70834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:70834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   1 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:18:5 › authors, reviews, publishes, and submits a Signal proposal (18.8s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   2 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:82:5 › authors an executable proposal from the full raw script (10.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   3 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:138:5 › keeps the exact review locked and announces asynchronous progress (10.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   4 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:257:5 › starts authoring with keyboard focus below the sticky header (27.3s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   5 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:293:5 › shows deterministic forum validation failures without clearing content (13.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   6 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:316:5 › preserves the draft and does not start the wallet step after publication failure (10.3s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   7 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:340:5 › keeps publication after every failed typed transaction outcome (20.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:71702) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:71718) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:386:5 › uses visible review controls for rejection then retries the same publication to Indexed (15.9s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   9 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:468:5 › renders every mutable proposer blocker and the shared capacity rule (11.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  10 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:492:5 › keeps normal eligibility compact while retaining the six-epoch range (9.2s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+  ✓  11 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:18:5 › answers preview DAO HEAD probes without self-proxying (2.3s)
+  -  12 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:33:5 › fails closed for production DAO requests without a server error
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  13 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:64:5 › renders the DAO proposal board shell (2.5s)
+[WebServer] (node:71878) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:71894) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  14 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:96:5 › links the shared DAO application label home on desktop and mobile (7.1s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  15 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:132:5 › wraps the long shared app label at 200% mobile text without clipping (6.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:71978) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:206:5 › preserves the board group through replace, reload, detail, and Back (6.5s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  17 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:252:5 › keeps nested row controls independent of the stretched proposal link (3.8s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:72022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  18 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:280:5 › makes no dead-loopback RPC request while hydrating every DAO route (6.5s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:72065) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:72067) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  19 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:350:5 › uses clean client-side paths on the guarded DAO beta host (7.4s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  20 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:434:5 › exposes the shared DAO debug section without route-local controls (2.6s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  21 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:465:5 › moves debug-panel focus and removes its entrance animation for reduced motion (2.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:72179) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:72199) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  22 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:489:5 › uses the typed bridge to mutate DAO facts and refresh infinitely fresh queries (21.1s)
+[WebServer] (node:72289) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:72298) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  23 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:531:5 › renders DAO proposal detail and not-found shells (5.1s)
+  ✓  24 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:564:5 › renders the DAO proposal authoring shell without M2 form controls (2.8s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:72360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  25 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:583:5 › contains every DAO route at 390px (7.1s)
+[WebServer] (node:72399) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  26 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:619:5 › wraps an arbitrary-length numeric proposal ID at 390px (2.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+  ✓  27 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:632:5 › balances all six preview launcher apps across desktop rows (4.7s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+  ✓  28 [smoke] › tests/e2e/smoke/discoverability.spec.ts:3:5 › publishes canonical metadata and nonce-protected WebSite JSON-LD (5.7s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  29 [smoke] › tests/e2e/smoke/discoverability.spec.ts:37:5 › scopes machine-readable discovery files to the approved yearn.fi host (3.6s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  30 [smoke] › tests/e2e/smoke/onboarding.spec.ts:4:5 › connects and defaults to stYFIx (10.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  31 [smoke] › tests/e2e/smoke/styfi-external-portfolio.spec.ts:9:5 › shows external portfolio and opens veYFI in a new tab (28.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  32 [smoke] › tests/e2e/smoke/styfi-flow.spec.ts:13:5 › stake, cooldown, and withdraw via bridge controls (41.4s)
+  ✓  33 [smoke] › tests/e2e/smoke/styfi-governance.spec.ts:17:5 › shows permanent Snapshot Voting navigation and an active vote banner (2.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✘  34 [smoke] › tests/e2e/smoke/styfi-governance.spec.ts:51:5 › keeps Snapshot Voting available in the mobile menu without an active vote (12.3s)
+(node:73114) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:73114) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  35 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:12:5 › renders the Team Finances route shell (11.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  36 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:76:5 › keeps loading and empty coverage reachable through the shared Teams runtime (4.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  37 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:104:5 › restores deep links and browser history without resetting active sections (10.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  38 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:232:5 › keeps DAI and USDC labels horizontal in the nested revenue pane (2.9s)
+  ✓  39 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:330:5 › contains long deposit-preview words and values at 375px (2.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  40 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:415:5 › keeps bonus math inside the viewport at 375px (2.6s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  41 [smoke] › tests/e2e/smoke/veyfi-flow.spec.ts:13:5 › migrate legacy veYFI and redeem sdYFI (38.6s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  42 [smoke] › tests/e2e/smoke/ybc-shell.spec.ts:10:5 › renders the YBC overview and operator panel states (13.2s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  43 [smoke] › tests/e2e/smoke/ybc-shell.spec.ts:64:5 › contains YBC identity and timestamp layouts at 360px (10.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  44 [smoke] › tests/e2e/smoke/ybc-shell.spec.ts:146:7 › touch identity controls › keeps the compact member address as the tap target (9.1s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead.
+  ✘  45 [smoke] › tests/e2e/smoke/yeth-flow.spec.ts:14:5 › claim, stay, redeem, claim-ended, and empty-state flows (2.0m)
+
+
+  1) [smoke] › tests/e2e/smoke/styfi-governance.spec.ts:51:5 › keeps Snapshot Voting available in the mobile menu without an active vote
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('link', { name: /snapshot voting/i })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('link', { name: /snapshot voting/i })
+
+
+      61 |   const mobileLink = page.getByRole("link", { name: /snapshot voting/i });
+      62 |   const toolsButton = page.getByRole("button", { name: "Tools", exact: true });
+    > 63 |   await expect(mobileLink).toBeVisible();
+         |                            ^
+      64 |   await expect(mobileLink).toHaveAttribute("href", SNAPSHOT_SPACE_URL);
+      65 |   const mobileLinkBox = await mobileLink.boundingBox();
+      66 |   const toolsButtonBox = await toolsButton.boundingBox();
+        at <WORKTREE>/tests/e2e/smoke/styfi-governance.spec.ts:63:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/styfi-governance-keeps-Sna-2707e-menu-without-an-active-vote-smoke/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/styfi-governance-keeps-Sna-2707e-menu-without-an-active-vote-smoke/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/styfi-governance-keeps-Sna-2707e-menu-without-an-active-vote-smoke/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/styfi-governance-keeps-Sna-2707e-menu-without-an-active-vote-smoke/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/styfi-governance-keeps-Sna-2707e-menu-without-an-active-vote-smoke/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [smoke] › tests/e2e/smoke/yeth-flow.spec.ts:14:5 › claim, stay, redeem, claim-ended, and empty-state flows
+
+    Test timeout of 120000ms exceeded.
+
+    Error: page.waitForFunction: Test timeout of 120000ms exceeded.
+
+       at utils.ts:18
+
+      16 |
+      17 | export async function waitForTestBridge(page: Page) {
+    > 18 |   await page.waitForFunction(() => !!window.__TEST__);
+         |              ^
+      19 | }
+      20 |
+      21 | export async function resetBridge(page: Page) {
+        at waitForTestBridge (<WORKTREE>/tests/e2e/utils.ts:18:14)
+        at <WORKTREE>/tests/e2e/smoke/yeth-flow.spec.ts:18:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/yeth-flow-claim-stay-redee-35cd8-ended-and-empty-state-flows-smoke/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/yeth-flow-claim-stay-redee-35cd8-ended-and-empty-state-flows-smoke/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/yeth-flow-claim-stay-redee-35cd8-ended-and-empty-state-flows-smoke/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/yeth-flow-claim-stay-redee-35cd8-ended-and-empty-state-flows-smoke/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/yeth-flow-claim-stay-redee-35cd8-ended-and-empty-state-flows-smoke/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [smoke] › tests/e2e/smoke/styfi-governance.spec.ts:51:5 › keeps Snapshot Voting available in the mobile menu without an active vote
+    [smoke] › tests/e2e/smoke/yeth-flow.spec.ts:14:5 › claim, stay, redeem, claim-ended, and empty-state flows
+  1 skipped
+  42 passed (10.1m)

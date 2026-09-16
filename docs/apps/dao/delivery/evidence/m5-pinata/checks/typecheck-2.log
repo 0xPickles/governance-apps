@@ -1,0 +1,5 @@
+
+> governance-apps@0.1.0 typecheck
+> tsc --noEmit
+
+tests/e2e/dao-live/lifecycle.spec.ts(38,67): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.

@@ -1,0 +1,21 @@
+[
+  {
+    "results": [
+      {
+        "digest": "0x71ef88a77e301d47957b438c72aa010773908caa1a85dfe88aadd863dcd57add",
+        "cid": "bafkreidr56eko7rqdvdzk62drrzkuaihooiizkq2qxp6rcvn3br5zvl23u",
+        "byte_length": 382,
+        "published_at": 1789570075,
+        "upload_accepted": 1,
+        "upload_attempts": 1,
+        "retrieval_attempts": 1,
+        "reservations": 1,
+        "lease_until": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 1
+    }
+  }
+]

@@ -12,9 +12,13 @@ package starts.
 - [The live review](../experiments/pinata-free/live-review-2026-09-16.md) records exact-content compatibility, producer retrieval, limitations and completed cleanup.
 - Worktree: `governance-apps.dao.m5.pinata`; branch: `codex/dao/m5/pinata`.
 - Application base: `fc81ae0502efe45ed84367062a57df16c6dab46c` from `agent/dao/m5/live`.
-- Only evidence and planning documents are prepared. Application behavior and production flags are unchanged.
-- The inherited per-document grant workflow will be replaced. Missing dashboard counters and the complete experiment matrix do not block implementation.
-- Small credential checks remain staging acceptance items. Live provider requests, deployment and production transactions are not authorized by this documentation setup.
+- Server-side Pinata publication, durable D1 admission, retained bytes, and bounded recovery are implemented.
+- The implementation started at `e1bd671b87758c49311bb0d8c3e6d93fbeeca61c`. See [current validation](evidence/m5-pinata/README.md).
+- Local validation passed: typecheck, lint, 1,392 unit tests, 44 smoke tests with one expected skip, all 34 serial full tests,
+  seven fork tests, released-producer/app retrieval, production route checks, builds, and Worker size.
+- Production flags and remote infrastructure remain unchanged.
+- The inherited document grants and publication-only signature are removed. Governance transaction safeguards remain.
+- Small credential checks remain staging acceptance items. Live provider requests, deployment, and production transactions were not part of implementation.
 - The original spike is retained for audit. Its runner, private configuration and runtime ledger are not application dependencies.
 - Integration is still `28dd8fff2e7ff00961174635715be8d18ecd8d42`; M5 live is a dependency of this package, not an integrated baseline.
 - Integrate reviewed M5 live before or with the new publication package. Reconcile the 141/17 master divergence separately before rollout.
@@ -22,7 +26,7 @@ package starts.
 ## Inherited M5 implementation evidence (2026-09-11)
 
 The following records the code inherited at package start. Statements about provider selection, grants and old next steps are superseded by the current task.
-Historical test results are retained; they do not count as validation of the forthcoming publication changes.
+Historical test results are retained. They do not count as validation of this publication package.
 
 - The [milestone plan](milestone-plan.md) remains the single active plan. Older sequencing and producer-start gates are superseded.
 - Accepted mock UX, reviewed V2 reads, historical acceptance and [original evidence](evidence/m5-live/README.md) remain unchanged.

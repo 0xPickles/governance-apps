@@ -1,0 +1,37 @@
+
+> governance-apps@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.5 <WORKTREE>
+
+{"level":10,"time":1789569983451,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","msg":"Initialized"}
+{"level":10,"time":1789569983452,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","msg":"Initialized"}
+{"level":10,"time":1789569983452,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/history","msg":"Initialized"}
+{"level":10,"time":1789569983452,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/history","msg":"Initialized"}
+{"level":10,"time":1789569983452,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/expirer","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/expirer","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/subscription","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/subscription","msg":"Initialized"}
+{"level":20,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Successfully Restored records for messages"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","type":"method","method":"restore","size":0}
+{"level":20,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Successfully Restored records for messages"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","type":"method","method":"restore","size":0}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","context":"core/pairing/pairing","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","context":"core/pairing/pairing","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","msg":"Initialized"}
+{"level":10,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","msg":"Initialized"}
+{"level":30,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","msg":"Core Initialization Success"}
+{"level":30,"time":1789569983453,"pid":79306,"hostname":"lerna.local","name":"core","context":"core","msg":"Core Initialization Success"}
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's scrollBy() method
+
+ Test Files  153 passed (153)
+      Tests  1392 passed (1392)
+   Start at  16:46:21
+   Duration  25.87s (transform 8.62s, setup 49.76s, import 59.79s, tests 66.71s, environment 33.30s)

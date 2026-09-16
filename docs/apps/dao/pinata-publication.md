@@ -43,6 +43,8 @@ The package adds no application dependency.
 | `documentReservations` | 6 | Lifetime publication jobs for one digest, including forum errors and crashes |
 
 These numbers are application allowances, not Pinata plan facts or billing formulas.
+They apply to one shared D1 ledger. Separate production and preproduction databases do not enforce an account-wide cap.
+If environments share a provider account, review their combined allowances before enabling both.
 The [complete JSON example](examples/publication-limits.json) matches the implementation defaults.
 Each legitimate revision consumes another document slot. A busy period can exhaust the hourly allowance.
 Operators can revise limits after usage review. Authors never request document approval.

@@ -141,7 +141,8 @@ The app's retained GET proves local recovery. The separate gateway check proves 
 
 The helper writes `acceptance-ledger.json` before each request.
 Empty or invalid confirmations cause another prompt.
-A negative confirmation requires a skip reason and leaves that check unproven.
+A negative confirmation for an individual request requires a skip reason and leaves that check unproven.
+Declining launch stops before key input or application startup and reports that no publication evidence was recorded.
 If a process stops with `acceptance.lock`, first make sure that no helper remains active.
 Remove only the stale lock. Preserve the ledger and uncertain request reservation.
 

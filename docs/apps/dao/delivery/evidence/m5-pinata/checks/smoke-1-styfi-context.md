@@ -1,0 +1,65 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e7]
+        - button "Open navigation menu" [active] [ref=e14]:
+          - img [ref=e15]
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e22]: "Total Supply:"
+            - generic [ref=e23]: "-- YFI"
+          - generic [ref=e24]:
+            - generic [ref=e25]: "Staked:"
+            - generic [ref=e26]: "-- YFI"
+          - generic [ref=e27]:
+            - generic [ref=e28]: "APR:"
+            - generic [ref=e29]: "--%"
+        - main [ref=e30]:
+          - paragraph [ref=e33]: Account Summary
+          - generic [ref=e41]:
+            - generic [ref=e43]:
+              - generic [ref=e44]:
+                - generic [ref=e45]:
+                  - button "stYFI" [ref=e46]
+                  - button "stYFIx" [pressed] [ref=e47]
+                - button "Compare modes" [ref=e48]
+              - generic [ref=e49]: You are managing stYFIx. Voting is delegated for passive yield.
+              - tablist [ref=e51]:
+                - tab "Stake" [selected] [ref=e53]:
+                  - generic [ref=e55]: Stake
+                - tab "Unstake" [ref=e58]:
+                  - generic [ref=e60]: Unstake
+              - generic [ref=e62]:
+                - generic [ref=e63]:
+                  - paragraph [ref=e64]: Amount to stake
+                  - generic [ref=e65]:
+                    - generic [ref=e66]: 0 YFI
+                    - generic [ref=e67]: →
+                    - generic [ref=e68]: 0 stYFIx
+                - generic [ref=e69]:
+                  - generic [ref=e70]:
+                    - textbox "0.00" [disabled] [ref=e71]
+                    - generic [ref=e72]:
+                      - button "Max" [disabled]
+                      - generic "YFI" [ref=e73]
+                  - 'button "Balance: 0 YFI" [disabled] [ref=e76]'
+                - button "Stake YFI" [disabled] [ref=e78]
+            - generic [ref=e96]:
+              - heading "Mock mode" [level=3] [ref=e97]
+              - generic [ref=e99]:
+                - generic [ref=e100]: This dashboard is running against mock clients while contracts finalize.
+                - button "Reset mock state" [ref=e101]
+          - group [ref=e102]:
+            - generic "Contracts" [ref=e103] [cursor=pointer]:
+              - generic [ref=e104]: Contracts
+              - img [ref=e105]
+      - button "🛠️ Debug" [ref=e107]
+  - button "Open Next.js Dev Tools" [ref=e113] [cursor=pointer]:
+    - img [ref=e114]
+```
