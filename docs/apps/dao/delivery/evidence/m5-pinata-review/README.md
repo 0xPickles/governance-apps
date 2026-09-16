@@ -1,8 +1,11 @@
 # Pinata publication acknowledgement correction
 
 Review base: `6886f447da52006f9659b91a5129572b944a92e5` on `codex/dao/m5/pinata`.
+Correction commit: `a5b82c412df26eae3dfe4e5e64aa16221de94a0d`.
+Code review range: `6886f447da52006f9659b91a5129572b944a92e5..a5b82c412df26eae3dfe4e5e64aa16221de94a0d`.
 The worktree was clean at correction start.
 The [original implementation evidence](../m5-pinata/README.md) remains historical and unchanged.
+The inherited M5 dependency remains `fc81ae0502efe45ed84367062a57df16c6dab46c`; integration order is unchanged.
 
 ## Finding tracker
 
@@ -44,11 +47,53 @@ The gateway fixture always returns the exact bytes, including while upload reque
 - Acknowledgement survives restart and avoids reupload.
 - Older unacknowledged success records fail closed without counter changes.
 
-The initial reproduction produced five expected regression failures and two local-runtime test timeouts.
-The corrected focused run passed all 57 tests in four files.
-It used a 30-second test timeout to accommodate the local D1 runtime.
-Typecheck and the full repository lint command passed.
-Final repository checks are recorded here after completion.
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Pre-fix reproduction on real D1 | 5 expected regression failures, 2 runtime timeouts, 14 passes | [Reproduction](checks/red.log) |
+| Corrected publication and authoring regressions | 57 tests passed in four files | [Focused tests](checks/focused.log) |
+| Complete unit run | 1,391 passed, 6 failed across 153 files; exit 1 | [Full unit run](checks/unit.log) |
+| Separate rerun of six full-suite UI failures | 1 passed, 5 failed; 44 unselected tests skipped | [UI rerun](checks/ui-rerun.log) |
+| `npm run typecheck` | Passed | [Typecheck](checks/typecheck.log) |
+| `npm run lint` | Passed | [Lint](checks/lint.log) |
+| Original evidence integrity | All 49 retained checksums valid; original files unchanged | [Checksums](checks/original-checksums.log) |
+| Current documentation links | All relative links resolve | [Links](checks/document-links.log) |
+
+The focused run used `--testTimeout=30000` for local D1 runtime headroom.
+Its complete command was:
+
+```sh
+npx vitest run tests/unit/lib/clients/dao.publication-store.test.ts tests/unit/lib/clients/dao.publication.test.ts tests/unit/lib/clients/dao.publication-policy.test.ts tests/integration/hooks/useDaoLiveRecovery.test.tsx --testTimeout=30000
+```
+
+The two reproduction timeouts occurred in existing D1 race and propagation checks under heavy system load.
+The corrected run passed those checks without assertion changes.
+The complete unit command was `npm run test -- --maxWorkers=2 --testTimeout=30000`.
+It completed in 1,660.53 seconds. The machine's observed load average exceeded 170 during validation.
+The six failures were confined to the two UI files listed below; both files are unchanged.
+All 151 other files passed, including the real D1 publication regressions.
+
+The separate UI rerun used one worker and the same 30-second test timeout:
+
+```sh
+npx vitest run tests/components/TeamsPageClient.test.tsx tests/components/DaoProposalAuthoringForm.test.tsx --maxWorkers=1 --testTimeout=30000 --reporter=verbose -t 'cleans an unknown|mutates route coverage|keeps published bytes|shows fixed parser code|publishes a Signal snapshot|shows the transaction before receipt identity'
+```
+
+Receipt-to-index recovery passed on that rerun. Five failures remain unresolved:
+
+- Teams directory cleanup: expected heading not found.
+- Teams debug state: expected loading text not found.
+- DAO reverted-receipt recovery: 30-second timeout.
+- DAO parser display: expected parser code not found.
+- DAO Signal publication: expected review heading not found.
+
+These tests exercise unchanged mock-backed UI code. This correction changes only server publication and D1 success conditions.
+Heavy host load is observed context, not a proven explanation for every failure.
+The partial rerun does not establish a passing full suite.
+
+The editor, route schema, and governance transaction code are unchanged.
+Browser/fork suites and builds were not repeated for this correction; their earlier results remain historical in the original evidence.
+The [SHA-256 manifest](artifact-sha256.txt) covers every retained correction evidence file except itself.
+Local paths, the machine name, and terminal formatting are normalized in retained logs.
 
 ## Acceptance and deployment handoff
 

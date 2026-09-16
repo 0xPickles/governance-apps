@@ -1,0 +1,142 @@
+
+ RUN  v4.1.5 <WORKTREE>
+
+ ❯ |node| tests/unit/lib/clients/dao.publication-store.test.ts (21 tests | 7 failed) 46335ms
+     × serializes same-digest races across independent stores 6907ms
+     × requires upload acceptance before completing a live reservation 296ms
+     × requires another acknowledged upload after an rejected attempt despite retrievable bytes 1195ms
+     × requires another acknowledged upload after an ambiguous attempt despite retrievable bytes 902ms
+     × exhausts unacknowledged upload attempts without accepting open-gateway bytes 874ms
+     × fails closed on older published records without upload acceptance 558ms
+     × bounds propagation and never reuploads acknowledged content 5149ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > serializes same-digest races across independent stores
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/lib/clients/dao.publication-store.test.ts:41:3
+     39| afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restor…
+     40| describe("admission on real local D1", () => {
+     41|   it("serializes same-digest races across independent stores", async (…
+       |   ^
+     42|     const requests = await Promise.allSettled(Array.from({ length: 12 …
+     43|     expect(requests.filter(r => r.status === "fulfilled")).toHaveLengt…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > requires upload acceptance before completing a live reservation
+AssertionError: promise resolved "1789584049" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+1789584049
+
+ ❯ tests/unit/lib/clients/dao.publication-store.test.ts:99:65
+     97|     await store.spend(first.row.digest, first.token!, "upload");
+     98|     await store.spend(first.row.digest, first.token!, "retrieval");
+     99|     await expect(store.verified(first.row.digest, first.token!)).rejec…
+       |                                                                 ^
+    100|     expect(await db.prepare("SELECT published_at, upload_accepted, upl…
+    101|       .toEqual({ published_at: null, upload_accepted: 0, upload_attemp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > requires another acknowledged upload after an rejected attempt despite retrievable bytes
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > requires another acknowledged upload after an ambiguous attempt despite retrievable bytes
+AssertionError: promise resolved "{ …(4) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "cid": "bafkreicpa2vbejztlyyxrpmjvoavvflzaowdkihxo6uslkukzpil5622km",
++   "digest": "0x4f06aa1227335e3178bd89ab815a957903ac3520f777a925aa8acbd0befb5a53",
++   "publishedAt": 1789584053,
++   "state": "published",
+  }
+
+ ❯ tests/unit/lib/clients/dao.publication-store.test.ts:139:45
+    137|     await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ c…
+    138|     await db.prepare("UPDATE dao_publications SET retry_after = 0").ru…
+    139|     await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ c…
+       |                                             ^
+    140|     await expect(readStoredDaoContent(i.digest)).rejects.toThrow();
+    141|     expect(await db.prepare("SELECT published_at, upload_accepted, upl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > exhausts unacknowledged upload attempts without accepting open-gateway bytes
+AssertionError: promise resolved "{ …(4) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "cid": "bafkreicpa2vbejztlyyxrpmjvoavvflzaowdkihxo6uslkukzpil5622km",
++   "digest": "0x4f06aa1227335e3178bd89ab815a957903ac3520f777a925aa8acbd0befb5a53",
++   "publishedAt": 1789584054,
++   "state": "published",
+  }
+
+ ❯ tests/unit/lib/clients/dao.publication-store.test.ts:156:47
+    154|     vi.stubGlobal("fetch", fetcher);
+    155|     for (let attempt = 0; attempt < defaults.documentUploadAttempts; a…
+    156|       await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({…
+       |                                               ^
+    157|       await db.prepare("UPDATE dao_publications SET retry_after = 0").…
+    158|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > fails closed on older published records without upload acceptance
+AssertionError: promise resolved "{ …(4) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "cid": "bafkreicpa2vbejztlyyxrpmjvoavvflzaowdkihxo6uslkukzpil5622km",
++   "digest": "0x4f06aa1227335e3178bd89ab815a957903ac3520f777a925aa8acbd0befb5a53",
++   "publishedAt": 1,
++   "state": "already_published",
+  }
+
+ ❯ tests/unit/lib/clients/dao.publication-store.test.ts:186:45
+    184|     await db.prepare("UPDATE dao_publications SET published_at = 1, le…
+    185|     const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
+    186|     await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ c…
+       |                                             ^
+    187|     await expect(readStoredDaoContent(i.digest)).rejects.toThrow();
+    188|     expect(fetcher).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > bounds propagation and never reuploads acknowledged content
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/lib/clients/dao.publication-store.test.ts:192:3
+    190|       .toEqual({ published_at: 1, upload_accepted: 0, reservations: 1,…
+    191|   });
+    192|   it("bounds propagation and never reuploads acknowledged content", as…
+       |   ^
+    193|     const i = identity();
+    194|     const fetcher = vi.fn(async (_url: string, options: RequestInit) =…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 14 passed (21)
+   Start at  20:39:48
+   Duration  76.11s (transform 6.32s, setup 5.59s, import 22.38s, tests 46.34s, environment 0ms)
