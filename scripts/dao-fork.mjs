@@ -190,7 +190,7 @@ export async function scenario(command, args = []) {
       command === "vote" ? state.deployment.supportedVoters[0] : voting);
     await record(state, hash); return { hash };
   }
-  throw new Error("Use setup, grant CONTENT, reset, mine, phase vote|execute ID, propose CONTENT [signal|SCRIPT_FILE], record HASH [CONTENT], fixture, status, vote|retract|flag|veto|execute ID, or replace ID YEA_BPS.");
+  throw new Error("Use setup, reset, mine, phase vote|execute ID, propose CONTENT [signal|SCRIPT_FILE], record HASH [CONTENT], fixture, status, vote|retract|flag|veto|execute ID, or replace ID YEA_BPS.");
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log(json(await scenario(process.argv[2] ?? "status", process.argv.slice(3))));

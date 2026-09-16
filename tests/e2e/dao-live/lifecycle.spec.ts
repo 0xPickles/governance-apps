@@ -77,7 +77,13 @@ test("publishes exact bytes, creates ID zero, recovers feed lag, votes and execu
   await page.getByRole("button", { name: "Review proposal", exact: true }).click();
   await page.getByRole("checkbox", { name: /I reviewed/ }).check();
   // The real route performs public durable admission. No grant or publication wallet signature.
+  // Corrupt one transport body to exercise actual route rejection while preserving the editor review.
+  await page.route("**/api/dao-content", route => route.continue({ postData: "invalid canonical bytes" }), { times: 1 });
   await page.getByRole("button", { name: "Publish immutable content", exact: true }).click();
+  await expect(page.getByText("Proposal content was not published", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create onchain proposal", exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => window.daoTestWallet.hashes)).toEqual([]);
+  await page.getByRole("button", { name: "Retry content publication", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Immutable content published", exact: true })).toBeVisible();
   await page.evaluate(() => { window.daoTestWallet.reject = true; });
   await page.getByRole("button", { name: "Create onchain proposal", exact: true }).click();
