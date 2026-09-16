@@ -1,0 +1,10 @@
+cloudflare-env.d.ts:11523: trailing whitespace.
++    composite?:
+cloudflare-env.d.ts:12037: trailing whitespace.
++declare type CertVerificationStatus =
+cloudflare-env.d.ts:12105: trailing whitespace.
++type D1SessionConstraint =
+cloudflare-env.d.ts:12525: trailing whitespace.
++type ImageCompositeMode =
+cloudflare-env.d.ts:12960: trailing whitespace.
++    type Serializable<T> =

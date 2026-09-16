@@ -75,6 +75,8 @@ Browser suites ran serially in this worktree. No two Next builds or browser serv
 - The [first production build](checks/production-enabled-1.log) stopped at the existing required-RPC configuration guard.
   Subsequent local builds explicitly use `NEXT_PUBLIC_RPC_URLS=http://127.0.0.1:18545`.
   The guard remains intact; no private RPC configuration was needed or inspected.
+- The [final full-range whitespace check](checks/range-whitespace-1.log) found five lines emitted by Wrangler's type generator.
+  Their trailing spaces were removed without changing declarations or runtime behavior.
 
 Dependency installation and type generation initially encountered sandbox network/loopback restrictions.
 Authorized local retries succeeded. No remote resource was created.
@@ -147,7 +149,8 @@ Review the inherited M5 range
 before or together with this package.
 The publication implementation range starts at `e1bd671b87758c49311bb0d8c3e6d93fbeeca61c`.
 The validated code/test tip is `eed4059c80bc4f04dde42106777e7bd0a2988e92`.
-The final evidence/documentation commit follows that tip; the handoff supplies its exact final review range.
+Only evidence/documentation and generated-type whitespace cleanup follow that tip.
+The handoff supplies the exact final review range.
 Documentation setup between M5 live and that start is also part of the branch history.
 Integrate reviewed M5 live first, then this package, or review a combined merge preserving that ancestry.
 Master reconciliation is a separate task.
