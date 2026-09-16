@@ -9,7 +9,8 @@ import {
 } from "./lib/runtime/security-headers";
 import { shouldSendNoIndexHeader } from "./lib/runtime/deployment-env";
 
-initOpenNextCloudflareForDev();
+initOpenNextCloudflareForDev(process.env.NEXT_PUBLIC_RUNTIME_MODE === "development" && process.env.DAO_PUBLICATION_LOCAL_STATE
+  ? { persist: { path: process.env.DAO_PUBLICATION_LOCAL_STATE } } : undefined);
 
 interface WebpackConfig {
   resolve?: {

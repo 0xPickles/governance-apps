@@ -137,15 +137,6 @@ export async function scenario(command, args = []) {
     return state;
   }
   const state = await load();
-  if (command === "grant") {
-    const bytes = await readFile(args[0]);
-    assert.ok(bytes.length > 0 && bytes.length <= 131072, "Content exceeds the local grant byte limit.");
-    const content = JSON.parse(bytes);
-    assert.match(content.createdBy, /^0x[0-9a-f]{40}$/i);
-    const policy = { maxDocuments: 1, maxTotalBytes: bytes.length, grants: [{ uploader: content.createdBy, digest: sha256(bytes), bytes: bytes.length }] };
-    await writeFile(directory + "/publication-policy.json", json(policy));
-    return policy; // Replaces only this disposable local policy.
-  }
   if (command === "reset") {
     assert.equal(await rpc("evm_revert", [state.ready]), true, "Fork snapshot was lost; restart the node and run setup.");
     state.ready = await rpc("evm_snapshot"); state.proposals = {};

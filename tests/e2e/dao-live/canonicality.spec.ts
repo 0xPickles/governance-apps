@@ -14,7 +14,7 @@ test("invalidates real fork preparation after head advancement and canonical rep
   expect(parsed.protocol).toBe("http:");
   const request: DaoWalletContext["rpc"]["request"] = async ({ method, params }) => {
     const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params: params ?? [] }) });
-    const result = await response.json();
+    const result = await response.json() as { result?: unknown; error?: { message: string } };
     if (result.error) throw new Error(result.error.message);
     return result.result;
   };

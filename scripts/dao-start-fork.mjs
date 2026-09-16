@@ -2,7 +2,7 @@
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-require("@next/env").loadEnvConfig(process.cwd());
+if (!process.env.DAO_FORK_SOURCE_RPC) require("@next/env").loadEnvConfig(process.cwd());
 const source = process.env.DAO_FORK_SOURCE_RPC ?? process.env.NEXT_PUBLIC_RPC_URLS?.split(",")[0]?.trim();
 if (!source) throw new Error("Set DAO_FORK_SOURCE_RPC to the approved upstream RPC.");
 const port = process.env.DAO_FORK_PORT ?? "18545";

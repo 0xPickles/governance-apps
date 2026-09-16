@@ -33,9 +33,9 @@ async function wallet(page: Page, account: string) {
         if (method === "wallet_getCapabilities") return {};
         if (method === "eth_sendTransaction" && control.reject) { control.reject = false; throw Object.assign(new Error("User rejected the request."), { code: 4001 }); }
         const response = await fetch(rpc, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params: params ?? [] }) });
-        const result = await response.json();
+        const result = await response.json() as { result?: unknown; error?: { message: string; code: number } };
         if (result.error) throw Object.assign(new Error(result.error.message), { code: result.error.code });
-        if (method === "eth_sendTransaction") control.hashes.push(result.result);
+        if (method === "eth_sendTransaction" && typeof result.result === "string") control.hashes.push(result.result);
         return result.result;
       },
     };
@@ -76,16 +76,7 @@ test("publishes exact bytes, creates ID zero, recovers feed lag, votes and execu
   await page.getByLabel("Full Executor script").fill(state.script);
   await page.getByRole("button", { name: "Review proposal", exact: true }).click();
   await page.getByRole("checkbox", { name: /I reviewed/ }).check();
-  // The test operator grants only this exact signed document; the real route and Kubo still handle it.
-  await page.route("**/api/dao-content*", async route => {
-    const url = new URL(route.request().url());
-    if (url.searchParams.has("authorize")) {
-      const bytes = Number(url.searchParams.get("bytes"));
-      await writeFile(directory + "/publication-policy.json", JSON.stringify({ maxDocuments: 1, maxTotalBytes: bytes,
-        grants: [{ uploader: url.searchParams.get("uploader"), digest: url.searchParams.get("authorize"), bytes }] }));
-    }
-    await route.continue();
-  });
+  // The real route performs public durable admission. No grant or publication wallet signature.
   await page.getByRole("button", { name: "Publish immutable content", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Immutable content published", exact: true })).toBeVisible();
   await page.evaluate(() => { window.daoTestWallet.reject = true; });
