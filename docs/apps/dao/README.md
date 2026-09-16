@@ -2,8 +2,9 @@
 
 Current implementation task (2026-09-16): [public publication through Pinata](delivery/pinata-publication-task.md).
 The [provider decision](experiments/pinata-free/decision.md) closes the exploratory spike and selects a private server-side upload path.
-This worktree starts from M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`; the new provider/admission code is not implemented yet.
-The grant policy described below is the inherited code to replace. It is not a requirement for the planned author experience.
+This package builds on M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
+The server-side Pinata path and durable public D1 admission are implemented.
+See [current evidence](delivery/evidence/m5-pinata/README.md), [operations](pinata-publication.md), and [operator acceptance](pinata-acceptance.md).
 No complete experiment rerun is required. Small credential checks move into release acceptance.
 
 DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.
@@ -40,4 +41,4 @@ Writes stay in domain clients and shared useTx. Authoring separates content publ
 
 Shared hosts use `/dao`, `/dao/proposals/[id]`, and `/dao/propose`. Proposal links carry chain/Voting selection where needed. The existing internal `dao-beta.dao-ops.com` host stays unlisted, noindex and noncanonical; planned `dao.yearn.fi` exposure requires later approval. Forum discussion remains at `gov.yearn.fi`.
 
-`NEXT_PUBLIC_ENABLE_DAO` gates production routes. `DAO_PUBLICATION_ENABLED` independently gates uploads, which also require an operator grant policy and uploader signatures. Production mode has no mock fallback, including on the beta host. The existing production deployment flag remains off. Protected preview-mode environments may review mock actions. See the [runbook](delivery/dao-beta-runbook.md); this reset changes no infrastructure or deployed environment.
+`NEXT_PUBLIC_ENABLE_DAO` gates production routes. `DAO_PUBLICATION_ENABLED` independently gates uploads, which require configured Pinata secrets and durable global admission. Authors need no publication signature or document approval. Production mode has no mock fallback, including on the beta host. The existing production deployment flag remains off. Protected preview-mode environments may review mock actions. See the [runbook](delivery/dao-beta-runbook.md); this reset changes no infrastructure or deployed environment.

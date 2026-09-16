@@ -4,6 +4,15 @@ import type {
 } from "@/lib/clients/dao";
 
 export const daoCopy = {
+  publicationErrors: {
+    disabled: "Publication is disabled. Keep your draft and try again later.",
+    unavailable: "Publication is temporarily unavailable. Keep your reviewed content and try again later.",
+    budget_reached: "The publication budget is reached. Keep your reviewed content and try again later.",
+    busy: "Publication is already in progress. Wait before retrying the same content.",
+    verification_pending: "Publication could not yet be verified. Wait before retrying the same content.",
+    invalid_content: "The content does not match its canonical bytes and identity. Review the proposal again.",
+    invalid_forum: "The discussion no longer passes forum validation. Validate the topic again.",
+  },
   feed: {
     snapshot: "Snapshot as of",
     snapshotTiming: "Proposal statuses and countdowns below describe this snapshot.",

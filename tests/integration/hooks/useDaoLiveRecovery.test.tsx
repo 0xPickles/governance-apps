@@ -19,7 +19,48 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_DAO_DEPLOYMENTS", JSON.stringify([{ chainId: 1, votingAddress: DAO_MOCK_VOTING_ADDRESS, deploymentBlock: "0", genesis: 0, active: true, supportedVoters: [], supportedExecutors: [] }]));
   vi.spyOn(OnchainDaoClient.prototype, "getFeed").mockResolvedValue(getDaoMockSnapshot().feed);
 });
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); });
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
+describe("public content publication", () => {
+  function reviewedContent() {
+    const fixture = getDaoMockFixture("discussion"), proposer = deriveDaoProposerState(fixture.proposer);
+    const result = createDaoAuthoringReview({ address: proposer.address, createdAt: fixture.now,
+      draft: { markdown: "# Public publication\n\nKeep reviewed bytes.\n\n## Scope\n\nNo publication signature.\n", proposalType: "signal", executableScript: "0x" },
+      topic: { topicId: 1001, normalizedUrl: "https://gov.yearn.fi/t/topic/1001", title: "Topic", category: "Proposals", categoryId: 5, author: "user", createdAt: 1 } });
+    if (result.state !== "valid") throw new Error("Invalid review");
+    return { proposer, review: result.review, identity: deriveDaoProposalContentIdentity(result.review.content) };
+  }
+  it("publishes without a challenge and restores verified publication after reload", async () => {
+    const { proposer, review, identity } = reviewedContent();
+    const fetcher = vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        expect(options.headers).toEqual({ "Content-Type": "application/octet-stream", "X-DAO-Content-Digest": identity.digest, "X-DAO-Content-CID": identity.cid });
+        expect(Array.from(options.body as Uint8Array)).toEqual(Array.from(identity.bytes));
+        return Response.json({ digest: identity.digest, cid: identity.cid, publishedAt: 100 });
+      }
+      expect(url).toBe("/api/dao-content?digest=" + identity.digest);
+      return new Response(new Uint8Array(identity.bytes));
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const first = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
+    await act(async () => { const published = await first.result.current.services.publish(review, 100); expect(published, JSON.stringify(published)).toMatchObject({ state: "published" }); });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    first.unmount();
+    const second = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
+    expect(second.result.current.recovery?.publication).toMatchObject({ fingerprint: identity.digest, cid: identity.cid });
+  });
+  it.each(["disabled", "budget_reached", "verification_pending", "unavailable"])("keeps %s publication failures out of transaction recovery", async code => {
+    const { proposer, review } = reviewedContent();
+    const fetcher = vi.fn(async () => Response.json({ code, error: "private-provider-detail" }, { status: 503 }));
+    vi.stubGlobal("fetch", fetcher);
+    const hook = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
+    await act(async () => {
+      const result = await hook.result.current.services.publish(review, 100);
+      expect(result.state).toBe("failed"); expect(JSON.stringify(result)).not.toContain("private-provider-detail");
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(readDaoAuthoringRecovery(daoAuthoringStorageKey(daoDeploymentScope(getDaoDeployments()), proposer.address), proposer.address)).toBeNull();
+  });
+});
 describe("live action receipt recovery", () => {
   it("retains a submitted action through timeout and reload; retry confirms without another wallet send", async () => {
     const proposal = getDaoMockSnapshot().feed.proposals[0];

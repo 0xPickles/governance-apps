@@ -1,7 +1,4 @@
 "use client";
-import { signMessage } from "wagmi/actions";
-import { wagmiConfig } from "@/web3/wagmi";
-import { daoPublicationMessage } from "@/lib/clients/dao/publication-authorization";
 import { useRef, useState } from "react";
 import type { Address, Hex } from "viem";
 import { useTx } from "@/lib/tx/useTx";
@@ -18,6 +15,7 @@ import { daoAuthoringStorageKey, readDaoAuthoringRecovery, saveDaoAuthoringRecov
 import type { DaoAuthoringServices } from "@/lib/clients/dao/authoring-services";
 import type { DaoDecodedProposeIdentity, DaoProposerState } from "@/lib/clients/dao/types";
 import type { DaoForumValidationResult } from "@/lib/clients/dao/authoring-types";
+import { daoCopy } from "@/app/dao/messages";
 
 export function useDaoAuthoringServices(address: Address, proposer: DaoProposerState) {
   const tx = useTx();
@@ -41,23 +39,20 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
       try {
         if (!proposer.canPropose) throw new Error("Refresh proposal eligibility before continuing.");
         const identity = deriveDaoProposalContentIdentity(review.content);
-        const challengeResponse = await fetch("/api/dao-content?authorize=" + identity.digest + "&uploader=" + address + "&bytes=" + identity.bytes.length,
-          { cache: "no-store", signal: AbortSignal.timeout(15_000) });
-        if (!challengeResponse.ok) throw new Error("Publication is disabled or this content needs operator authorization. Keep the reviewed content and retry after approval.");
-        const challenge = await challengeResponse.json();
-        if (challenge.digest !== identity.digest || challenge.uploader.toLowerCase() !== address.toLowerCase() ||
-            challenge.bytes !== identity.bytes.length || !Number.isSafeInteger(challenge.issuedAt)) throw new Error("Invalid publication authorization.");
-        const issuedAt = challenge.issuedAt as number;
-        const signature = await signMessage(wagmiConfig, { account: address,
-          message: daoPublicationMessage({ origin: window.location.origin, uploader: address, digest: identity.digest, bytes: identity.bytes.length, issuedAt }) });
         const response = await fetch("/api/dao-content", {
           method: "POST", headers: { "Content-Type": "application/octet-stream", "X-DAO-Content-Digest": identity.digest,
-            "X-DAO-Uploader": address, "X-DAO-Publication-Issued-At": String(issuedAt), "X-DAO-Publication-Signature": signature },
-          body: new Uint8Array(identity.bytes), signal: AbortSignal.timeout(60_000),
+            "X-DAO-Content-CID": identity.cid },
+          body: new Uint8Array(identity.bytes), signal: AbortSignal.timeout(150_000),
         });
-        if (!response.ok) throw new Error("Content publication failed. Retry the same content after checking the service.");
-        const result = await response.json();
-        if (result.digest !== identity.digest || result.cid !== identity.cid || !Number.isSafeInteger(result.publishedAt)) throw new Error("Publication returned a different content identity.");
+        if (!response.ok) {
+          const failure = await response.json().catch(() => ({})) as { code?: string };
+          const messages = daoCopy.publicationErrors;
+          throw new Error(failure.code && Object.hasOwn(messages, failure.code)
+            ? messages[failure.code as keyof typeof messages] : messages.unavailable);
+        }
+        const result = await response.json() as { digest?: unknown; cid?: unknown; publishedAt?: unknown };
+        if (result.digest !== identity.digest || result.cid !== identity.cid || typeof result.publishedAt !== "number" ||
+            !Number.isSafeInteger(result.publishedAt) || result.publishedAt <= 0) throw new Error("Publication returned a different content identity.");
         const retained = await retrieveDaoPublishedContent(identity.digest);
         if (readDaoContentBytes(daoContentBase64(retained), identity.digest).state !== "available") throw new Error("Published content could not be verified.");
         const publication = { fingerprint: identity.digest, cid: identity.cid, canonicalBytes: identity.bytes, publishedAt: result.publishedAt };

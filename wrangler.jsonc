@@ -6,6 +6,9 @@
   "compatibility_date": "2026-01-22",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 
+  // Release gate: replace this reserved placeholder with the reviewed database ID.
+  "d1_databases": [{ "binding": "DAO_PUBLICATION_DB", "database_name": "dao-publication", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations/dao-publication" }],
+
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,

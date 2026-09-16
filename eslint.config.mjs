@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "build/**",
     ".github/skills/**",
     "next-env.d.ts",
+    "cloudflare-env.d.ts",
   ]),
   {
     files: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],

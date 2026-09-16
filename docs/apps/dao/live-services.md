@@ -1,71 +1,31 @@
 # DAO live services
 
-> Implementation transition (2026-09-16): [the Pinata task](delivery/pinata-publication-task.md) replaces the current Kubo production adapter and per-document grants.
-> [The decision](experiments/pinata-free/decision.md) selects the provider path; [the live review](experiments/pinata-free/live-review-2026-09-16.md) records actual evidence.
-> The configuration and grant instructions below describe inherited M5 code. Update them with the implementation; do not use them as the new launch policy.
-> Production publication remains disabled. Missing private credentials do not block local code and test work.
-
 DAO uses real clients when `NEXT_PUBLIC_USE_MOCKS=false`. Production always uses real clients.
-`NEXT_PUBLIC_ENABLE_DAO` continues to gate all production DAO routes.
+`NEXT_PUBLIC_ENABLE_DAO` gates DAO routes. `DAO_PUBLICATION_ENABLED` independently gates new uploads and defaults to false.
 
-## Configuration
+## Publication
 
-| Variable | Location | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_DAO_DEPLOYMENTS` | Build-time public configuration | Independently reviewed chain, Voting address, deployment block, genesis, active flag, and supported Voter, Executor and proposal-hook addresses |
-| `NEXT_PUBLIC_RPC_URLS` | Build-time public configuration | App RPC for current reads, required simulation and receipts |
-| `DAO_DATA_URL` | Server configuration | Static V2 feed; live endpoint: https://data.dao-ops.com/prod/dao.json |
-| `DAO_PUBLICATION_ENABLED` | Private server configuration | Independent upload gate; absent or false disables publication even when DAO reads are enabled |
-| `DAO_PUBLICATION_POLICY` | Private server configuration | Fixed operator-approved uploader/digest/byte grants with document and total-byte ceilings |
-| `DAO_PUBLICATION_POLICY_FILE` | Loopback development only | Disposable local policy file; ignored in production and on public hosts |
-| `DAO_IPFS_API_URL` | Server configuration | Base URL of an operator-selected Kubo-compatible raw-block API |
-| `DAO_IPFS_AUTHORIZATION` | Private server secret | Full Authorization header value for that API; required for external services |
-| `DAO_FORUM_TEST_ORIGIN` | Local test configuration only | Loopback fixture origin; rejected in production |
+The implemented path uses server-side Pinata legacy file upload with one private upload-only JWT.
+Public D1 admission replaces document grants and publication-only signatures.
+The author keeps the editor, template, preview, forum validation, and separate onchain transaction.
+The server validates canonical bytes, digest, raw CID, provider identity, and exact gateway retrieval before success.
 
-Store local server values in the ignored `.env.local`. Use private runtime secrets for the deployed Worker.
-Public variables require a rebuild. Never put provider credentials in a `NEXT_PUBLIC_*` variable.
+[Publication operations](pinata-publication.md) defines configuration, atomic budgets, retries, backup, key replacement, and rollback.
+[Operator acceptance](pinata-acceptance.md) defines the small release session. It remains unperformed.
+[Implementation evidence](delivery/evidence/m5-pinata/README.md) records current local validation.
+Historical grant and Kubo evidence remains historical. Those settings are obsolete for production.
 
-No external publication provider, credentials, retention policy or test target has been selected in this package.
-The implemented adapter uses the standard raw-block API. Confirm compatibility with the selected service before rollout.
-The task tested an offline local Kubo node. This does not establish external retention or availability.
+## Other service configuration
 
-## Publication and forum validation
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_DAO_DEPLOYMENTS` | Independently reviewed chain, Voting, deployment block, genesis, and supported hook addresses |
+| `NEXT_PUBLIC_RPC_URLS` | Current reads, required simulation, and receipts |
+| `DAO_DATA_URL` | Static V2 feed. Live source: https://data.dao-ops.com/prod/dao.json |
+| `DAO_FORUM_TEST_ORIGIN` | Loopback forum fixture, rejected in production |
 
-The browser sends the exact reviewed canonical bytes to `POST /api/dao-content`.
-The server first checks the independent publication gate, complete grant budget and uploader signature.
-It then checks the exact authorized bytes and revalidates the public forum topic.
-It sends those bytes to `block/put` with raw CID encoding, SHA-256 and `pin=true`.
-It verifies the returned CID and size, then retrieves the block separately and compares every byte.
-The browser retrieves the same commitment before it enables creation.
-
-`GET /api/dao-content?digest=<SHA-256>` retrieves and verifies the retained bytes.
-Provider errors do not expose credentials or upstream response bodies.
-The public error remains retriable with the same reviewed content.
-The publication route requires both the DAO gate and the independent publication gate.
-Origin is a browser request check, not uploader authentication.
-The approved uploader signs a message containing the origin, content digest, byte count, uploader address and server-issued time.
-The signature expires after five minutes. It stays outside the canonical content document.
-The current policy supports EOA signatures. Contract-wallet authorization requires a separately reviewed policy.
-
-The operator approves a fixed set of exact content digests.
-The complete grant set must fit both `maxDocuments` and `maxTotalBytes`.
-Each grant contains `uploader`, `digest` and the exact `bytes` count.
-Repeated requests can only pin the same raw CID; they cannot authorize another content document.
-No process-local counter or resettable time window controls storage authorization.
-
-Keep prior grants in the budget when authorizing additional content. Replacing a policy is an explicit operator budget decision.
-This policy bounds authorized unique content, not provider request charges or storage already created outside this application.
-A public service still requires operator approval of provider limits, retention and its complete grant set.
-Keep preview access protected until that review is complete.
-
-The author can download the exact reviewed content before requesting approval.
-The app obtains a short-lived challenge, then requests the uploader signature.
-Missing policy, an over-budget grant set, an unapproved digest or an invalid signature prevents all forum and pinning calls.
-
-`GET /api/dao-forum?url=<topic URL>` checks a public Yearn Discourse topic.
-It rejects credentials, suffixes, queries, fragments and ambiguous URL normalization.
-It checks stable category IDs, names, slugs and ancestry under Proposals.
-The normalized topic URL comes from the public topic response. The app never posts to the forum.
+`GET /api/dao-forum?url=...` retains public topic, category, and ancestry validation.
+The app never posts to the forum. Provider credentials stay in deployment secrets.
 
 ## Transactions and recovery
 
