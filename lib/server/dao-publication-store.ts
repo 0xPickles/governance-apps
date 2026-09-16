@@ -57,7 +57,10 @@ export class DaoPublicationStore {
     if (!row) throw new DaoPublicationPolicyError((results[4].results[0]?.active ?? 0) >= p.concurrent ? "busy" : "budget_reached", 429);
     if (row.cid !== cid || row.byte_length !== bytes.length || row.content.length !== bytes.length ||
         row.content.some((byte, i) => byte !== bytes[i])) throw new DaoPublicationPolicyError("invalid_content", 400);
-    if (row.published_at !== null) return { row, token: null };
+    if (row.published_at !== null) {
+      if (row.upload_accepted !== 1) throw new DaoPublicationPolicyError("unavailable", 503);
+      return { row, token: null };
+    }
     if (row.lease_token !== token) throw new DaoPublicationPolicyError(
       row.reservations >= p.documentReservations && row.lease_until <= now ? "budget_reached" : "busy", 429);
     return { row, token };
@@ -80,8 +83,9 @@ export class DaoPublicationStore {
     if (!result.results.length) throw new DaoPublicationPolicyError("busy", 429);
   }
   async verified(digest: Hex, token: string) {
+    // Completion requires both the caller's exact-byte verification and durable upload acceptance.
     const result = await this.db.prepare(`UPDATE dao_publications SET published_at = ?, lease_token = NULL, lease_until = 0
-      WHERE digest = ? AND lease_token = ? AND lease_until > ? RETURNING published_at`)
+      WHERE digest = ? AND lease_token = ? AND lease_until > ? AND upload_accepted = 1 RETURNING published_at`)
       .bind(Math.floor(Date.now() / 1000), digest, token, Date.now()).first<{ published_at: number }>();
     if (!result) throw new DaoPublicationPolicyError("busy", 429);
     return result.published_at;
@@ -91,7 +95,7 @@ export class DaoPublicationStore {
       WHERE digest = ? AND lease_token = ?`).bind(Date.now() + DAO_PUBLICATION_RETRY_MS, digest, token).run();
   }
   async read(digest: Hex) {
-    return this.db.prepare("SELECT * FROM dao_publications WHERE digest = ? AND published_at IS NOT NULL")
+    return this.db.prepare("SELECT * FROM dao_publications WHERE digest = ? AND published_at IS NOT NULL AND upload_accepted = 1")
       .bind(digest).first<DaoPublicationRecord>();
   }
 }

@@ -66,8 +66,9 @@ Lease tokens prevent a stale owner from completing or releasing a newer reservat
 The two-job ceiling bounds admitted application work. A provider can continue processing a timed-out request remotely.
 
 An attempt is charged before network I/O, even if the process stops before sending.
-An uncertain upload first triggers exact retrieval on retry.
-A valid provider acknowledgement prevents automatic reupload.
+An upload without a validated acknowledgement requires another upload of the same bytes within the existing attempt allowance.
+This includes rejected requests, timeouts, and a crash before D1 records the acknowledgement.
+A recorded, validated provider acknowledgement prevents automatic reupload.
 A job performs at most one upload and three gateway requests.
 A failed job has a 60-second cooldown. Durable per-document and global limits also bound manual retries.
 Spent allowances survive restarts, errors, key replacement, and deployments.
@@ -80,6 +81,10 @@ Admitted content passes the existing forum check before upload.
 The server sends a file with `cidVersion: 1` and `wrapWithDirectory: false`.
 It checks `IpfsHash` and `PinSize`, then compares every retrieved byte.
 This follows the selected [Pinata legacy file API](https://docs.pinata.cloud/api-reference/endpoint/ipfs/pin-file-to-ipfs).
+Publication requires both the validated upload acknowledgement and exact gateway bytes.
+The D1 completion operation independently requires `upload_accepted = 1`.
+An open gateway can retrieve content from other IPFS sources; retrieval alone does not establish acceptance by this Pinata account.
+See Pinata's [restricted and open gateway distinction](https://docs.pinata.cloud/gateways/gateway-access-controls).
 
 A verified digest returns `already_published` without another provider request.
 `GET /api/dao-content?digest=...` serves only previously verified retained bytes.
@@ -87,6 +92,12 @@ Unknown or unpublished digests never trigger gateway retrieval.
 Disabling POST leaves retained recovery reads and producer-embedded proposal reads available.
 Public errors distinguish disabled, unavailable, budget reached, busy, invalid content/forum, and pending verification.
 Provider response text and private configuration never enter the response.
+
+Before reusing a ledger written by the pre-correction build, inspect rows with `published_at IS NOT NULL AND upload_accepted != 1`.
+The corrected app rejects these rows for deduplication and retained-content recovery.
+If any exist, keep publication disabled and preserve the complete ledger for operator reconciliation.
+Do not invent an acknowledgement, delete rows, or reset spent counters.
+No remote ledger was used during implementation; the local acceptance session starts with its own preserved ledger.
 
 The existing editor, template, preview, draft storage, and browser recovery remain.
 Real proposer eligibility, simulation, transaction signatures, receipt identity, ID zero, replacement handling, cancellation, and indexing recovery remain.
@@ -122,7 +133,7 @@ Export the complete database through the operator's Cloudflare account:
 
 ```fish
 npx wrangler d1 export DAO_PUBLICATION_DB --remote --config wrangler.jsonc --output /absolute/private/dao-publication.sql
-npx wrangler d1 execute DAO_PUBLICATION_DB --remote --config wrangler.jsonc --command "SELECT digest,cid,byte_length,admitted_at,published_at,upload_attempts,retrieval_attempts,reservations FROM dao_publications" --json
+npx wrangler d1 execute DAO_PUBLICATION_DB --remote --config wrangler.jsonc --command "SELECT digest,cid,byte_length,admitted_at,published_at,upload_accepted,upload_attempts,retrieval_attempts,reservations FROM dao_publications" --json
 ```
 
 The SQL export includes canonical BLOB bytes, unsuccessful rows, policy, and every spent counter.

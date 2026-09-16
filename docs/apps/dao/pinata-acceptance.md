@@ -95,6 +95,7 @@ Each tab retains its own publication recovery state.
 3. Keep the original app process running with K1.
 4. Prepare distinct B, download its reviewed bytes, and attempt publication once.
 5. Record the sanitized failure and prove that creation remains unavailable.
+   Check that B has `upload_accepted = 0` and `published_at IS NULL` in the session's local D1 ledger.
 6. Keep B unchanged.
 7. Verify that A remains publicly retrievable:
 
@@ -109,6 +110,14 @@ node scripts/dao-pinata-acceptance.mjs retrieve /absolute/private/pinata-accepta
 12. Verify B through `verify-app`.
 
 B must retain its original digest and CID. App admission must show the failed and replacement attempts.
+After replacement, B must have `upload_accepted = 1`, a non-null `published_at`, and two counted upload attempts.
+Gateway availability alone must never complete B's rejected upload.
+Inspect the session ledger from the repository root in the private operator terminal:
+
+```fish
+npx wrangler d1 execute DAO_PUBLICATION_DB --local --config wrangler.jsonc --persist-to /absolute/private/pinata-acceptance/d1 --command "SELECT digest,cid,published_at,upload_accepted,upload_attempts,retrieval_attempts FROM dao_publications" --json
+```
+
 The session uses two successful initial uploads, one rejected upload, and one replacement upload.
 If a timeout or another attempt exhausts the four-attempt bound, stop and report incomplete acceptance.
 Do not infer provider use counts from the app ledger.
@@ -161,3 +170,12 @@ C was removed by the successful control. If that control failed, C still needs s
 Privately revoke K2 and any disposable cleanup key.
 Stop the app and fork. Preserve all ledgers and evidence.
 Do not claim successful acceptance if a required check was skipped, inconclusive, or exhausted its bound.
+
+## Deployment configuration handoff
+
+After correction review, use this same bounded session; no new provider experiment is required.
+Supply the selected public HTTPS gateway and reviewed production/preproduction D1 IDs before replacing the reserved configuration values.
+Keep the existing feature flags disabled during configuration and migration.
+Enter the upload-only JWT through the private secret prompt in [operations](pinata-publication.md).
+Do not send credentials to the implementation task.
+Record the session results before requesting rollout approval.

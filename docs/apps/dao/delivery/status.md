@@ -7,6 +7,9 @@ package starts.
 
 ## Current work (2026-09-16)
 
+- The [publication acknowledgement correction](evidence/m5-pinata-review/README.md) addresses the review P2 after `6886f447da52006f9659b91a5129572b944a92e5`.
+  Unacknowledged uploads retry within their existing allowance; gateway availability alone cannot complete publication.
+  Independent re-review and the prepared operator acceptance session remain next.
 - The user authorized the [Pinata publication implementation](pinata-publication-task.md) after the live provider run.
 - [The decision](../experiments/pinata-free/decision.md) selects server-side legacy upload and public bounded admission.
 - [The live review](../experiments/pinata-free/live-review-2026-09-16.md) records exact-content compatibility, producer retrieval, limitations and completed cleanup.
@@ -14,7 +17,7 @@ package starts.
 - Application base: `fc81ae0502efe45ed84367062a57df16c6dab46c` from `agent/dao/m5/live`.
 - Server-side Pinata publication, durable D1 admission, retained bytes, and bounded recovery are implemented.
 - The implementation started at `e1bd671b87758c49311bb0d8c3e6d93fbeeca61c`. See [current validation](evidence/m5-pinata/README.md).
-- Local validation passed: typecheck, lint, 1,392 unit tests, 44 smoke tests with one expected skip, all 34 serial full tests,
+- Initial package validation passed: typecheck, lint, 1,392 unit tests, 44 smoke tests with one expected skip, all 34 serial full tests,
   seven fork tests, released-producer/app retrieval, production route checks, builds, and Worker size.
 - Production flags and remote infrastructure remain unchanged.
 - The inherited document grants and publication-only signature are removed. Governance transaction safeguards remain.

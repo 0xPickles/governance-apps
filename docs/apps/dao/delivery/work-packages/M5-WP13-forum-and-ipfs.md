@@ -17,6 +17,7 @@ Acceptance: immutable byte round-trip and durable recovery; publication failure 
 
 - Fixed legacy Pinata file upload with CIDv1 and no directory wrapping.
 - Strict canonical input, digest, CID, response-size, and exact gateway-byte checks.
+- Publication requires a validated upload acknowledgement, including after rejected or uncertain attempts.
 - One D1 ledger for atomic admission, cumulative bytes, attempts, leases, and recovery.
 - Default-off publication, independent reads, sanitized errors, and server-only credentials.
 - No document grants or publication-only signature. Governance authorization remains.

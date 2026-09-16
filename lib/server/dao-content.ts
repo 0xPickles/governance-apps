@@ -74,9 +74,9 @@ export async function publishDaoContent(bytes: Uint8Array) {
       try { await retrieveDaoPinataFile(bytes, service); return true; }
       catch { return false; }
     };
-    // Recover uncertain uploads by looking for these exact bytes before another upload.
-    if (row.upload_attempts > 0) verified = await verify();
-    if (!verified && !row.upload_accepted) {
+    // Gateway availability cannot prove this account accepted an upload.
+    // Unacknowledged attempts must upload the same bytes again within the existing budget.
+    if (!row.upload_accepted) {
       await store.spend(digest, token, "upload");
       await uploadDaoPinataFile(bytes, service);
       await store.accepted(digest, token);

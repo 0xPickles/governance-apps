@@ -9,10 +9,13 @@ The implemented path uses server-side Pinata legacy file upload with one private
 Public D1 admission replaces document grants and publication-only signatures.
 The author keeps the editor, template, preview, forum validation, and separate onchain transaction.
 The server validates canonical bytes, digest, raw CID, provider identity, and exact gateway retrieval before success.
+Success also requires a recorded upload acknowledgement. A rejected or uncertain upload consumes another bounded upload attempt on retry.
+Acknowledged uploads retry gateway retrieval without reuploading.
 
 [Publication operations](pinata-publication.md) defines configuration, atomic budgets, retries, backup, key replacement, and rollback.
 [Operator acceptance](pinata-acceptance.md) defines the small release session. It remains unperformed.
 [Implementation evidence](delivery/evidence/m5-pinata/README.md) records current local validation.
+[Publication review correction](delivery/evidence/m5-pinata-review/README.md) tracks the acknowledgement requirement and its regression results.
 Historical grant and Kubo evidence remains historical. Those settings are obsolete for production.
 
 ## Other service configuration

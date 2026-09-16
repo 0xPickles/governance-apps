@@ -27,6 +27,8 @@ The earlier M5 implementation remains its dependency. Keep integration unchanged
 WP13–WP15 remain acceptance requirements, with per-document publication grants superseded by bounded public admission.
 The experiment is closed. [Current implementation evidence](evidence/m5-pinata/README.md) records local results.
 The small [operator session](../pinata-acceptance.md) remains a release gate.
+The [publication review correction](evidence/m5-pinata-review/README.md) requires acknowledged uploads before successful publication.
+Complete correction review before the bounded operator session and deployment configuration.
 
 - Reuse the proxy, V2 parser, adapter, routes, and live wallet overlay.
 - Select real clients with `NEXT_PUBLIC_USE_MOCKS=false`. Production never falls back to mocks.

@@ -91,6 +91,17 @@ describe("admission on real local D1", () => {
     await expect(reserve(new DaoPublicationStore(db, defaults), 1)).rejects.toMatchObject({ code: "unavailable" });
     vi.stubEnv("DAO_PUBLICATION_LIMITS", '{"concurrent":3}'); expect(daoPublicationLimits).toThrow();
   });
+  it("requires upload acceptance before completing a live reservation", async () => {
+    const store = new DaoPublicationStore(db, defaults);
+    const first = await reserve(store);
+    await store.spend(first.row.digest, first.token!, "upload");
+    await store.spend(first.row.digest, first.token!, "retrieval");
+    await expect(store.verified(first.row.digest, first.token!)).rejects.toThrow();
+    expect(await db.prepare("SELECT published_at, upload_accepted, upload_attempts, retrieval_attempts FROM dao_publications").first())
+      .toEqual({ published_at: null, upload_accepted: 0, upload_attempts: 1, retrieval_attempts: 1 });
+    await store.accepted(first.row.digest, first.token!);
+    expect(await store.verified(first.row.digest, first.token!)).toBeGreaterThan(0);
+  });
 });
 describe("publication with durable recovery", () => {
   it("deduplicates verified bytes without provider calls, including restart and disabled recovery reads", async () => {
@@ -110,15 +121,73 @@ describe("publication with durable recovery", () => {
     await expect(publishDaoContent(identity(1).bytes)).rejects.toMatchObject({ code: "disabled" });
     expect(fetcher).toHaveBeenCalledTimes(2);
   }, 30_000);
-  it("recovers an ambiguous timeout through exact retrieval without another upload", async () => {
-    const i = identity(); const fetcher = vi.fn().mockRejectedValueOnce(new Error("timeout with private URL"));
+  it.each(["rejected", "ambiguous"] as const)("requires another acknowledged upload when the prior outcome is %s, despite retrievable bytes", async outcome => {
+    const i = identity();
+    let acceptUpload = false;
+    const fetcher = vi.fn(async (_url: string, options: RequestInit) => {
+      // The open gateway always has the exact bytes, independently of our account's upload.
+      if (options.method !== "POST") return new Response(new Uint8Array(i.bytes));
+      const file = (options.body as FormData).get("file") as Blob;
+      expect(new Uint8Array(await file.arrayBuffer())).toEqual(i.bytes);
+      if (acceptUpload) return Response.json({ IpfsHash: i.cid, PinSize: i.bytes.length });
+      if (outcome === "ambiguous") throw new Error("timeout with private URL");
+      return new Response(null, { status: 403 });
+    });
     vi.stubGlobal("fetch", fetcher);
     await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ code: "verification_pending" });
     await db.prepare("UPDATE dao_publications SET retry_after = 0").run();
-    fetcher.mockResolvedValueOnce(new Response(new Uint8Array(i.bytes)));
-    expect(await publishDaoContent(i.bytes)).toMatchObject({ state: "published" });
-    expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(await db.prepare("SELECT upload_attempts, retrieval_attempts FROM dao_publications").first()).toEqual({ upload_attempts: 1, retrieval_attempts: 1 });
+    await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ code: "verification_pending" });
+    await expect(readStoredDaoContent(i.digest)).rejects.toThrow();
+    expect(await db.prepare("SELECT published_at, upload_accepted, upload_attempts, retrieval_attempts FROM dao_publications").first())
+      .toEqual({ published_at: null, upload_accepted: 0, upload_attempts: 2, retrieval_attempts: 0 });
+    acceptUpload = true;
+    await db.prepare("UPDATE dao_publications SET retry_after = 0").run();
+    expect(await publishDaoContent(i.bytes)).toMatchObject({ state: "published", digest: i.digest, cid: i.cid });
+    expect(fetcher.mock.calls.map(([, options]) => options.method ?? "GET")).toEqual(["POST", "POST", "POST", "GET"]);
+    expect(await db.prepare("SELECT upload_accepted, upload_attempts, retrieval_attempts FROM dao_publications").first())
+      .toEqual({ upload_accepted: 1, upload_attempts: 3, retrieval_attempts: 1 });
+  });
+  it("exhausts unacknowledged upload attempts without accepting open-gateway bytes", async () => {
+    const i = identity();
+    const fetcher = vi.fn(async (_url: string, options: RequestInit) => options.method === "POST"
+      ? new Response(null, { status: 403 }) : new Response(new Uint8Array(i.bytes)));
+    vi.stubGlobal("fetch", fetcher);
+    for (let attempt = 0; attempt < defaults.documentUploadAttempts; attempt++) {
+      await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ code: "verification_pending" });
+      await db.prepare("UPDATE dao_publications SET retry_after = 0").run();
+    }
+    await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ code: "budget_reached" });
+    await expect(readStoredDaoContent(i.digest)).rejects.toThrow();
+    expect(fetcher).toHaveBeenCalledTimes(defaults.documentUploadAttempts);
+    expect(await db.prepare("SELECT published_at, upload_accepted, upload_attempts, retrieval_attempts FROM dao_publications").first())
+      .toEqual({ published_at: null, upload_accepted: 0, upload_attempts: 3, retrieval_attempts: 0 });
+  });
+  it("resumes acknowledged uploads after restart without another upload", async () => {
+    const i = identity();
+    let available = false;
+    const fetcher = vi.fn(async (_url: string, options: RequestInit) => options.method === "POST"
+      ? Response.json({ IpfsHash: i.cid, PinSize: i.bytes.length })
+      : available ? new Response(new Uint8Array(i.bytes)) : new Response(null, { status: 404 }));
+    vi.stubGlobal("fetch", fetcher);
+    await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ code: "verification_pending" });
+    await db.prepare("UPDATE dao_publications SET retry_after = 0").run();
+    await platform.dispose(); await start();
+    available = true;
+    expect(await publishDaoContent(i.bytes)).toMatchObject({ state: "published", digest: i.digest, cid: i.cid });
+    expect(fetcher.mock.calls.map(([, options]) => options.method ?? "GET")).toEqual(["POST", "GET", "GET", "GET", "GET"]);
+    expect(await db.prepare("SELECT upload_accepted, upload_attempts, retrieval_attempts FROM dao_publications").first())
+      .toEqual({ upload_accepted: 1, upload_attempts: 1, retrieval_attempts: 4 });
+  }, 30_000);
+  it("fails closed on older published records without upload acceptance", async () => {
+    const i = identity(), store = new DaoPublicationStore(db, defaults);
+    await store.reserve(i.digest, i.cid, i.bytes);
+    await db.prepare("UPDATE dao_publications SET published_at = 1, lease_token = NULL, lease_until = 0").run();
+    const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
+    await expect(publishDaoContent(i.bytes)).rejects.toMatchObject({ code: "unavailable" });
+    await expect(readStoredDaoContent(i.digest)).rejects.toThrow();
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(await db.prepare("SELECT published_at, upload_accepted, reservations, upload_attempts FROM dao_publications").first())
+      .toEqual({ published_at: 1, upload_accepted: 0, reservations: 1, upload_attempts: 0 });
   });
   it("bounds propagation and never reuploads acknowledged content", async () => {
     const i = identity();
