@@ -1,5 +1,11 @@
 # DAO Governance
 
+Current implementation task (2026-09-16): [public publication through Pinata](delivery/pinata-publication-task.md).
+The [provider decision](experiments/pinata-free/decision.md) closes the exploratory spike and selects a private server-side upload path.
+This worktree starts from M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`; the new provider/admission code is not implemented yet.
+The grant policy described below is the inherited code to replace. It is not a requirement for the planned author experience.
+No complete experiment rerun is required. Small credential checks move into release acceptance.
+
 DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.
 
 The accepted mock product and reviewed V2 reads are integrated. The user reports that the reviewed producer is released and active at https://data.dao-ops.com/prod/dao.json.

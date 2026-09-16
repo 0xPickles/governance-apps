@@ -1,5 +1,10 @@
 # DAO live services
 
+> Implementation transition (2026-09-16): [the Pinata task](delivery/pinata-publication-task.md) replaces the current Kubo production adapter and per-document grants.
+> [The decision](experiments/pinata-free/decision.md) selects the provider path; [the live review](experiments/pinata-free/live-review-2026-09-16.md) records actual evidence.
+> The configuration and grant instructions below describe inherited M5 code. Update them with the implementation; do not use them as the new launch policy.
+> Production publication remains disabled. Missing private credentials do not block local code and test work.
+
 DAO uses real clients when `NEXT_PUBLIC_USE_MOCKS=false`. Production always uses real clients.
 `NEXT_PUBLIC_ENABLE_DAO` continues to gate all production DAO routes.
 

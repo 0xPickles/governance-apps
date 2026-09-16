@@ -5,7 +5,24 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current implementation state (2026-09-11)
+## Current work (2026-09-16)
+
+- The user authorized the [Pinata publication implementation](pinata-publication-task.md) after the live provider run.
+- [The decision](../experiments/pinata-free/decision.md) selects server-side legacy upload and public bounded admission.
+- [The live review](../experiments/pinata-free/live-review-2026-09-16.md) records exact-content compatibility, producer retrieval, limitations and completed cleanup.
+- Worktree: `governance-apps.dao.m5.pinata`; branch: `codex/dao/m5/pinata`.
+- Application base: `fc81ae0502efe45ed84367062a57df16c6dab46c` from `agent/dao/m5/live`.
+- Only evidence and planning documents are prepared. Application behavior and production flags are unchanged.
+- The inherited per-document grant workflow will be replaced. Missing dashboard counters and the complete experiment matrix do not block implementation.
+- Small credential checks remain staging acceptance items. Live provider requests, deployment and production transactions are not authorized by this documentation setup.
+- The original spike is retained for audit. Its runner, private configuration and runtime ledger are not application dependencies.
+- Integration is still `28dd8fff2e7ff00961174635715be8d18ecd8d42`; M5 live is a dependency of this package, not an integrated baseline.
+- Integrate reviewed M5 live before or with the new publication package. Reconcile the 141/17 master divergence separately before rollout.
+
+## Inherited M5 implementation evidence (2026-09-11)
+
+The following records the code inherited at package start. Statements about provider selection, grants and old next steps are superseded by the current task.
+Historical test results are retained; they do not count as validation of the forthcoming publication changes.
 
 - The [milestone plan](milestone-plan.md) remains the single active plan. Older sequencing and producer-start gates are superseded.
 - Accepted mock UX, reviewed V2 reads, historical acceptance and [original evidence](evidence/m5-live/README.md) remain unchanged.

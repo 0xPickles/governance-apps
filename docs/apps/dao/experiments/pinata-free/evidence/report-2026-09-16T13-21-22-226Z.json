@@ -1,0 +1,2234 @@
+{
+  "schema": "dao-pinata-experiment.v1",
+  "identity": {
+    "commit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+    "sha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a",
+    "lockSha256": "35d42f38bf8c5194cb8906c6347c1d3a274dae57eb31fc68da24753392257cce",
+    "browserSha256": "2545eace9a9b5825cf20dabaf2d48341520c8fef82bb3080f232aed3e8579867",
+    "manualSha256": "ce8dbc76c5c9b81ab0f0c9c20e3b4001b7737f38791c5a042cec2a9318ea6ecc",
+    "development": false
+  },
+  "producer": {
+    "commit": "23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6",
+    "ancestor": "7b67945253d91c495b148ee4f0a09a946a93390d",
+    "binarySha256": "61c51b8528cb249b8290b0bc1fe9acc9f9514be7a5991d8af22fd61fedc8ff5c"
+  },
+  "configuration": {
+    "endpoint": "legacy",
+    "gateway": "https://tomato-raw-duck-661.mypinata.cloud/ipfs/"
+  },
+  "at": "2026-09-16T13:47:10.487Z",
+  "phase": "A/B-evidence-only",
+  "providerVerdict": "INCOMPLETE",
+  "limits": {
+    "requests": 200,
+    "uploads": 40,
+    "bytes": 8388608,
+    "objects": 20,
+    "fileBytes": 131073,
+    "concurrency": 2,
+    "cleanupReserve": 45
+  },
+  "ledger": {
+    "version": 1,
+    "requests": 73,
+    "uploads": 20,
+    "bytes": 304384,
+    "objectSlots": 8,
+    "objects": [
+      {
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "id": null,
+        "removed": true
+      },
+      {
+        "cid": "bafkreiewxsb4ri23ztk46daenukhquuql6mao5nyuig5nut4zrl5uocovy",
+        "id": null,
+        "removed": true
+      },
+      {
+        "cid": "bafkreihelbwyujahrzzjhaazvha5xfocfjmqsr5s4uy7rofoasjenzpxfa",
+        "id": null,
+        "removed": true
+      },
+      {
+        "cid": "bafkreieezp6456qgazuslireczptif45itmfbtapvi6i74ak3uorttgo54",
+        "id": null,
+        "removed": true
+      },
+      {
+        "cid": "bafkreicxacp5ozquzd6c4hguf4x7gcmadiol6fxewxdxpsqult5q4grz5m",
+        "id": null,
+        "removed": true
+      },
+      {
+        "cid": "bafkreifgz7t6w2dmcjlyxf76qvzrnnke72pr4xnrpujvyswvlcbgabnley",
+        "id": null,
+        "removed": true
+      },
+      {
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "id": "01a0aa65-60c7-72d8-a8d4-8d85fd81e7c8",
+        "removed": true
+      },
+      {
+        "cid": "bafkreid7gbkrxceydazfccinkbyxvtn3gwsn3caprr72rk7swufsjsgoni",
+        "id": "01a0aa6e-89fa-761d-9778-23d15eff176d",
+        "removed": true
+      }
+    ],
+    "events": [
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:03:31.416Z",
+        "digest": "0x68a2e97f35335ca54cf762fc3cb79500f6e01c403930b66ab0a16e3cfb18a68a",
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:03:32.110Z",
+        "digest": "0x568aaaf762d007bed6e5c6936794bd643c199bf89a2e1b51ecc8702a9cd47e8f",
+        "requests": 0,
+        "passed": true
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:03:32.197Z",
+        "digest": "0x9b253308a33402bd23f67f96b6fdcfb45ffd67506b156fc58553f4bb095bccf7",
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:03:33.081Z",
+        "digest": "0xae075d5e595cc13733de080bf05fb0651debbdcda7af6d1c3171ebdbf643a2b3",
+        "requests": 0,
+        "passed": true
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:11:14.247Z",
+        "digest": "0xbebdf9a5a5032334f0f8847dc16faa86d88d5355eca23ef07b9e3253ea8459d6",
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:11:15.186Z",
+        "digest": "0xdcfc532195f232b21c5cc5e76a89db37d191e1f2a5b61fd185e153b96272f06a",
+        "requests": 0,
+        "passed": true
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:11:15.336Z",
+        "digest": "0xea52b93896157e64e9f813ad3061f165229e580ba4accfbea4ede3377170bd7d",
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:11:16.259Z",
+        "digest": "0x4279036e8cc09458e5a35f84f5dc410f92a4c5fda6a24550444b5b906fae5422",
+        "requests": 0,
+        "passed": true
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-14T12:11:17.710Z",
+        "passed": true
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:23:06.253Z",
+        "digest": "0xd98b628c5a77c6f650c798667f2b851d0d5a59998a3a1bbae29f023c60e3b730",
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:23:07.151Z",
+        "digest": "0xbed054534711247428480c196d32763a8eed379b5cb662d4b5b99edae16248d1",
+        "requests": 0,
+        "passed": true
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:23:07.238Z",
+        "digest": "0xf1477b8f5d59daefc2134efdfad7e1dc17457d45944a713c4e1752beb36aace0",
+        "requests": 1,
+        "passed": true
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:23:08.130Z",
+        "digest": "0x9e4403a3bdd662b8c200c7c7fbd61726b67ad8f8ed113e8ede9f732491fcc9db",
+        "requests": 0,
+        "passed": true
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-14T12:23:08.754Z",
+        "passed": true
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:29:30.263Z",
+        "digest": "0xde6ecaac1b0832abc450acbdc0cec0c8d66a9a077b2e99c4720db5e6f1c21511",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "7a163e38a07fbc6f5bac20503ab027823e9ed21d",
+        "runnerSha256": "6958b76711a7aac7d1f65f63dcbbc7a862d9ec2fe3db59670fbbde3787b5ba23"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:29:31.158Z",
+        "digest": "0xae0e5b213cf7b7d01be6cd8c1d3537d587d6c38aaca622459c370bd5bfc79469",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "7a163e38a07fbc6f5bac20503ab027823e9ed21d",
+        "runnerSha256": "6958b76711a7aac7d1f65f63dcbbc7a862d9ec2fe3db59670fbbde3787b5ba23"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:29:31.247Z",
+        "digest": "0x277ff419925e78fdd91e39adfbeef8ba48e81bb618b048869bb172b72c184ed8",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "7a163e38a07fbc6f5bac20503ab027823e9ed21d",
+        "runnerSha256": "6958b76711a7aac7d1f65f63dcbbc7a862d9ec2fe3db59670fbbde3787b5ba23"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:29:32.126Z",
+        "digest": "0xa99929ccc6713c153b06caea9fe64c0dc1f53c282c386f9de1112795e4b91153",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "7a163e38a07fbc6f5bac20503ab027823e9ed21d",
+        "runnerSha256": "6958b76711a7aac7d1f65f63dcbbc7a862d9ec2fe3db59670fbbde3787b5ba23"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-14T12:29:33.003Z",
+        "passed": true,
+        "sourceCommit": "7a163e38a07fbc6f5bac20503ab027823e9ed21d",
+        "runnerSha256": "6958b76711a7aac7d1f65f63dcbbc7a862d9ec2fe3db59670fbbde3787b5ba23"
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:33:14.880Z",
+        "digest": "0xe31003767654b9dd36c3974bcec189c3d04308683e01b33c1ff5306b211bf499",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "79ebb5a2fff732c77e96a31f64e3aa375111aa56",
+        "runnerSha256": "452adb4ecb47343f0a933d673b6224e029d1701209dd367782e75158b537f854"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:33:15.179Z",
+        "digest": "0xe9e30cf532132302f6f9ed60ba3c0dbffc879fcf97ca9a6576d9b9c326158e11",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "79ebb5a2fff732c77e96a31f64e3aa375111aa56",
+        "runnerSha256": "452adb4ecb47343f0a933d673b6224e029d1701209dd367782e75158b537f854"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:33:15.272Z",
+        "digest": "0xb20815c68984cd8038723a995003bace83b7872ba26a5caeaa85b1d1aecf3ef6",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "79ebb5a2fff732c77e96a31f64e3aa375111aa56",
+        "runnerSha256": "452adb4ecb47343f0a933d673b6224e029d1701209dd367782e75158b537f854"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:33:16.163Z",
+        "digest": "0x61d934b5f667a0398d4440126401c20e6d30a9436076a6be7bca88ad2c3d1fbe",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "79ebb5a2fff732c77e96a31f64e3aa375111aa56",
+        "runnerSha256": "452adb4ecb47343f0a933d673b6224e029d1701209dd367782e75158b537f854"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-14T12:33:16.982Z",
+        "passed": true,
+        "sourceCommit": "79ebb5a2fff732c77e96a31f64e3aa375111aa56",
+        "runnerSha256": "452adb4ecb47343f0a933d673b6224e029d1701209dd367782e75158b537f854"
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:36:33.417Z",
+        "digest": "0x2c2e593659e894e48712ab07216dd247f5450df387fbb4c43c9960961fdf1f8e",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "6c74697d22ac77a5bd405acd14a098c69540729b",
+        "runnerSha256": "b02bb6e4c156922cda9df373fd22584d15a731850ccbb7825547e5787f986b10"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:36:34.117Z",
+        "digest": "0x867cb61804ec8281f7aa4171f183dfbc6211e805fa47f68abaa3a9d0ddbd3795",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "6c74697d22ac77a5bd405acd14a098c69540729b",
+        "runnerSha256": "b02bb6e4c156922cda9df373fd22584d15a731850ccbb7825547e5787f986b10"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:36:34.209Z",
+        "digest": "0x1e3935e688e46b00ae4cac20335b28414cdcbfca70f853c921edec3c1bb29de4",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "6c74697d22ac77a5bd405acd14a098c69540729b",
+        "runnerSha256": "b02bb6e4c156922cda9df373fd22584d15a731850ccbb7825547e5787f986b10"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T12:36:35.099Z",
+        "digest": "0x7d043e503f4eb2c9625c3c11e825bd19fd1fff8f75506ff9d88748e88666b3f8",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "6c74697d22ac77a5bd405acd14a098c69540729b",
+        "runnerSha256": "b02bb6e4c156922cda9df373fd22584d15a731850ccbb7825547e5787f986b10"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-14T12:36:35.685Z",
+        "passed": true,
+        "sourceCommit": "6c74697d22ac77a5bd405acd14a098c69540729b",
+        "runnerSha256": "b02bb6e4c156922cda9df373fd22584d15a731850ccbb7825547e5787f986b10"
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T13:25:10.137Z",
+        "digest": "0x74dbd2091a3d6b10ee1a0bee0ce2c28c057938352009785a5421280765686f05",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "9d763e9a81d28948a6cd3d297eb55b2839a84cff",
+        "runnerSha256": "90a76e3f27d27c71928fab92237b4ea1518c8a8f086474d4e73de5fc6e9900f9"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T13:25:11.250Z",
+        "digest": "0x825a6ae72e7a783d91a5e2af6ebc08dbbc697dc029a4bed3dba369e55f7552b1",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "9d763e9a81d28948a6cd3d297eb55b2839a84cff",
+        "runnerSha256": "90a76e3f27d27c71928fab92237b4ea1518c8a8f086474d4e73de5fc6e9900f9"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T13:25:11.345Z",
+        "digest": "0x0e814f96c23d21913b7595cd6fb2227235e255e6927299e7eb0c643c8d3d23a6",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "9d763e9a81d28948a6cd3d297eb55b2839a84cff",
+        "runnerSha256": "90a76e3f27d27c71928fab92237b4ea1518c8a8f086474d4e73de5fc6e9900f9"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-14T13:25:12.248Z",
+        "digest": "0xb45ee56cf1ddf68859dd5f67f10b79328ac637e5f40360c7411f6c61de2d3176",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "9d763e9a81d28948a6cd3d297eb55b2839a84cff",
+        "runnerSha256": "90a76e3f27d27c71928fab92237b4ea1518c8a8f086474d4e73de5fc6e9900f9"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-14T13:25:13.149Z",
+        "passed": true,
+        "sourceCommit": "9d763e9a81d28948a6cd3d297eb55b2839a84cff",
+        "runnerSha256": "90a76e3f27d27c71928fab92237b4ea1518c8a8f086474d4e73de5fc6e9900f9"
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T11:57:17.359Z",
+        "digest": "0xb67a5bdac2b4b163d568df97d07db6e8cc6448d051e01ed3dbd1454521c51f9b",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "53b162f07920321558faaad0b09b68e0fdae713b",
+        "runnerSha256": "dede3afab332c7e52603d5f7d878e5e5c1876fe32c5c9c75d067c8072d4657e0"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T11:57:18.257Z",
+        "digest": "0xd6c979c8ced8d6d0979e43c3cd15321144ca8dcd4d7e27f0074ce2724028070e",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "53b162f07920321558faaad0b09b68e0fdae713b",
+        "runnerSha256": "dede3afab332c7e52603d5f7d878e5e5c1876fe32c5c9c75d067c8072d4657e0"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T11:57:18.345Z",
+        "digest": "0xe2e2c49edc494c97044b33634108ecad5ffa83ff83ac9bfd7146089870b126a5",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "53b162f07920321558faaad0b09b68e0fdae713b",
+        "runnerSha256": "dede3afab332c7e52603d5f7d878e5e5c1876fe32c5c9c75d067c8072d4657e0"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T11:57:19.233Z",
+        "digest": "0x4db72d6a7d298743376c709af62517fee820a6cd642bbcd0128ee8e16e8bcdca",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "53b162f07920321558faaad0b09b68e0fdae713b",
+        "runnerSha256": "dede3afab332c7e52603d5f7d878e5e5c1876fe32c5c9c75d067c8072d4657e0"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-15T11:57:20.137Z",
+        "passed": true,
+        "sourceCommit": "53b162f07920321558faaad0b09b68e0fdae713b",
+        "runnerSha256": "dede3afab332c7e52603d5f7d878e5e5c1876fe32c5c9c75d067c8072d4657e0"
+      },
+      {
+        "test": "producer-initial",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T12:15:11.563Z",
+        "digest": "0x767b430d72fba555ae16920d9989858d09f10559515415094c82f7fd70a7c5e6",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T12:15:12.259Z",
+        "digest": "0x49f5ea94d732ba12d7020d9a25a9c193fcbf9d45568422e6703e4b8990e4a41a",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T12:15:12.351Z",
+        "digest": "0x88cf3bc0a8c80ea7d3e2edc534887e6f1002333b791bc4732c6ed63dba85bdbe",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-15T12:15:13.242Z",
+        "digest": "0x2ab870570f1108bc6ebe1ff6c418a2a8e2c41ec8a5c657bbfc0fdad62d31803e",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-15T12:15:13.910Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "free-account-checkpoint",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:21:33.166Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-modern-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:21:54.229Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-modern",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:21:57.178Z",
+        "status": 200,
+        "ms": 710,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-modern-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:21:59.615Z",
+        "status": 200,
+        "ms": 202,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-modern-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:21:59.630Z",
+        "uses": 0,
+        "maxUses": 8,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-legacy-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:21:59.640Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-legacy",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:02.064Z",
+        "status": 200,
+        "ms": 202,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-legacy-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:04.501Z",
+        "status": 200,
+        "ms": 205,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-legacy-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:04.517Z",
+        "uses": 0,
+        "maxUses": 8,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-canary-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:04.532Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-canary",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:06.965Z",
+        "status": 200,
+        "ms": 204,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-canary-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:09.400Z",
+        "status": 200,
+        "ms": 203,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-canary-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:09.420Z",
+        "uses": 0,
+        "maxUses": 10,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-scope-legacy-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:09.437Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-scope-legacy",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:11.876Z",
+        "status": 200,
+        "ms": 208,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-scope-legacy-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:14.317Z",
+        "status": 200,
+        "ms": 203,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-scope-legacy-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:14.339Z",
+        "uses": 0,
+        "maxUses": 5,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-legacy-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:14.356Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-legacy",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:16.810Z",
+        "status": 200,
+        "ms": 210,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-legacy-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:19.271Z",
+        "status": 200,
+        "ms": 222,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-legacy-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:19.288Z",
+        "uses": 0,
+        "maxUses": 16,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-modern-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:19.306Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-modern",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:21.749Z",
+        "status": 200,
+        "ms": 213,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-modern-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:24.190Z",
+        "status": 200,
+        "ms": 206,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-p-scope-modern-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:24.210Z",
+        "uses": 0,
+        "maxUses": 16,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-sequential-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:24.224Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-sequential",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:26.661Z",
+        "status": 200,
+        "ms": 209,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-sequential-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:29.111Z",
+        "status": 200,
+        "ms": 211,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-sequential-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:29.126Z",
+        "uses": 0,
+        "maxUses": 2,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-consumption-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:29.141Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-consumption",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:31.581Z",
+        "status": 200,
+        "ms": 205,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-consumption-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:34.018Z",
+        "status": 200,
+        "ms": 198,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-consumption-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:34.037Z",
+        "uses": 0,
+        "maxUses": 3,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-race-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:34.056Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-race",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:36.495Z",
+        "status": 200,
+        "ms": 212,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-race-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:38.941Z",
+        "status": 200,
+        "ms": 211,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-race-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:38.958Z",
+        "uses": 0,
+        "maxUses": 2,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-revoke-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:38.974Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-revoke",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:41.423Z",
+        "status": 200,
+        "ms": 208,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-revoke-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:43.875Z",
+        "status": 200,
+        "ms": 208,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-revoke-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:43.893Z",
+        "uses": 0,
+        "maxUses": 3,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-replacement-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:43.908Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-replacement",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:46.343Z",
+        "status": 200,
+        "ms": 203,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-replacement-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:48.790Z",
+        "status": 200,
+        "ms": 201,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-l-replacement-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:48.812Z",
+        "uses": 0,
+        "maxUses": 2,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-control-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:48.829Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-control",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:51.264Z",
+        "status": 200,
+        "ms": 207,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-control-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:53.702Z",
+        "status": 200,
+        "ms": 200,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-control-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:53.727Z",
+        "uses": 0,
+        "maxUses": 40,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-exhaust-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:53.748Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-exhaust",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:56.192Z",
+        "status": 200,
+        "ms": 209,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-exhaust-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:58.623Z",
+        "status": 200,
+        "ms": 197,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-exhaust-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:58.641Z",
+        "uses": 0,
+        "maxUses": 3,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-revoke-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:22:58.656Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-revoke",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:01.110Z",
+        "status": 200,
+        "ms": 215,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-revoke-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:03.545Z",
+        "status": 200,
+        "ms": 200,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-s-revoke-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:03.564Z",
+        "uses": 0,
+        "maxUses": 8,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-cleanup-intent",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:03.577Z",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-cleanup",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:06.022Z",
+        "status": 200,
+        "ms": 216,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-cleanup-metadata",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:08.466Z",
+        "status": 200,
+        "ms": 201,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-create-c-cleanup-configuration",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:23:08.484Z",
+        "uses": 0,
+        "maxUses": 40,
+        "verification": "verified",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-credential-revoked",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:26:02.035Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-legacy",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:06.187Z",
+        "status": 200,
+        "ms": 1859,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-legacy-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:06.217Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-legacy-get-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:07.624Z",
+        "status": 200,
+        "ms": 1374,
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-legacy-publication",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:07.636Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "setup-generated-key-after-revoke",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:07.648Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-unicode-serialization",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:10.513Z",
+        "status": 200,
+        "ms": 641,
+        "bytes": 647,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-unicode-serialization-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:10.547Z",
+        "cid": "bafkreiewxsb4ri23ztk46daenukhquuql6mao5nyuig5nut4zrl5uocovy",
+        "digest": "0x96bc83c8a35bccd5cf0c046d147852905f980775b8a20dd6d27ccc57da384eae",
+        "bytes": 647,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-unicode-serialization-get-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:11.680Z",
+        "status": 200,
+        "ms": 1099,
+        "cid": "bafkreiewxsb4ri23ztk46daenukhquuql6mao5nyuig5nut4zrl5uocovy",
+        "digest": "0x96bc83c8a35bccd5cf0c046d147852905f980775b8a20dd6d27ccc57da384eae",
+        "bytes": 647,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-unicode-serialization-publication",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:11.695Z",
+        "cid": "bafkreiewxsb4ri23ztk46daenukhquuql6mao5nyuig5nut4zrl5uocovy",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-max-markdown",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:14.715Z",
+        "status": 200,
+        "ms": 797,
+        "bytes": 33013,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-max-markdown-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:14.753Z",
+        "cid": "bafkreihelbwyujahrzzjhaazvha5xfocfjmqsr5s4uy7rofoasjenzpxfa",
+        "digest": "0xe4586d8a24078e72938019a9c1db95c22a590947b2e531f8b8ae049246e5f728",
+        "bytes": 33013,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-max-markdown-get-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:15.965Z",
+        "status": 200,
+        "ms": 1186,
+        "cid": "bafkreihelbwyujahrzzjhaazvha5xfocfjmqsr5s4uy7rofoasjenzpxfa",
+        "digest": "0xe4586d8a24078e72938019a9c1db95c22a590947b2e531f8b8ae049246e5f728",
+        "bytes": 33013,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-max-markdown-publication",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:15.978Z",
+        "cid": "bafkreihelbwyujahrzzjhaazvha5xfocfjmqsr5s4uy7rofoasjenzpxfa",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-largest",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:19.323Z",
+        "status": 200,
+        "ms": 1123,
+        "bytes": 131072,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-largest-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:19.368Z",
+        "cid": "bafkreieezp6456qgazuslireczptif45itmfbtapvi6i74ak3uorttgo54",
+        "digest": "0x84cbfdcefa06066925a224165f34179d44d850cc0faa3c8ff00add1d19ccceef",
+        "bytes": 131072,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-largest-get-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:20.570Z",
+        "status": 200,
+        "ms": 1161,
+        "cid": "bafkreieezp6456qgazuslireczptif45itmfbtapvi6i74ak3uorttgo54",
+        "digest": "0x84cbfdcefa06066925a224165f34179d44d850cc0faa3c8ff00add1d19ccceef",
+        "bytes": 131072,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-largest-publication",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:20.583Z",
+        "cid": "bafkreieezp6456qgazuslireczptif45itmfbtapvi6i74ak3uorttgo54",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-revision",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:23.555Z",
+        "status": 200,
+        "ms": 749,
+        "bytes": 610,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-revision-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:23.593Z",
+        "cid": "bafkreicxacp5ozquzd6c4hguf4x7gcmadiol6fxewxdxpsqult5q4grz5m",
+        "digest": "0x57009fd76614c8fc2e1cd42f2ff309801a1cbf16e4b5c777ca145cfb0e1a39eb",
+        "bytes": 610,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-revision-get-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:24.733Z",
+        "status": 200,
+        "ms": 1108,
+        "cid": "bafkreicxacp5ozquzd6c4hguf4x7gcmadiol6fxewxdxpsqult5q4grz5m",
+        "digest": "0x57009fd76614c8fc2e1cd42f2ff309801a1cbf16e4b5c777ca145cfb0e1a39eb",
+        "bytes": 610,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-revision-publication",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:24.746Z",
+        "cid": "bafkreicxacp5ozquzd6c4hguf4x7gcmadiol6fxewxdxpsqult5q4grz5m",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "transport-over",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:28.035Z",
+        "status": 200,
+        "ms": 1065,
+        "bytes": 131073,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "transport-over-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:28.076Z",
+        "cid": "bafkreifgz7t6w2dmcjlyxf76qvzrnnke72pr4xnrpujvyswvlcbgabnley",
+        "digest": "0xa6cfe7eb686c12578b97fe857316b544fe9f1e5db17d135c4ad558826005ab26",
+        "bytes": 131073,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "transport-over-get",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:29.378Z",
+        "status": 200,
+        "ms": 1260,
+        "cid": "bafkreifgz7t6w2dmcjlyxf76qvzrnnke72pr4xnrpujvyswvlcbgabnley",
+        "digest": "0xa6cfe7eb686c12578b97fe857316b544fe9f1e5db17d135c4ad558826005ab26",
+        "bytes": 131073,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-modern",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:32.913Z",
+        "status": 200,
+        "ms": 1311,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-modern-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:32.952Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-modern-get-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:33.596Z",
+        "status": 200,
+        "ms": 615,
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "compat-modern-publication",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:26:33.611Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "independent-gateway",
+        "kind": "live",
+        "category": "rate-or-quota",
+        "at": "2026-09-16T13:26:34.278Z",
+        "status": 429,
+        "ms": 646,
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 0,
+        "equal": false,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "stored-count",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:36:03.257Z",
+        "passed": false,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "transport-max",
+        "kind": "live",
+        "category": "untested",
+        "at": "2026-09-16T13:36:03.277Z",
+        "passed": false,
+        "verdict": "incomplete",
+        "reason": "deferred-budget",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "negative-cid-v0",
+        "kind": "live",
+        "category": "untested",
+        "at": "2026-09-16T13:36:03.294Z",
+        "passed": false,
+        "verdict": "incomplete",
+        "reason": "deferred-budget",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "negative-directory",
+        "kind": "live",
+        "category": "untested",
+        "at": "2026-09-16T13:36:03.308Z",
+        "passed": false,
+        "verdict": "incomplete",
+        "reason": "deferred-budget",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-canary",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:36:07.008Z",
+        "status": 200,
+        "ms": 1466,
+        "bytes": 594,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-canary-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:36:07.041Z",
+        "cid": "bafkreid7gbkrxceydazfccinkbyxvtn3gwsn3caprr72rk7swufsjsgoni",
+        "digest": "0x7f30551b8898183251090d50717acdbb35a4dd880f8c7fa8abf2b50b24c8ce6a",
+        "bytes": 594,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-canary-read",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:36:09.953Z",
+        "status": 200,
+        "ms": 677,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-auth",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:36:12.417Z",
+        "status": 200,
+        "ms": 234,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-allowed-before",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:36:15.726Z",
+        "status": 200,
+        "ms": 1066,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-allowed-before-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:36:15.772Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-before-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:38:01.995Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-legacy-boundary",
+        "kind": "live",
+        "category": "untested",
+        "at": "2026-09-16T13:38:02.020Z",
+        "passed": false,
+        "verdict": "incomplete",
+        "reason": "uses-unknown",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-canary",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:05.452Z",
+        "status": 200,
+        "ms": 1184,
+        "bytes": 594,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-canary-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:05.485Z",
+        "cid": "bafkreid7gbkrxceydazfccinkbyxvtn3gwsn3caprr72rk7swufsjsgoni",
+        "digest": "0x7f30551b8898183251090d50717acdbb35a4dd880f8c7fa8abf2b50b24c8ce6a",
+        "bytes": 594,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-canary-read",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:08.386Z",
+        "status": 200,
+        "ms": 668,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-auth",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:10.848Z",
+        "status": 200,
+        "ms": 228,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-allowed-before",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:14.221Z",
+        "status": 200,
+        "ms": 1143,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-allowed-before-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:14.253Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-before-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:38:28.934Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "scope-modern-boundary",
+        "kind": "live",
+        "category": "untested",
+        "at": "2026-09-16T13:38:28.952Z",
+        "passed": false,
+        "verdict": "incomplete",
+        "reason": "uses-unknown",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:32.829Z",
+        "status": 200,
+        "ms": 1645,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-0-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:38:32.863Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-0-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:38:41.250Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "pin-before-exhaustion",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:40:33.302Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "before-duplicate-count",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:40:57.479Z",
+        "stored": 7,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "before-duplicate-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:41:01.866Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-1",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:41:05.393Z",
+        "status": 200,
+        "ms": 1294,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-1-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:41:05.429Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-1-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:41:10.259Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "after-duplicate-count",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:41:21.387Z",
+        "stored": 7,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-2",
+        "kind": "live",
+        "category": "forbidden",
+        "at": "2026-09-16T13:41:24.241Z",
+        "status": 403,
+        "ms": 611,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "sequential-2-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:41:26.517Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "retrieval-after-exhaustion",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:41:27.401Z",
+        "status": 200,
+        "ms": 853,
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "pin-after-exhaustion",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:41:42.737Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-malformed",
+        "kind": "live",
+        "category": "provider",
+        "at": "2026-09-16T13:41:45.613Z",
+        "status": 400,
+        "ms": 636,
+        "bytes": 0,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-malformed-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:42:11.388Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-unauthorized",
+        "kind": "live",
+        "category": "forbidden",
+        "at": "2026-09-16T13:42:14.184Z",
+        "status": 403,
+        "ms": 556,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-unauthorized-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:42:32.355Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-auth",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:42:35.234Z",
+        "status": 200,
+        "ms": 620,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-auth-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:42:42.524Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-upload-0",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:42:45.988Z",
+        "status": 200,
+        "ms": 1225,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-upload-0-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:42:46.027Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumption-upload-0-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:44:05.163Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-start-process",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:05.347Z",
+        "clientPid": 60074,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-first",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:08.877Z",
+        "status": 200,
+        "ms": 1280,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-first-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:08.910Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-start-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:44:13.815Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-finish-process",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:13.981Z",
+        "clientPid": 60096,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-final-a",
+        "kind": "live",
+        "category": "forbidden",
+        "at": "2026-09-16T13:44:16.814Z",
+        "status": 403,
+        "ms": 602,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-final-b",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:17.053Z",
+        "status": 200,
+        "ms": 821,
+        "bytes": 610,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-final-b-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:17.079Z",
+        "cid": "bafkreicxacp5ozquzd6c4hguf4x7gcmadiol6fxewxdxpsqult5q4grz5m",
+        "digest": "0x57009fd76614c8fc2e1cd42f2ff309801a1cbf16e4b5c777ca145cfb0e1a39eb",
+        "bytes": 610,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "race-finish-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:44:29.376Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "before-revoke",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:32.551Z",
+        "status": 200,
+        "ms": 939,
+        "bytes": 561,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "before-revoke-identity",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:44:32.587Z",
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "duplicate": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "pin-before-revoke",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:44:43.203Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "manual-revoke",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:44:58.863Z",
+        "passed": false,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "signed-control-initial-uses",
+        "kind": "dashboard",
+        "category": "untested",
+        "at": "2026-09-16T13:45:12.815Z",
+        "uses": null,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "signed-controls",
+        "kind": "live",
+        "category": "untested",
+        "at": "2026-09-16T13:45:12.841Z",
+        "passed": false,
+        "verdict": "incomplete",
+        "reason": "uses-unknown",
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-gateway-1",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:13.892Z",
+        "status": 200,
+        "ms": 881,
+        "cid": "bafkreiavlyhtr67v72mzlxhuq463uvqr7p22awzevq6o7oxhjlfjvypcly",
+        "digest": "0x155e0f38fbf5fe9995dcf4873dba5611fbf5a05b24ac3cefbae74aca9ae1e25e",
+        "bytes": 561,
+        "equal": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-initial",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:13.974Z",
+        "digest": "0xbea39b003cd2e797801a4ff9e3ef15b71fe862c97fbe0fab7015eeacf70068a5",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-16T13:45:14.063Z",
+        "digest": "0x16c2281703059c9cdf901400f89e79f19bb05716113ee1dff464c540f451ab0a",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-unavailable",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-16T13:45:14.151Z",
+        "digest": "0x96f8613749c32cb77f9fa8f3df01bed0523fdfbc34943dead51ab128ea8f5a67",
+        "requests": 1,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "producer-unavailable-resumed",
+        "kind": "injected",
+        "category": "ok",
+        "at": "2026-09-16T13:45:15.246Z",
+        "digest": "0xf4c951cb7ba14a32ddb9eb431d58917ca028443ab9361551b83be7b7735d1a4c",
+        "requests": 0,
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "consumer-browser",
+        "kind": "fixture",
+        "category": "ok",
+        "at": "2026-09-16T13:45:16.140Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:19.659Z",
+        "status": 200,
+        "ms": 1294,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:22.801Z",
+        "status": 200,
+        "ms": 898,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:25.953Z",
+        "status": 200,
+        "ms": 893,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:29.129Z",
+        "status": 200,
+        "ms": 919,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:32.393Z",
+        "status": 200,
+        "ms": 1024,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:35.682Z",
+        "status": 200,
+        "ms": 1022,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-unpin",
+        "kind": "live",
+        "category": "ok",
+        "at": "2026-09-16T13:45:38.999Z",
+        "status": 200,
+        "ms": 1052,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-empty-account",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:46:07.111Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      },
+      {
+        "test": "cleanup-keys",
+        "kind": "dashboard",
+        "category": "ok",
+        "at": "2026-09-16T13:47:10.462Z",
+        "passed": true,
+        "sourceCommit": "42caed45f9fe93e7b5d4699d87f637d892225f27",
+        "runnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a"
+      }
+    ]
+  }
+}

@@ -1,12 +1,15 @@
 # WP13: forum and durable content publication
 
-Status: Acceptance coverage in the authorized combined `agent/dao/m5/live` implementation. Separate package sequencing is superseded by the [milestone plan](../milestone-plan.md).
+Status: Inherited acceptance coverage from `agent/dao/m5/live`, continued by [the Pinata publication task](../pinata-publication-task.md) on `codex/dao/m5/pinata`. The [milestone plan](../milestone-plan.md) controls sequencing.
 
 ## Scope
 
 Preserve yearn.dao.proposal.v1 canonical bytes, SHA-256/CID, forum category/ancestry validation, safe Markdown and no-load attachments. Implement durable publication/pinning/retrieval without recanonicalizing fetched bytes. Keep publication distinct from onchain creation.
 
 ## Acceptance
+
+The public publication flow replaces per-document operator grants with bounded admission. Keep the editor and preview.
+The spike is closed; small credential checks belong to final staging acceptance and do not block implementation.
 
 Acceptance: immutable byte round-trip and durable recovery; publication failure does not expose creation; direct-contract proposals remain readable when forum/content conventions fail; no producer Markdown AST requirement.
 

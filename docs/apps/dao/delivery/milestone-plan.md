@@ -1,6 +1,6 @@
 # DAO delivery milestones
 
-This is the single active delivery plan, updated for the combined implementation authorized on 2026-09-10.
+This is the single active delivery plan, updated for the Pinata publication implementation authorized on 2026-09-16.
 Older package ordering and producer-start gates are superseded. Historical acceptance and evidence remain in [status](status.md).
 
 ## Accepted baseline
@@ -17,17 +17,20 @@ The combined package now implements these application flows and supplies local f
 The five findings from independent review are addressed in the [finding tracker](evidence/m5-live-review/README.md#finding-tracker).
 The follow-up keeps this package and architecture. Independent re-review remains pending.
 
-## 1. Complete real application behavior
+## 1. Complete public publication through Pinata
 
-Use one package: `agent/dao/m5/live`, based on `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
-Keep the integration worktree unchanged. WP13–WP15 remain acceptance requirements within this package, without separate start approvals.
+The next package is `codex/dao/m5/pinata`, based on M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
+Follow [the implementation task](pinata-publication-task.md) and [the accepted implementation decision](../experiments/pinata-free/decision.md).
+The earlier M5 implementation remains its dependency. Keep integration unchanged during implementation.
+WP13–WP15 remain acceptance requirements, with per-document publication grants superseded by bounded public admission.
+The experiment is closed. Its missing permission/revocation evidence moves to the small final staging session, without blocking code work.
 
 - Reuse the proxy, V2 parser, adapter, routes, and live wallet overlay.
 - Select real clients with `NEXT_PUBLIC_USE_MOCKS=false`. Production never falls back to mocks.
 - Set `DAO_DATA_URL` to the live endpoint. Obtain independently reviewed `NEXT_PUBLIC_DAO_DEPLOYMENTS` values outside the feed.
 - Implement current proposer eligibility, hooks, shared capacity, and forum URL/category validation.
 - Publish and retrieve exact canonical content through the intended durable service. Keep credentials server-side.
-- Gate publication independently of reads. Require uploader authorization and an operator-approved document and byte budget before upstream requests.
+- Gate publication independently of reads. Replace per-document grants with durable global admission limits and a finite document/byte/attempt budget.
 - Preserve publication after wallet rejection or transaction failure. Publication and creation are separate actions.
 - Prepare creation, vote, retract, flag, veto, and execute in domain clients through shared `useTx`.
 - Verify actual account, network, trusted deployment, and action-specific state before signing. Simulate the exact transaction.
