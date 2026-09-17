@@ -6,6 +6,7 @@ This package builds on M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
 The server-side Pinata path and durable public D1 admission are implemented.
 See [current evidence](delivery/evidence/m5-pinata/README.md), [operations](pinata-publication.md), and [operator acceptance](pinata-acceptance.md).
 The [publication review correction](delivery/evidence/m5-pinata-review/README.md) tracks acknowledgement enforcement and incremental validation.
+The user approved that correction on 2026-09-17. The [validation closure](delivery/evidence/m5-pinata-validation/README.md) records the complete passing rerun.
 No complete experiment rerun is required. Small credential checks move into release acceptance.
 
 DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.

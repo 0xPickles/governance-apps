@@ -5,13 +5,14 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current work (2026-09-16)
+## Current work (2026-09-17)
 
 - The [publication acknowledgement correction](evidence/m5-pinata-review/README.md) addresses the review P2 after `6886f447da52006f9659b91a5129572b944a92e5`.
   Unacknowledged uploads retry within their existing allowance; gateway availability alone cannot complete publication.
-  Independent re-review and the prepared operator acceptance session remain next.
-- Correction validation: 57 focused tests, typecheck, and lint passed. The full unit run passed 1,391 tests and failed six unchanged UI checks.
-  A separate rerun passed one of those checks and failed five. These unresolved results are retained in the correction evidence.
+  The user approved this correction on 2026-09-17. The prepared operator acceptance session remains next.
+- The [validation closure](evidence/m5-pinata-validation/README.md) records 1,397 passing tests across all 153 files and 50 passing affected-file tests.
+  Typecheck and lint also passed. Application code, tests, assertions, and timeout settings are unchanged.
+  The earlier failures remain in the historical correction evidence.
 - The user authorized the [Pinata publication implementation](pinata-publication-task.md) after the live provider run.
 - [The decision](../experiments/pinata-free/decision.md) selects server-side legacy upload and public bounded admission.
 - [The live review](../experiments/pinata-free/live-review-2026-09-16.md) records exact-content compatibility, producer retrieval, limitations and completed cleanup.

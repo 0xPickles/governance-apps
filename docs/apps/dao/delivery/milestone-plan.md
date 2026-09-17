@@ -1,6 +1,6 @@
 # DAO delivery milestones
 
-This is the single active delivery plan, updated for the Pinata publication implementation authorized on 2026-09-16.
+This is the single active delivery plan, updated after Pinata correction approval and validation closure on 2026-09-17.
 Older package ordering and producer-start gates are superseded. Historical acceptance and evidence remain in [status](status.md).
 
 ## Accepted baseline
@@ -28,7 +28,8 @@ WP13–WP15 remain acceptance requirements, with per-document publication grants
 The experiment is closed. [Current implementation evidence](evidence/m5-pinata/README.md) records local results.
 The small [operator session](../pinata-acceptance.md) remains a release gate.
 The [publication review correction](evidence/m5-pinata-review/README.md) requires acknowledged uploads before successful publication.
-Complete correction review before the bounded operator session and deployment configuration.
+The user approved the correction on 2026-09-17. The [validation closure](evidence/m5-pinata-validation/README.md) records the complete passing rerun.
+The bounded operator session and deployment configuration remain release work.
 
 - Reuse the proxy, V2 parser, adapter, routes, and live wallet overlay.
 - Select real clients with `NEXT_PUBLIC_USE_MOCKS=false`. Production never falls back to mocks.

@@ -1,0 +1,58 @@
+
+ RUN  v4.1.5 <WORKTREE>
+
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps published bytes available when receipt recovery confirms a revert 2037ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > connects accessible field errors and focuses the first invalid field 1057ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > returns Preview to Write before focusing the located Markdown error 1126ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > shows fixed parser code, byte offset, counts, targets, and hash 1742ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > publishes a Signal snapshot before starting the wallet step 1343ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > shows the transaction before receipt identity and preserves the decoded route through indexing 1323ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > retries delayed indexing idempotently with the same visible proposal identity 2459ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps the transaction link and hides proposal actions when identity decoding fails 1080ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > locks the exact review throughout publication and exposes complete forum facts 1472ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > supports keyboard navigation between Write and Preview 173ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > preserves every draft field when publication fails and never starts a wallet step 1233ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps publication and all proposal state clean after user-rejected 1051ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps publication and all proposal state clean after revert 1012ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps publication and all proposal state clean after network-error 987ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > reuses the completed publication when a rejected request retries as Success 1230ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary wrong network blocker with all current facts 19ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary blacklist blocker with all current facts 18ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary weight blocker with all current facts 15ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary cooldown blocker with all current facts 23ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > names full reward capacity as a shared system rule, not a user quota 29ms
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the authoritative disconnected fact and keeps wallet priority 30ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders the Team Finances shell, keeps debug presets off-route, and opens a workspace 904ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > shows one accessible pending-ownership notice only while a transfer exists 538ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > canonicalizes an invalid workspace route without dropping safe query state: /teams?trace=1&section=overview 311ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > canonicalizes an invalid workspace route without dropping safe query state: /teams?trace=1#ignored 313ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > canonicalizes an invalid workspace route without dropping safe query state: /teams?trace=1&section=overview&team=not-an-address 307ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > loads the saved Teams directory view 341ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > opens a team from the native stretched row link while nested controls stay independent 425ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > keeps hierarchy surfaces at the hero 453ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > restores a workspace on reload and browser history traversal 1350ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > clears stale selected-team state when returning to the directory 566ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > does not duplicate history or reset the active workspace section 606ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > cleans an unknown but well-formed team address after data resolves 381ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > mounts Teams controls inside the shared debug panel 596ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > mutates route coverage through the shared debug panel 3291ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders the admin console only when the runtime exposes operator/admin access 461ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > intercepts only unmodified primary clicks on hierarchy links 1ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > opens the canonical Teams admin route for operator/admin viewers 389ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > exposes deterministic loading and empty coverage through the shared runtime 299ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > keeps explicit admin empty coverage available under operator access 308ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > preserves the URL-selected workspace when the runtime preset changes 787ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > shows claimable bonus detail and resets staged bonus state when the preset changes 796ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > covers claimed and pending-finalization bonus states in the operator preset 632ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > keeps the read-only revenue blocker visible in the retired preset 495ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders the revenue preview, validation, and success state for the operator revenue preset 716ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > shows the explicit empty revenue history state when a selected team has no deposits 428ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > rejects a mock deposit when its deterministic credit fixture is missing 494ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders funding approval states and the separate claim and return flows for the owner preset 698ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > validates and completes the funding claim flow 2448ms
+ ✓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > validates and completes the current-period funding return flow 1357ms
+
+ Test Files  2 passed (2)
+      Tests  50 passed (50)
+   Start at  08:57:26
+   Duration  50.04s (transform 2.20s, setup 1.42s, import 4.94s, tests 40.16s, environment 2.87s)
