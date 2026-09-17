@@ -3,6 +3,7 @@
 This procedure is prepared, not executed. It requires separate explicit live-session authorization.
 The implementation task made no authenticated provider requests and inspected no private keys.
 The prior spike is closed. Its revoked keys must not be reused.
+The authorized 2026-09-17 session has a [prepared operator checklist](pinata-acceptance-session.md) with concrete local paths and manual wallet instructions.
 
 ## Bounds and setup
 
@@ -20,7 +21,7 @@ If prior experiment infrastructure is reused, preserve and extend its aggregate 
 Do not rename the session directory, remove counters, or start a new ledger to retry exhausted allowances.
 
 1. Complete independent review and obtain live-session authorization.
-2. Start the [disposable fork](local-fork-uat.md) and prepare its scenario state.
+2. Start the [disposable fork](local-fork-uat.md) and prepare its scenario state. Live Pinata needs no offline Kubo container or automatic lifecycle test.
 3. Privately create upload-only key K1, with only `pinning.pinFileToIPFS`.
 4. Keep temporary cleanup authority outside the application.
 5. Select a private session directory and a public HTTPS gateway.
@@ -115,8 +116,13 @@ Gateway availability alone must never complete B's rejected upload.
 Inspect the session ledger from the repository root in the private operator terminal:
 
 ```fish
-npx wrangler d1 execute DAO_PUBLICATION_DB --local --config wrangler.jsonc --persist-to /absolute/private/pinata-acceptance/d1 --command "SELECT digest,cid,published_at,upload_accepted,upload_attempts,retrieval_attempts FROM dao_publications" --json
+source /private/tmp/dao-pinata-acceptance-20260917/session.fish
+sqlite3 -readonly -json "$DAO_ACCEPTANCE_DB" 'SELECT digest,cid,published_at,upload_accepted,upload_attempts,retrieval_attempts FROM dao_publications'
 ```
+
+For the prepared session, use the verified database path in `session.fish` for every inspection and SQLite backup.
+The app passes `persist.path` directly to `getPlatformProxy`. Wrangler CLI `--persist-to` adds a different `v3` directory.
+Preserve both databases. The [operator checklist](pinata-acceptance-session.md) identifies the active file and exact backup command.
 
 The session uses two successful initial uploads, one rejected upload, and one replacement upload.
 If a timeout or another attempt exhausts the four-attempt bound, stop and report incomplete acceptance.

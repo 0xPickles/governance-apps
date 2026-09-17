@@ -1,0 +1,189 @@
+{
+  "status": "Preparation complete; private live acceptance pending",
+  "checkedAt": "2026-09-17T13:21:44.617Z",
+  "branch": "codex/dao/m5/pinata",
+  "acceptedImplementationHead": "ffb2ba336fe04652aa710f35bb0887e6310694a4",
+  "sessionDirectory": "/private/tmp/dao-pinata-acceptance-20260917",
+  "gateway": "https://tomato-raw-duck-661.mypinata.cloud/ipfs/",
+  "gatewayRequestedDuringPreparation": false,
+  "sessionFish": "# Public local configuration only. JWTs go only to the existing hidden-input helper.\ncd /Users/hydra/Developer/yearn/governance-apps.dao.m5.pinata\nset -gx DAO_ACCEPTANCE_DIR /private/tmp/dao-pinata-acceptance-20260917\nset -gx DAO_FORK_DIR /private/tmp/dao-pinata-acceptance-20260917/fork\nset -gx DAO_FORK_RPC http://127.0.0.1:18545\nset -gx DAO_FORK_PORT 18545\nset -gx DAO_LOCAL_SERVICES_PORT 18546\nset -gx E2E_PORT 3310\nset -gx DAO_ACCEPTANCE_APP_ORIGIN http://127.0.0.1:3310\nset -gx DAO_UAT_LIVE_FEED false\nset -gx WRANGLER_LOG_PATH /private/tmp/dao-pinata-acceptance-20260917/wrangler-logs\nset -gx DAO_ACCEPTANCE_DB /private/tmp/dao-pinata-acceptance-20260917/d1/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite\nset -gx DAO_IPFS_GATEWAY_URL https://tomato-raw-duck-661.mypinata.cloud/ipfs/\n",
+  "browserPreflight": {
+    "wallet": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    "eligible": true,
+    "forumFixtureAccepted": true,
+    "publicationPosts": 0,
+    "transactions": 0,
+    "liveProviderRequests": 0
+  },
+  "initialBrowserFailure": "Credential-free browser preflight: page.goto timed out after 60000ms while /dao/propose compiled. No publication or transaction action was reached. Browser closed. This failure is retained; it does not spend provider allowances.",
+  "browserPreflightReused": true,
+  "helperContinuationChange": "Bound navigation to 60 seconds and close Chromium plus remove signal handlers on startup failure. Wallet injection and retained-download behavior are unchanged.",
+  "priorValidation": {
+    "implementationTestsAccepted": 1397,
+    "focusedTests": 5,
+    "typecheck": "passed",
+    "lint": "passed"
+  },
+  "continuationValidation": {
+    "focusedTests": "RUN  v4.1.5 /Users/hydra/Developer/yearn/governance-apps.dao.m5.pinata\n\n\n Test Files  2 passed (2)\n      Tests  6 passed (6)\n   Start at  15:18:39\n   Duration  484ms (transform 108ms, setup 486ms, import 155ms, tests 14ms, environment 0ms)",
+    "targetedLint": "passed",
+    "typecheck": "> governance-apps@0.1.0 typecheck\n> tsc --noEmit",
+    "noFullSuiteOrAutomaticLifecycle": true,
+    "fishSyntax": "All 24 documented fish blocks and session.fish passed syntax checks."
+  },
+  "database": {
+    "active": {
+      "path": "/private/tmp/dao-pinata-acceptance-20260917/d1/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite",
+      "documents": 0,
+      "uploadAttempts": 0,
+      "retrievalAttempts": 0,
+      "reservations": 0,
+      "policyRows": 0
+    },
+    "inactivePreserved": {
+      "path": "/private/tmp/dao-pinata-acceptance-20260917/d1/v3/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite",
+      "documents": 0,
+      "uploadAttempts": 0,
+      "retrievalAttempts": 0,
+      "reservations": 0,
+      "policyRows": 0
+    },
+    "proof": {
+      "method": "Read-only GET for an absent digest through the actual app; then lsof observed the open SQLite file",
+      "appPid": 54548,
+      "workerdPid": 54565,
+      "workerdParentPid": 54548,
+      "httpStatus": 503,
+      "providerRequests": 0,
+      "observedOpenFile": "/private/tmp/dao-pinata-acceptance-20260917/d1/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite",
+      "sourceChain": [
+        "scripts/dao-pinata-acceptance.mjs: DAO_PUBLICATION_LOCAL_STATE = session/d1",
+        "scripts/dao-local-app.mjs and next.config.ts: persist.path = DAO_PUBLICATION_LOCAL_STATE",
+        "Wrangler 4.120.0 getMiniflarePersistRoot returns persist.path directly"
+      ]
+    },
+    "backup": "After app shutdown and verification of no open database handles or WAL: sqlite3 -readonly file:$DAO_ACCEPTANCE_DB?immutable=1 .dump. Ordinary read-only inspection remains for the running app. No Wrangler upgrade, deletion, migration, or counter reset.",
+    "stoppedDatabaseQuickCheck": "ok",
+    "preparationDump": {
+      "file": "/private/tmp/dao-pinata-acceptance-20260917/evidence/stopped-d1-preparation.sql",
+      "sha256": "3273e49b00814587b671878257eeffaba87ac9898db3ea9f12656f1df124f1bf",
+      "bytes": 916,
+      "verified": true
+    }
+  },
+  "fork": {
+    "launcherPid": 49858,
+    "anvilPid": 49883,
+    "owner": "hydra",
+    "startedAt": "2026-09-17T09:24:15Z",
+    "port": 18545,
+    "intervalMiningSeconds": 12,
+    "scenarioStatePreserved": true,
+    "stateSha256": "e5daad47b402bbb472d8ad743f33799139ad6f6858014526feb950dce005ef6b",
+    "proposalCount": 0,
+    "marker": "0",
+    "headTimestamp": 1789650860,
+    "feedBefore": {
+      "observedAt": 1789637841,
+      "block": {
+        "number": "25996300",
+        "hash": "0x96595a32cfbdff5b49af07365138b79b77db922083710702571bbabacee9e2e3",
+        "timestamp": 1789637841
+      }
+    },
+    "feedAfter": {
+      "observedAt": 1789650860,
+      "block": {
+        "number": "25997346",
+        "hash": "0x70cf844080dbe2e5a6962f2da6b218825c524a78da3b5615138c3b3420ccb209",
+        "timestamp": 1789650860
+      }
+    },
+    "feedRefreshedFromExistingFork": true,
+    "appServesSameFeed": true,
+    "operatorMustRefreshBeforeStartup": true,
+    "shutdown": "Verify launcher 49858 and child Anvil 49883 ownership, then signal launcher with SIGTERM.",
+    "handoffHealth": {
+      "checkedAt": "2026-09-17T13:24:21.859Z",
+      "blockNumber": "25997389",
+      "blockTimestamp": 1789651376,
+      "ageSeconds": 85
+    }
+  },
+  "services": {
+    "preflightLauncherPid": 54476,
+    "preflightLocalServicesPid": 54535,
+    "preflightNextPid": 54548,
+    "ownership": "49858 49847 hydra Thu Sep 17 11:24:15 2026     node\n49883 49858 hydra Thu Sep 17 11:24:15 2026     anvil\n54476 54473 hydra Thu Sep 17 11:46:40 2026     node\n54535 54476 hydra Thu Sep 17 11:46:45 2026     /opt/homebrew/Cellar/node/24.1.0/bin/node\n54536 54476 hydra Thu Sep 17 11:46:45 2026     /opt/homebrew/Cellar/node/24.1.0/bin/node\n54548 54536 hydra Thu Sep 17 11:46:45 2026     next-server (v16.2.11)\n54565 54548 hydra Thu Sep 17 11:46:52 2026     /Users/hydra/Developer/yearn/governance-apps.dao.m5.pinata/node_modules/@cloudflare/workerd-darwin-arm64/bin/workerd",
+    "stoppedViaLauncherSIGTERM": true,
+    "ports3310And18546Free": true,
+    "remainingListeners": "COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nanvil   49883 hydra   13u  IPv4 0x6082e7db16d80dd0      0t0  TCP 127.0.0.1:18545 (LISTEN)"
+  },
+  "producer": {
+    "chainIdentityVerified": true,
+    "deploymentIdentityVerified": true,
+    "contentRequests": 1,
+    "retries": 0,
+    "producerAcquisitions": 0,
+    "intervalMiningSeconds": 12,
+    "checkedAt": "2026-09-17T09:45:14.458Z",
+    "binaryPath": "/Users/hydra/Developer/dao-operations/gov-apps-stats.agent.integration/target/release/gov-apps-dao",
+    "binarySha256": "61c51b8528cb249b8290b0bc1fe9acc9f9514be7a5991d8af22fd61fedc8ff5c",
+    "configurationSha256": "3f20374cad6c543c7d3e7e02a0fc446847db9e8e0ab88c1e250ebe58d02b4705",
+    "configuration": {
+      "chainId": 1,
+      "chainGenesisHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+      "confirmations": 1,
+      "deployments": [
+        {
+          "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+          "deploymentBlock": 25883944,
+          "deploymentBlockHash": "0xf98a64fcf13bebeb7092632ee859be5035a20623b5f85ef3dd775dc3f8932848",
+          "genesis": 1770249600,
+          "votingCodeHash": "0xbb17fdf7ddfaf2b502b473edfcb10c7ff213eeb01f910abfbe70bab65dc48009",
+          "supportedVoters": [
+            {
+              "address": "0x5069bce8c8e371a45ab113604b128bbdf5ee5c11",
+              "codeHash": "0x35c839008b1f76fc822d779ec395af6f8de42df4adfb7e281b6c6550e2cff1c6"
+            }
+          ],
+          "supportedExecutors": [
+            {
+              "address": "0xac7d4a37ba61c2cac7f64d3e2b5773d85613fe7b",
+              "codeHash": "0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151"
+            }
+          ]
+        }
+      ],
+      "limits": {
+        "logRange": 2000,
+        "requestSeconds": 10,
+        "retries": 0,
+        "cycleSeconds": 90,
+        "contentRequests": 1
+      }
+    },
+    "executedDuringContinuation": false
+  },
+  "preparationFailures": [
+    "Earlier browser navigation exceeded 60 seconds during compilation; subsequent wallet and forum preflight passed.",
+    "Initial sandbox process and loopback checks were blocked. Narrow approved retries succeeded; no credentials or process environments were inspected.",
+    "SQLite 3.43.2 ordinary read-only open failed after app shutdown, including outside the sandbox. A stopped-file immutable URI passed quick_check and returned zero rows; no WAL file remained. The checklist reserves this URI for the stopped database.",
+    "One refresh command was interpreted by an incompatible shell before reaching the fork. The explicit fish invocation succeeded.",
+    "The first dump audit incorrectly rejected the expected _cf_METADATA row. The corrected audit confirms no publication or publication-policy inserts; the dump was preserved."
+  ],
+  "boundaries": {
+    "publicationPostsDuringPreparation": 0,
+    "proposalTransactionsDuringPreparation": 0,
+    "liveProviderRequestsDuringPreparation": 0,
+    "producerAcquisitions": 0,
+    "sessionRecreated": false,
+    "ledgersReset": false,
+    "credentialsInspected": false
+  },
+  "remainingOperatorInputs": [
+    "Private upload-only K1 and K2",
+    "Separate private cleanup authority"
+  ],
+  "remainingPreparationBlockers": []
+}

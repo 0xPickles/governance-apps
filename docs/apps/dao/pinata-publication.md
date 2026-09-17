@@ -1,6 +1,6 @@
 # DAO publication operations
 
-Publication is implemented but disabled by default. Release acceptance and independent review remain pending.
+Publication is implemented but disabled by default. Implementation and acknowledgement correction review are approved; live release acceptance remains pending.
 The author needs no provider account, upload key, document grant, or publication signature.
 An eligible author publishes reviewed content, then separately authorizes the governance transaction.
 
