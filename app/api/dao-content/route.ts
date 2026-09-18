@@ -7,11 +7,27 @@ import type { Hex } from "viem";
 
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
+
+function hasPublicationOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  const target = new URL(request.url);
+  if (origin === target.origin) return true;
+  // NextRequest normalizes loopback IPs to localhost. Recover only the original
+  // local authority in explicit development, never from forwarded headers.
+  if (!origin || process.env.NODE_ENV !== "development" || process.env.NEXT_PUBLIC_RUNTIME_MODE !== "development" ||
+      target.hostname !== "localhost") return false;
+  try {
+    const source = new URL(origin);
+    return origin === source.origin && ["127.0.0.1", "[::1]"].includes(source.hostname) &&
+      source.protocol === target.protocol && source.port === target.port && request.headers.get("host") === source.host;
+  } catch { return false; }
+}
+
 export async function POST(request: Request) {
   if (!isDaoEnabled()) return new Response(null, { status: 404, headers });
   try {
     requireDaoPublicationEnabled();
-    if (request.headers.get("origin") !== new URL(request.url).origin) return new Response(null, { status: 403, headers });
+    if (!hasPublicationOrigin(request)) return new Response(null, { status: 403, headers });
     if (request.headers.get("content-type") !== "application/octet-stream") return new Response(null, { status: 415, headers });
     let bytes: Uint8Array;
     try {

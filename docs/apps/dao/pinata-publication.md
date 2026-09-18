@@ -26,6 +26,13 @@ An operator must supply distinct reviewed production and preproduction database 
 An absent binding, missing migration, invalid limits, or missing key makes publication fail closed.
 The package adds no application dependency.
 
+The publication POST requires an exact request origin in production.
+In explicit development mode, Next.js normalizes loopback IP addresses to `localhost` in the request URL.
+The route also accepts `127.0.0.1` or `[::1]` when the original `Host` matches and the scheme and port remain identical.
+This exception requires both `NODE_ENV=development` and `NEXT_PUBLIC_RUNTIME_MODE=development`.
+Forwarded headers do not authorize the exception. Missing, malformed, and foreign origins remain rejected.
+Empty binary requests reach `400 invalid_content` only after origin validation; they make no publication reservation or provider request.
+
 ## Global application limits
 
 | JSON field | Default | Accounting |
