@@ -33,6 +33,9 @@ import {
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { cn } from "@/lib/cn";
 import { deriveDaoProposalContentIdentity } from "@/lib/clients/dao/content";
+import { restoreDaoAuthoringReview } from "@/lib/clients/dao/authoring-recovery";
+import { validateDaoPublicationBytes } from "@/lib/clients/dao/publication";
+import { DAO_CONTENT_MAX_BYTES } from "@/lib/schemas/dao-feed";
 import { getEtherscanTransactionUrl } from "@/lib/explorer";
 import { formatTokenAmount } from "@/lib/format";
 import {
@@ -136,26 +139,29 @@ function DaoProposalAuthoringFormState({
   serviceLatencyMs = 140,
   transactionOutcome = "success",
 }: DaoProposalAuthoringFormProps) {
-  const [markdown, setMarkdown] = useState(DAO_PROPOSAL_MARKDOWN_TEMPLATE);
+  const [markdown, setMarkdown] = useState(recovery?.review.content.markdown ?? DAO_PROPOSAL_MARKDOWN_TEMPLATE);
   const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
   const [proposalType, setProposalType] = useState<DaoProposalType>(
-    authoringPreset?.proposalType ?? "signal"
+    recovery?.review.content.proposalType ?? authoringPreset?.proposalType ?? "signal"
   );
   const [executableScript, setExecutableScript] = useState(
-    authoringPreset?.proposalType === "executable"
+    recovery?.review.scriptCheck.script ?? (authoringPreset?.proposalType === "executable"
       ? authoringPreset.scriptCheck.script
-      : "0x"
+      : "0x")
   );
-  const [forumInput, setForumInput] = useState("");
-  const [forumState, setForumState] = useState<ForumState>({ state: "idle" });
+  const [forumInput, setForumInput] = useState(recovery?.review.topic.normalizedUrl ?? "");
+  const [forumState, setForumState] = useState<ForumState>(recovery ? { state: "valid", topic: recovery.review.topic } : { state: "idle" });
   const [errors, setErrors] = useState<DaoAuthoringErrors>({});
   const [review, setReview] = useState<DaoAuthoringReview | null>(recovery?.review ?? null);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmationError, setConfirmationError] = useState<string | null>(null);
-  const [publication, setPublication] = useState<PublicationState>(recovery ? { state: "published", publication: recovery.publication } : { state: "idle" });
+  const [publication, setPublication] = useState<PublicationState>(recovery?.state === "published" ? { state: "published", publication: recovery.publication } : { state: "idle" });
+  const [storageWarning, setStorageWarning] = useState(false);
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
   const [wallet, setWallet] = useState<WalletState>(recovery?.lastFailure ? { state: "failed", code: recovery.lastFailure.code, message: recovery.lastFailure.message, failedTransactionHash: recovery.lastFailure.transactionHash } : { state: "idle" });
   const forumRequest = useRef(0);
-  const publicationLock = useRef(Boolean(recovery));
+  const publicationLock = useRef(recovery?.state === "published");
   const forumInputRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
   const scriptRef = useRef<HTMLTextAreaElement>(null);
@@ -284,6 +290,7 @@ function DaoProposalAuthoringFormState({
       return;
     }
 
+    setStorageWarning(services?.retainReview?.(result.review) === false);
     setErrors({});
     setReview(result.review);
     setConfirmed(false);
@@ -293,6 +300,37 @@ function DaoProposalAuthoringFormState({
     requestAnimationFrame(() => {
       document.getElementById("dao-proposal-final-review")?.focus();
     });
+  };
+
+  const handleImport = async (file: File) => {
+    if (!services || importing) return;
+    setImporting(true);
+    setImportStatus(daoProposeCopy.recovery.restoring);
+    try {
+      if (file.size > DAO_CONTENT_MAX_BYTES) throw new Error("Content too large");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const { content } = validateDaoPublicationBytes(bytes);
+      if (content.createdBy.toLowerCase() !== address.toLowerCase()) throw new Error("Wrong wallet");
+      const forum = await services.validateForum(content.discussionUrl);
+      if (forum.state !== "valid") throw new Error("Forum validation failed");
+      const restored = restoreDaoAuthoringReview(bytes, address, forum.topic, content.proposalType === "signal" ? "0x" : executableScript);
+      setStorageWarning(services.retainReview?.(restored) === false);
+      setMarkdown(restored.content.markdown);
+      setProposalType(restored.content.proposalType);
+      setExecutableScript(restored.scriptCheck.script);
+      setForumInput(restored.topic.normalizedUrl);
+      setForumState({ state: "valid", topic: restored.topic });
+      setReview(restored);
+      setConfirmed(false);
+      setConfirmationError(null);
+      setPublication({ state: "idle" });
+      setWallet({ state: "idle" });
+      setImportStatus(null);
+    } catch {
+      setImportStatus(daoProposeCopy.recovery.invalid);
+    } finally {
+      setImporting(false);
+    }
   };
 
   const focusFirstError = (
@@ -337,6 +375,7 @@ function DaoProposalAuthoringFormState({
     ) {
       return;
     }
+    setStorageWarning(services?.retainReview?.(null) === false);
     setReview(null);
     setConfirmed(false);
     setConfirmationError(null);
@@ -533,6 +572,7 @@ function DaoProposalAuthoringFormState({
     return (
       <DaoFinalReview
         live={Boolean(services)}
+        storageWarning={storageWarning}
         confirmed={confirmed}
         confirmationError={confirmationError}
         onConfirm={(value) => {
@@ -581,6 +621,18 @@ function DaoProposalAuthoringFormState({
           <p className="font-bold">{daoProposeCopy.form.validationTitle}</p>
         </div>
       ) : null}
+
+      {services ? <div className="space-y-2">
+        <label htmlFor="dao-review-import" className="block text-sm font-bold">{daoProposeCopy.recovery.importLabel}</label>
+        <p className="text-sm text-text-secondary">{daoProposeCopy.recovery.importHelp}</p>
+        <input id="dao-review-import" type="file" accept=".json,application/json" disabled={importing}
+          onChange={event => {
+            const file = event.currentTarget.files?.[0];
+            event.currentTarget.value = "";
+            if (file) void handleImport(file);
+          }} />
+        {importStatus ? <p role="status">{importStatus}</p> : null}
+      </div> : null}
 
       <form noValidate className="space-y-8" onSubmit={handleReview}>
         <AuthoringSection
@@ -853,6 +905,7 @@ function DaoProposalAuthoringFormState({
 
 function DaoFinalReview({
   live,
+  storageWarning,
   confirmed,
   confirmationError,
   onConfirm,
@@ -869,6 +922,7 @@ function DaoFinalReview({
   wallet,
 }: {
   live: boolean;
+  storageWarning: boolean;
   confirmed: boolean;
   confirmationError: string | null;
   onConfirm: (value: boolean) => void;
@@ -1033,6 +1087,8 @@ function DaoFinalReview({
       </ReviewSection>
 
       {live ? <ReviewSection title={daoProposeCopy.publication.downloadTitle}>
+        {storageWarning ? <p role="alert">{daoProposeCopy.recovery.storageUnavailable}</p> : null}
+        {!contentPublished ? <p>{daoProposeCopy.recovery.unpublished}</p> : null}
         <p className="text-sm text-text-secondary">{daoProposeCopy.publication.downloadBody}</p>
         <Button type="button" variant="secondary" size="sm" onClick={() => {
           const identity = deriveDaoProposalContentIdentity(review.content);

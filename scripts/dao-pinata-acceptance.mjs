@@ -1,5 +1,5 @@
 // Operator-run only. No authenticated request runs without an explicit confirmation and hidden key input.
-import { readFile, writeFile, mkdir, open, rename, unlink } from "node:fs/promises";
+import { readFile, writeFile, stat, open, rename, unlink } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline/promises";
@@ -13,6 +13,25 @@ export const acceptanceLimits = {
   concurrent: 2, uploadAttempts: 4, documentUploadAttempts: 2,
   retrievalAttempts: 12, documentRetrievalAttempts: 4, documentReservations: 4,
 };
+export const acceptanceDatabaseRelativePath = "d1/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite";
+export async function readAcceptanceLedger(directory) {
+  // Missing accounting is an interruption, never permission to start counting again.
+  const ledger = JSON.parse(await readFile(join(directory, "acceptance-ledger.json"), "utf8"));
+  if (ledger.version !== 1 || !Number.isInteger(ledger.requests) || ledger.requests < 0 || !Array.isArray(ledger.events)) throw new Error("Invalid existing ledger");
+  return ledger;
+}
+export async function requireAcceptanceState(directory, forkDirectory) {
+  try {
+    const database = await stat(join(directory, acceptanceDatabaseRelativePath));
+    if (!database.isFile() || database.size === 0) throw new Error("Missing database");
+    await readAcceptanceLedger(directory);
+    if (forkDirectory) {
+      for (const name of ["state.json", "deployments.json", "feed.json"]) JSON.parse(await readFile(join(forkDirectory, name), "utf8"));
+    }
+  } catch {
+    throw new Error("Acceptance state is missing or invalid. Stop and restore a consistent checkpoint; do not initialize replacement accounting for an existing run.");
+  }
+}
 export function confirmationAnswer(answer) {
   if (answer === "yes") return true;
   if (answer === "no") return false;
@@ -79,12 +98,13 @@ async function main() {
     throw new Error("Usage: node scripts/dao-pinata-acceptance.mjs ACTION /absolute/session-directory [canonical-file]");
   }
   const directory = resolve(directoryArg);
-  await mkdir(directory, { recursive: true, mode: 0o700 });
+  await requireAcceptanceState(directory, action === "launch" ? process.env.DAO_FORK_DIR ?? join(directory, "fork") : undefined);
   if (action === "launch") {
     if (!await confirm("Start the actual loopback app with a live upload-only key?")) { console.log("Skipped app launch. No publication evidence was recorded."); return; }
     const key = await hiddenKey();
     const child = spawn(process.execPath, ["scripts/dao-local-app.mjs"], { stdio: "inherit", env: {
       ...process.env, DAO_PINATA_JWT: key, DAO_UAT_PROVIDER: "pinata", DAO_UAT_LIVE_AUTHORIZED: "yes",
+      DAO_FORK_DIR: process.env.DAO_FORK_DIR ?? join(directory, "fork"),
       DAO_PUBLICATION_LIMITS: JSON.stringify(acceptanceLimits), DAO_PUBLICATION_LOCAL_STATE: join(directory, "d1"),
     } });
     process.on("SIGINT", () => child.kill("SIGINT")); process.on("SIGTERM", () => child.kill("SIGTERM"));
@@ -97,10 +117,7 @@ async function main() {
   const lockFile = join(directory, "acceptance.lock");
   const lock = await open(lockFile, "wx", 0o600);
   try {
-    let ledger;
-    try { ledger = JSON.parse(await readFile(ledgerFile, "utf8")); }
-    catch (error) { if (error.code !== "ENOENT") throw error; ledger = { version: 1, requests: 0, events: [] }; }
-    if (ledger.version !== 1 || !Number.isInteger(ledger.requests) || ledger.requests < 0 || !Array.isArray(ledger.events)) throw new Error("Invalid existing ledger");
+    const ledger = await readAcceptanceLedger(directory);
     const save = async () => { await writeFile(ledgerFile + ".tmp", JSON.stringify(ledger, null, 2) + "\n", { mode: 0o600 }); await rename(ledgerFile + ".tmp", ledgerFile); };
     if (!await confirm("Run one " + action + " request for " + document.cid + "?")) {
       let reason = ""; while (!reason) reason = await question("Reason for skipping (required): ");
@@ -149,5 +166,5 @@ async function main() {
   } finally { await lock.close(); await unlink(lockFile); }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  main().catch(() => { console.error("Acceptance stopped. Inspect the sanitized ledger and procedure before retrying."); process.exitCode = 1; });
+  main().catch(error => { console.error(error.message.startsWith("Acceptance state is missing") ? error.message : "Acceptance stopped. Inspect the sanitized ledger and procedure before retrying."); process.exitCode = 1; });
 }

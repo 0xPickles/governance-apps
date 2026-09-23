@@ -123,6 +123,14 @@ export const daoProposeCopy = {
     capacityFullBody: (first: string, last: string) =>
       `This proposal would affect reward epochs ${first}–${last}. The 64-proposal limit is shared system-wide; it is not a per-user quota.`,
   },
+  recovery: {
+    importLabel: "Restore exact content file",
+    importHelp: "Restore an exported JSON document as an unpublished review. For an executable proposal, enter its original script below before importing.",
+    invalid: "Cannot restore this file. Check its exact bytes, original wallet, forum topic, and script.",
+    restoring: "Checking the saved document and forum topic…",
+    storageUnavailable: "This tab cannot save the review. Download the exact content and keep its script before reloading. Enable browser storage before publishing.",
+    unpublished: "This review is unpublished. Confirm the retained content before publishing. No transaction is ready.",
+  },
   review: {
     eyebrow: "Final review",
     title: "Review the exact proposal",

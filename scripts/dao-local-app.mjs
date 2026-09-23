@@ -2,6 +2,8 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { getPlatformProxy } from "wrangler";
+import { dirname, basename } from "node:path";
+import { requireAcceptanceState } from "./dao-pinata-acceptance.mjs";
 const directory = process.env.DAO_FORK_DIR ?? "/tmp/governance-dao-uat";
 const rpc = process.env.DAO_FORK_RPC ?? "http://127.0.0.1:18545";
 const ipfs = process.env.DAO_LOCAL_IPFS_API_URL ?? "http://127.0.0.1:15001";
@@ -13,12 +15,18 @@ const deployments = JSON.parse(await readFile(directory + "/deployments.json", "
 const servicesPort = process.env.DAO_LOCAL_SERVICES_PORT ?? "18546";
 const liveProvider = process.env.DAO_UAT_PROVIDER === "pinata";
 if (liveProvider && process.env.DAO_UAT_LIVE_AUTHORIZED !== "yes") throw new Error("Live provider acceptance requires explicit operator authorization.");
+if (liveProvider) {
+  const statePath = process.env.DAO_PUBLICATION_LOCAL_STATE;
+  if (!statePath || basename(statePath) !== "d1") throw new Error("An existing acceptance D1 path is required.");
+  await requireAcceptanceState(dirname(statePath), directory);
+}
 // The same local D1 implementation used by the application. Preserve counters across restarts.
 const platform = await getPlatformProxy({ configPath: "wrangler.jsonc",
   ...(process.env.DAO_PUBLICATION_LOCAL_STATE ? { persist: { path: process.env.DAO_PUBLICATION_LOCAL_STATE } } : {}) });
 try {
   const exists = await platform.env.DAO_PUBLICATION_DB.prepare("SELECT name FROM sqlite_master WHERE name = 'dao_publications'").first();
   if (!exists) {
+    if (liveProvider) throw new Error("Acceptance database schema is missing. Restore the checkpoint before publication.");
     const migration = await readFile("migrations/dao-publication/0001_publications.sql", "utf8");
     await platform.env.DAO_PUBLICATION_DB.batch(migration.split(";").filter(sql => sql.trim()).map(sql => platform.env.DAO_PUBLICATION_DB.prepare(sql)));
   }

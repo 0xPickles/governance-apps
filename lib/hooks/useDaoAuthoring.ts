@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Address, Hex } from "viem";
 import { useTx } from "@/lib/tx/useTx";
 import { getDaoRouteClient } from "./useDao";
@@ -16,6 +16,7 @@ import type { DaoAuthoringServices } from "@/lib/clients/dao/authoring-services"
 import type { DaoDecodedProposeIdentity, DaoProposerState } from "@/lib/clients/dao/types";
 import type { DaoForumValidationResult } from "@/lib/clients/dao/authoring-types";
 import { daoCopy } from "@/app/dao/messages";
+import { daoProposeCopy } from "@/app/dao/propose/messages";
 
 export function useDaoAuthoringServices(address: Address, proposer: DaoProposerState) {
   const tx = useTx();
@@ -23,9 +24,13 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
   const deployments = getDaoDeployments();
   const deployment = deployments.find(d => d.active);
   const key = daoAuthoringStorageKey(daoDeploymentScope(deployments), address);
-  const [recovery] = useState(() => readDaoAuthoringRecovery(key, address));
+  const recovery = useMemo(() => readDaoAuthoringRecovery(key, address), [key, address]);
   const [identities] = useState(() => new Map<string, DaoDecodedProposeIdentity>());
   const services: DaoAuthoringServices = {
+    retainReview(review) {
+      if (review) return saveDaoAuthoringRecovery(key, review);
+      try { sessionStorage.removeItem(key); return true; } catch { return false; }
+    },
     async validateForum(input) {
       try {
         const result = await fetch("/api/dao-forum?url=" + encodeURIComponent(input), { cache: "no-store", signal: AbortSignal.timeout(30_000) });
@@ -38,6 +43,8 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
     async publish(review) {
       try {
         if (!proposer.canPropose) throw new Error("Refresh proposal eligibility before continuing.");
+        if (review.content.createdBy.toLowerCase() !== address.toLowerCase()) throw new Error("Wallet account changed. Restore the review with its original wallet.");
+        if (!saveDaoAuthoringRecovery(key, review)) throw new Error(daoProposeCopy.recovery.storageUnavailable);
         const identity = deriveDaoProposalContentIdentity(review.content);
         const response = await fetch("/api/dao-content", {
           method: "POST", headers: { "Content-Type": "application/octet-stream", "X-DAO-Content-Digest": identity.digest,
@@ -70,6 +77,7 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
       if (existing?.transactionHash) return { state: "submitted", transactionHash: existing.transactionHash };
       submitting.current = true;
       await tx.execute(async () => {
+        if (!proposer.canPropose) throw new Error("Refresh proposal eligibility before continuing.");
         if (!deployment) throw new Error("No active trusted DAO deployment.");
         if (review.content.createdBy.toLowerCase() !== address.toLowerCase()) throw new Error("Wallet account changed. Review the proposal again.");
         const identity = deriveDaoProposalContentIdentity(review.content);
@@ -142,5 +150,5 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
       return proposal;
     },
   };
-  return { services, recovery };
+  return { services, recovery, recoveryKey: key };
 }

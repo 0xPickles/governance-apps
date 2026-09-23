@@ -7,6 +7,8 @@ import { deriveDaoProposalContentIdentity } from "@/lib/clients/dao/content";
 import { DaoPublicationStore, DAO_PUBLICATION_LEASE_MS } from "@/lib/server/dao-publication-store";
 import { DAO_PUBLICATION_DEFAULT_LIMITS as defaults, daoPublicationLimits } from "@/lib/server/dao-publication-policy";
 import { publishDaoContent, readStoredDaoContent } from "@/lib/server/dao-content";
+import { recoveredBytes } from "@/tests/fixtures/dao-pinata-recovery";
+import { validateDaoPublicationBytes } from "@/lib/clients/dao/publication";
 vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: { DAO_PUBLICATION_DB: db } }) }));
 vi.mock("@/lib/clients/dao/forum", () => ({ validateDaoForumTopic: vi.fn(async (url: string) => ({ state: "valid", topic: { normalizedUrl: url } })) }));
 let db: D1Database, platform: PlatformProxy<{ DAO_PUBLICATION_DB: D1Database }>, directory: string;
@@ -104,6 +106,44 @@ describe("admission on real local D1", () => {
   });
 });
 describe("publication with durable recovery", () => {
+  it("retries exact recovered B across a runtime restart at the full three-document cap (synthetic ledger)", async () => {
+    // This isolated D1 fixture recreates the admission condition, not historical acceptance evidence.
+    vi.stubEnv("DAO_PUBLICATION_LIMITS", JSON.stringify({ hourlyDocuments: 3, dailyDocuments: 3, monthlyDocuments: 3, documents: 3,
+      uploadAttempts: 4, documentUploadAttempts: 2, retrievalAttempts: 12, documentRetrievalAttempts: 4, documentReservations: 4 }));
+    const a = recoveredBytes("A"), b = recoveredBytes("B"), c = recoveredBytes("C");
+    const bIdentity = validateDaoPublicationBytes(b);
+    const uploads: Uint8Array[] = [];
+    let acceptB = false;
+    const fetcher = vi.fn(async (url: string, options: RequestInit) => {
+      if (options.method === "POST") {
+        const bytes = new Uint8Array(await ((options.body as FormData).get("file") as Blob).arrayBuffer());
+        uploads.push(bytes);
+        const i = validateDaoPublicationBytes(bytes);
+        return i.digest === bIdentity.digest && !acceptB ? new Response(null, { status: 403 }) : Response.json({ IpfsHash: i.cid, PinSize: bytes.length });
+      }
+      const bytes = [a, b, c].find(value => url.endsWith(validateDaoPublicationBytes(value).cid));
+      if (!bytes) throw new Error("Unexpected offline retrieval");
+      return new Response(new Uint8Array(bytes));
+    });
+    vi.stubGlobal("fetch", fetcher);
+    await publishDaoContent(a); await publishDaoContent(c);
+    await expect(publishDaoContent(b)).rejects.toMatchObject({ code: "verification_pending" });
+    await expect(readStoredDaoContent(bIdentity.digest)).rejects.toThrow();
+    expect(await db.prepare("SELECT COUNT(*) AS documents, SUM(upload_attempts) AS uploads FROM dao_publications").first()).toEqual({ documents: 3, uploads: 3 });
+    await platform.dispose(); await start();
+    const changed = deriveDaoProposalContentIdentity({ ...bIdentity.content, createdAt: "2026-09-18T16:56:15.000Z" });
+    expect(changed.digest).not.toBe(bIdentity.digest);
+    await expect(publishDaoContent(changed.bytes)).rejects.toMatchObject({ code: "budget_reached" });
+    expect(uploads).toHaveLength(3);
+    const retry = await db.prepare("SELECT retry_after FROM dao_publications WHERE digest = ?").bind(bIdentity.digest).first<{ retry_after: number }>();
+    vi.spyOn(Date, "now").mockReturnValue(retry!.retry_after + 1);
+    acceptB = true;
+    expect(await publishDaoContent(b)).toMatchObject({ state: "published", digest: bIdentity.digest, cid: bIdentity.cid });
+    expect(uploads).toEqual([a, c, b, b]);
+    expect(await db.prepare("SELECT COUNT(*) AS documents, SUM(upload_attempts) AS uploads, SUM(retrieval_attempts) AS retrievals FROM dao_publications").first()).toEqual({ documents: 3, uploads: 4, retrievals: 3 });
+    expect(await db.prepare("SELECT upload_accepted, reservations, upload_attempts FROM dao_publications WHERE digest = ?").bind(bIdentity.digest).first()).toEqual({ upload_accepted: 1, reservations: 2, upload_attempts: 2 });
+    expect(await readStoredDaoContent(bIdentity.digest)).toEqual(b);
+  }, 30_000);
   it("deduplicates verified bytes without provider calls, including restart and disabled recovery reads", async () => {
     const i = identity();
     const fetcher = vi.fn(async (_url: string, options: RequestInit) => options.method === "POST"
