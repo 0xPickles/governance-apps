@@ -1,0 +1,14 @@
+
+> governance-apps@0.1.0 test:e2e:full
+> playwright test --project=full --workers=1 --grep keeps vote state unchanged after revert
+
+
+Running 1 test using 1 worker
+
+(node:93853) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:93853) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after revert (11.4s)
+
+  1 passed (16.8s)

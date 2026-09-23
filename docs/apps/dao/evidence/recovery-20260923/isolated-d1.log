@@ -1,0 +1,40 @@
+
+> governance-apps@0.1.0 test
+> vitest run tests/unit/lib/clients/dao.publication-store.test.ts --reporter=verbose
+
+
+ RUN  v4.1.5 [worktree]
+
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > serializes same-digest races across independent stores 448ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > atomically bounds distinct concurrent reservations across stores 403ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > enforces hourlyDocuments including abandoned documents 96ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > enforces dailyDocuments including abandoned documents 91ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > enforces monthlyDocuments including abandoned documents 93ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > enforces documents including abandoned documents 95ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > enforces bytes including abandoned documents 89ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > reopens rolling windows but never cumulative capacity 161ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > persists reservations and spent attempts across a runtime restart and fences stale owners 396ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > bounds global and per-document upload attempts without refunds 190ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > bounds global and per-document retrieval attempts without refunds 181ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > caps restart/retry reservations even before an upload; rejects policy drift 113ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > admission on real local D1 > requires upload acceptance before completing a live reservation 110ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > retries exact recovered B across a runtime restart at the full three-document cap (synthetic ledger) 612ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > deduplicates verified bytes without provider calls, including restart and disabled recovery reads 290ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > requires another acknowledged upload when the prior outcome is rejected, despite retrievable bytes 280ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > requires another acknowledged upload when the prior outcome is ambiguous, despite retrievable bytes 260ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > exhausts unacknowledged upload attempts without accepting open-gateway bytes 307ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > resumes acknowledged uploads after restart without another upload 873ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > fails closed on older published records without upload acceptance 106ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > bounds propagation and never reuploads acknowledged content 1319ms
+ ✓ |node| tests/unit/lib/clients/dao.publication-store.test.ts > publication with durable recovery > fails closed on missing private configuration without storing content or contacting services 15ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  14:30:31
+   Duration  8.16s (transform 209ms, setup 240ms, import 984ms, tests 6.85s, environment 0ms)
+
+npm notice
+npm notice New minor version of npm available! 11.14.0 -> 11.19.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.19.1
+npm notice To update run: npm install -g npm@11.19.1
+npm notice

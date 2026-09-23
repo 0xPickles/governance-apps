@@ -1,0 +1,88 @@
+
+> governance-apps@0.1.0 test:e2e:full
+> playwright test --project=full --workers=1
+
+
+Running 34 tests using 1 worker
+
+(node:89816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:89816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [full] › tests/e2e/full/caps-exhausted.spec.ts:11:5 › disables redeem when caps are exhausted (41.1s)
+  ✓   2 [full] › tests/e2e/full/dao-actions.spec.ts:28:5 › keeps the action panel reachable, responsive, and keyboard safe (27.9s)
+  ✓   3 [full] › tests/e2e/full/dao-actions.spec.ts:113:5 › submits one vote, preserves canonical totals, then indexes the event (13.1s)
+  ✓   4 [full] › tests/e2e/full/dao-actions.spec.ts:156:5 › keeps post-veto participation open and blocks an early veto (13.6s)
+  ✓   5 [full] › tests/e2e/full/dao-actions.spec.ts:171:5 › requires tiered confirmation when immutable content cannot be trusted (16.4s)
+  ✓   6 [full] › tests/e2e/full/dao-actions.spec.ts:196:5 › shows exact account, timing, and execution guard reasons (29.9s)
+  ✓   7 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › retract proposal confirms its effect and indexes separately (12.7s)
+  ✓   8 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › flag proposal confirms its effect and indexes separately (12.3s)
+  ✓   9 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › veto proposal confirms its effect and indexes separately (12.4s)
+  ✓  10 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › execute proposal confirms its effect and indexes separately (14.7s)
+  ✓  11 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after user-rejected (13.4s)
+  ✘  12 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after revert (14.1s)
+(node:90776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:90776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  13 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after network-error (11.8s)
+  ✓  14 [full] › tests/e2e/full/dao-mock-uat.spec.ts:145:5 › keeps the deterministic account presentation consistent across shared and DAO routes (15.5s)
+  ✓  15 [full] › tests/e2e/full/dao-mock-uat.spec.ts:199:5 › synchronizes read-only E2E wallet truth for connected, disconnected, and wrong-network states (12.3s)
+  ✓  16 [full] › tests/e2e/full/dao-mock-uat.spec.ts:241:5 › makes the mobile menu a contained modal for every closure path (6.5s)
+  ✓  17 [full] › tests/e2e/full/dao-mock-uat.spec.ts:306:7 › reaches deterministic proposal fixtures 1–11 through the shared bridge (48.0s)
+  ✓  18 [full] › tests/e2e/full/dao-mock-uat.spec.ts:306:7 › reaches deterministic proposal fixtures 12–22 through the shared bridge (39.2s)
+  ✓  19 [full] › tests/e2e/full/dao-mock-uat.spec.ts:377:5 › reaches the non-visual proposal capacity fixture through the shared bridge (16.2s)
+  ✓  20 [full] › tests/e2e/full/dao-mock-uat.spec.ts:433:5 › keeps core review and authoring surfaces contained with a 200% root font size (7.8s)
+  ✓  21 [full] › tests/e2e/full/dao-mock-uat.spec.ts:449:5 › keeps DAO status, purpose, and feedback text at AA contrast in both themes (44.8s)
+  ✓  22 [full] › tests/e2e/full/dao-proposal-read.spec.ts:24:5 › scans and filters the proposal board at every review viewport (17.4s)
+  ✓  23 [full] › tests/e2e/full/dao-proposal-read.spec.ts:60:5 › presents proposal #19 execution integrity first on board and detail (14.5s)
+  ✓  24 [full] › tests/e2e/full/dao-proposal-read.spec.ts:95:5 › supports keyboard filters and reduced motion (11.8s)
+  ✓  25 [full] › tests/e2e/full/dao-proposal-read.spec.ts:112:5 › offers responsive keyboard shortcuts when Active has no proposals (1.2m)
+  ✓  26 [full] › tests/e2e/full/dao-proposal-read.spec.ts:163:5 › keeps the last-good board visible while preserving outage semantics (11.1s)
+  ✓  27 [full] › tests/e2e/full/dao-proposal-read.spec.ts:199:5 › keeps a synthetic cold error distinct from a last-good outage (10.9s)
+  ✓  28 [full] › tests/e2e/full/dao-proposal-read.spec.ts:219:5 › does not retain a found detail outside the surfaced feed snapshot (11.3s)
+  ✓  29 [full] › tests/e2e/full/dao-proposal-read.spec.ts:241:5 › contains proposed script and technical values at every review viewport (17.8s)
+  ✓  30 [full] › tests/e2e/full/dao-proposal-read.spec.ts:315:5 › keeps technical address copy controls visible for coarse pointers (11.0s)
+  ✓  31 [full] › tests/e2e/full/dao-proposal-read.spec.ts:357:5 › renders every terminal fixture with explicit status and vote rule copy (38.2s)
+  ✓  32 [full] › tests/e2e/full/dao-proposal-read.spec.ts:425:5 › keeps onchain records and trust failures explicit (20.2s)
+  ✓  33 [full] › tests/e2e/full/dao-proposal-read.spec.ts:470:5 › contains long immutable Markdown at 200% text scaling (10.8s)
+  ✓  34 [full] › tests/e2e/full/dao-proposal-read.spec.ts:500:5 › loads an authenticated attachment only after explicit activation (13.7s)
+
+
+  1) [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after revert ───
+
+    Error: page.evaluate: Execution context was destroyed, most likely because of a navigation.
+
+       at utils.ts:22
+
+      20 |
+      21 | export async function resetBridge(page: Page) {
+    > 22 |   await page.evaluate(async () => {
+         |              ^
+      23 |     await window.__TEST__?.reset();
+      24 |   });
+      25 | }
+        at resetBridge ([isolated-e2e]/tests/e2e/utils.ts:22:14)
+        at [isolated-e2e]/tests/e2e/full/dao-actions.spec.ts:25:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dao-actions-keeps-vote-state-unchanged-after-revert-full/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dao-actions-keeps-vote-state-unchanged-after-revert-full/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dao-actions-keeps-vote-state-unchanged-after-revert-full/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/dao-actions-keeps-vote-state-unchanged-after-revert-full/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/dao-actions-keeps-vote-state-unchanged-after-revert-full/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after revert ────
+  33 passed (11.5m)

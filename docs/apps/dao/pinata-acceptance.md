@@ -1,5 +1,10 @@
 # Small Pinata release acceptance
 
+> Current status: the original A/C/B run is interrupted and incomplete. Its database and ledger are missing.
+> Preserve its historical observations. Use the [revised recovery checklist](pinata-recovery.md) for a separately authorized, bounded follow-up.
+> The original procedure below remains a reference. Its prior preparation status is historical.
+> The helper now requires an existing database and ledger; initialization is an explicit new-session operation.
+
 This procedure is prepared, not executed. It requires separate explicit live-session authorization.
 The implementation task made no authenticated provider requests and inspected no private keys.
 The prior spike is closed. Its revoked keys must not be reused.

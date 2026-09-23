@@ -16,6 +16,17 @@ It does not grant review approval, UAT acceptance or rollout authority.
 
 ## Finding tracker
 
+### Pinata acceptance UX observations — 2026-09-23
+
+These observations extend this existing finding tracker. They do not alter the historical review outcomes below.
+
+| Observation | State and scope |
+| --- | --- |
+| Cropped application frame during private Pinata acceptance | Open. Preserve for separate layout review; no cropping correction is included in recovery work. |
+| Forum warning appears before the operator completes validation | Open. Preserve for separate copy/state review; no forum-warning correction is included here. |
+| Repeated download refused after B's timestamp changed | Correct safeguard. Preserve the original bytes and report the mismatch; never overwrite the accepted document. |
+| Unpublished B lost across App restart | Recovery correction and offline tests prepared; independent review and bounded live follow-up remain pending. See [checklist](../../../pinata-recovery.md). |
+
 | Finding | Implemented correction | Targeted regression | Review state |
 | --- | --- | --- | --- |
 | R1 / P1: unauthenticated publication and unbounded storage | Independent default-off publication gate; operator grants for exact digest, uploader and byte count; wallet signature; finite unique-content budget before upstream calls | `dao.publication-policy.test.ts`; compiled enabled-read/publication-disabled test; real signed local publication | Fixed; independent review pending |

@@ -1,5 +1,11 @@
 # Prepared Pinata session — 2026-09-17
 
+> Historical preparation record, superseded on 2026-09-23. The live run was interrupted and remains incomplete.
+> The temporary session files, original D1, request ledger, and scenario metadata are missing.
+> Exact A/B/C bytes were recovered, but acknowledgements and counters were not recovered.
+> **Do not execute this old startup procedure.** Use the [recovery and separate follow-up checklist](pinata-recovery.md).
+> The statements below describe preparation on 17 September, not current service or publication state.
+
 This is the operator checklist for the authorized [bounded acceptance](pinata-acceptance.md).
 The clean starting commit was `ffb2ba336fe04652aa710f35bb0887e6310694a4` on `codex/dao/m5/pinata`.
 Implementation approval and validation closure remain accepted. Live acceptance is still pending.

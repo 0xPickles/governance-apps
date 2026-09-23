@@ -4,6 +4,27 @@ Publication is implemented but disabled by default. Implementation and acknowled
 The author needs no provider account, upload key, document grant, or publication signature.
 An eligible author publishes reviewed content, then separately authorizes the governance transaction.
 
+## Reviewed-content recovery
+
+The live form saves validated reviews in same-tab session storage before publication starts.
+The record retains canonical content, timestamp, digest, CID, validated forum topic, and executor script.
+An unpublished record stays unpublished after a failed request, reload, or App restart.
+The author must confirm the retained review again. Recovery never starts publication or creates a transaction automatically.
+
+Existing published records retain their publication identity and receipt recovery, including the legacy storage format.
+Storage is scoped to wallet and deployment. Account or deployment changes select a separate record and remount the form.
+Restored bytes, identity, forum topic, and script are validated. Transaction preparation still checks server publication, eligibility, network, and deployment.
+A cached publication record cannot bypass the server's acknowledgement and exact-content checks.
+
+If storage refuses a write, publication stops and the current review stays downloadable.
+If storage is missing or corrupt, use **Restore exact content file** with the original JSON export.
+Executable content also requires its original script, entered before import. The content schema does not contain that script.
+Import checks exact canonical bytes, the connected author, the forum topic, and script validity.
+It preserves the snapshot timestamp and creates an unpublished review, even when those bytes were previously published.
+The normal server flow must establish publication status. Do not edit browser-storage JSON to manufacture acknowledgement.
+
+See the [recovery checklist](pinata-recovery.md) for original B, durable session checkpoints, and the separate bounded follow-up.
+
 ## Configuration
 
 | Configuration | Purpose |
