@@ -3,10 +3,10 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright";
-import { installForkWallet, retainDownload, runManualBrowser } from "@/scripts/dao-pinata-browser.mjs";
+import { acceptanceForkRpc, installForkWallet, retainDownload, runManualBrowser } from "@/scripts/dao-pinata-browser.mjs";
 
 describe("manual browser startup", () => {
-  it("closes Chromium after a navigation timeout without retaining signal handlers", async () => {
+  it.each([18545, 18547])("uses the selected local fork on %s and closes Chromium after a navigation timeout", async port => {
     const directory = await mkdtemp(join(tmpdir(), "dao-manual-startup-"));
     const close = vi.fn(async () => {});
     const goto = vi.fn(async () => { throw new Error("Navigation timed out"); });
@@ -16,7 +16,8 @@ describe("manual browser startup", () => {
     const sigint = process.listenerCount("SIGINT");
     const sigterm = process.listenerCount("SIGTERM");
     try {
-      await expect(runManualBrowser(directory, "0xlocal")).rejects.toThrow("Navigation timed out");
+      await expect(runManualBrowser(directory, "0xlocal", "http://127.0.0.1:" + port)).rejects.toThrow("Navigation timed out");
+      expect(context.addInitScript).toHaveBeenCalledWith(installForkWallet, { account: "0xlocal", rpc: "http://127.0.0.1:" + port });
       expect(goto).toHaveBeenCalledExactlyOnceWith("http://127.0.0.1:3310/dao/propose#A", { timeout: 60_000 });
       expect(close).toHaveBeenCalledOnce();
       expect(process.listenerCount("SIGINT")).toBe(sigint);
@@ -43,6 +44,12 @@ describe("manual acceptance downloads", () => {
 });
 
 describe("manual fork wallet", () => {
+  it("rejects non-local, credential-bearing, and ambiguous fork URLs", () => {
+    for (const url of ["https://127.0.0.1:18547", "http://example.com", "http://key@127.0.0.1:18547", "http://127.0.0.1:18547/path", "http://127.0.0.1:18547?rpc=x"]) {
+      expect(() => acceptanceForkRpc(url)).toThrow();
+    }
+    expect(acceptanceForkRpc("http://127.0.0.1:18547")).toBe("http://127.0.0.1:18547");
+  });
   it("makes no automatic request and forwards operator transactions only to the local RPC", async () => {
     const browserWindow: { ethereum?: { request: (request: { method: string; params?: unknown[] }) => Promise<unknown> } } = {};
     const fetch = vi.fn(async () => ({ json: async () => ({ result: "0xreceipt" }) }));

@@ -46,21 +46,28 @@ export async function retainDownload(path, bytes) {
   }
 }
 
+export function acceptanceForkRpc(value = process.env.DAO_FORK_RPC ?? "http://127.0.0.1:18545") {
+  const url = new URL(value);
+  assert.ok(url.protocol === "http:" && ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname) &&
+    !url.username && !url.password && value === url.origin, "Manual acceptance requires an exact loopback HTTP RPC origin.");
+  return url.origin;
+}
+
 async function main() {
   assert.ok(process.argv[2], "Supply the existing acceptance session directory.");
   const directory = resolve(process.argv[2]);
   const state = JSON.parse(await readFile(join(directory, "fork/state.json"), "utf8"));
-  const rpc = "http://127.0.0.1:18545";
+  const rpc = acceptanceForkRpc();
   const call = async method => (await (await fetch(rpc, { method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params: [] }), signal: AbortSignal.timeout(5000) })).json()).result;
   assert.match(await call("web3_clientVersion"), /anvil/i);
   assert.equal(await call("eth_chainId"), "0x1");
   assert.equal((await call("eth_accounts"))[0].toLowerCase(), state.accounts[0].toLowerCase());
-  await runManualBrowser(directory, state.accounts[0]);
+  await runManualBrowser(directory, state.accounts[0], rpc);
 }
 
-export async function runManualBrowser(directory, account) {
-  const rpc = "http://127.0.0.1:18545";
+export async function runManualBrowser(directory, account, rpc = acceptanceForkRpc()) {
+  rpc = acceptanceForkRpc(rpc);
   await mkdir(join(directory, "documents"), { recursive: true, mode: 0o700 });
   const browser = await chromium.launch({ headless: false });
   const disconnected = new Promise(done => browser.on("disconnected", done));
@@ -83,6 +90,7 @@ export async function runManualBrowser(directory, account) {
       await page.goto("http://127.0.0.1:3310/dao/propose#" + label, { timeout: 60_000 });
     }
     console.log("Manual tabs A, C, B ready. Connect wallet > Browser Wallet. Transactions execute immediately on the local fork.");
+    console.log("Wallet RPC: " + rpc);
     console.log("Keep this browser running across the K1/K2 app restart. No real wallet or key import is needed.");
     await disconnected;
   } finally {
