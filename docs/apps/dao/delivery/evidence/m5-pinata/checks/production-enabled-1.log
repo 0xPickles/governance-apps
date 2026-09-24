@@ -1,0 +1,35 @@
+
+> governance-apps@0.1.0 test:e2e:dao-feed
+> node ./scripts/test-dao-feed-v2.mjs
+
+▲ Next.js 16.2.11 (webpack)
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 23.0s
+  Running TypeScript ...
+  Finished TypeScript in 12.6s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/12) ...
+  Generating static pages using 9 workers (3/12)
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: [Security Invariant: web3/wagmi] NEXT_PUBLIC_RPC_URLS must include at least one non-empty RPC URL.
+    at g (.next/server/chunks/8919.js:26:21202)
+    at 2149 (.next/server/chunks/8919.js:1:278)
+    at g (.next/server/webpack-runtime.js:1:136)
+    at 87995 (.next/server/chunks/8919.js:27:144197)
+    at Object.g [as require] (.next/server/webpack-runtime.js:1:136) {
+  digest: '4218631189'
+}
+Export encountered an error on /_not-found/page: /_not-found, exiting the build.
+⨯ Next.js build worker exited with code: 1 and signal: null
+file://<WORKTREE>/scripts/test-dao-feed-v2.mjs:24
+    child.on("exit", code => code === 0 ? resolve() : reject(new Error("Local V2 validation exited " + code)));
+                                                             ^
+
+Error: Local V2 validation exited 1
+    at ChildProcess.<anonymous> (file://<WORKTREE>/scripts/test-dao-feed-v2.mjs:24:62)
+    at ChildProcess.emit (node:events:507:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12)
+
+Node.js v24.1.0

@@ -1,0 +1,220 @@
+{
+  "date": "2026-09-18",
+  "acceptedPreparationCommit": "d67095395e6d681c2075ebd9d5a1fa8f29ffd69a",
+  "scope": "Fix the publication origin check after installed Next.js 16.2.11 normalizes loopback IPs to localhost.",
+  "production": "Exact request-origin check preserved; loopback exception requires NODE_ENV and NEXT_PUBLIC_RUNTIME_MODE both development.",
+  "exception": "Origin must be a canonical 127.0.0.1 or [::1] origin, normalized request hostname must be localhost, scheme and port must match, and Host must equal the origin authority. Forwarded headers never authorize the exception.",
+  "routeSha256": "e511a3c0f3b409aee6b3d1f96e6fd4c46ee11269fb7862ea163d1ab5fa91ca6b",
+  "regressionBefore": {
+    "tests": 35,
+    "passed": 33,
+    "failed": 2,
+    "failures": "IPv4 and IPv6 NextRequest normalization both returned 403 instead of 400 before the fix."
+  },
+  "validation": {
+    "focusedTests": 51,
+    "focusedTestsLog": "RUN  v4.1.5 /Users/hydra/Developer/yearn/governance-apps.dao.m5.pinata\n\n\n Test Files  2 passed (2)\n      Tests  51 passed (51)\n   Start at  12:27:52\n   Duration  726ms (transform 165ms, setup 499ms, import 260ms, tests 282ms, environment 0ms)",
+    "typecheck": "passed",
+    "lint": "passed",
+    "finalChangedTestLint": "passed",
+    "realNextRoute": {
+      "testedAt": "2026-09-18T10:26:27.112Z",
+      "url": "http://127.0.0.1:3311/api/dao-content",
+      "client": "node:http",
+      "bytesPerRequest": 0,
+      "results": [
+        {
+          "name": "browser loopback origin",
+          "origin": "http://127.0.0.1:3311",
+          "host": "127.0.0.1:3311",
+          "status": 400,
+          "body": "{\"code\":\"invalid_content\",\"error\":\"The content does not match its canonical bytes and identity. Review the proposal again.\"}"
+        },
+        {
+          "name": "normalized localhost origin",
+          "origin": "http://localhost:3311",
+          "host": "127.0.0.1:3311",
+          "status": 400,
+          "body": "{\"code\":\"invalid_content\",\"error\":\"The content does not match its canonical bytes and identity. Review the proposal again.\"}"
+        },
+        {
+          "name": "foreign origin",
+          "origin": "https://foreign.example",
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "missing origin",
+          "origin": null,
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "null origin",
+          "origin": "null",
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "different scheme",
+          "origin": "https://127.0.0.1:3311",
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "different port",
+          "origin": "http://127.0.0.1:3312",
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "origin containing path",
+          "origin": "http://127.0.0.1:3311/path",
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "forwarded foreign origin",
+          "origin": "https://foreign.example",
+          "host": "127.0.0.1:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "forwarded loopback does not replace Host",
+          "origin": "http://127.0.0.1:3311",
+          "host": "localhost:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "different Host without forwarding",
+          "origin": "http://127.0.0.1:3311",
+          "host": "localhost:3311",
+          "status": 403,
+          "body": ""
+        },
+        {
+          "name": "foreign Host matching foreign origin",
+          "origin": "http://foreign.example:3311",
+          "host": "foreign.example:3311",
+          "status": 403,
+          "body": ""
+        }
+      ]
+    }
+  },
+  "isolation": {
+    "temporaryProject": "/private/tmp/dao-origin-fix-20260918",
+    "port": 3311,
+    "reason": "Keep the existing browser at 127.0.0.1:3310 disconnected from the test server and preserve its review.",
+    "copiedApplicationAndMiddleware": true,
+    "privateEnvironmentFilesCopied": false,
+    "childEnvironment": "Explicit allowlist with dummy JWT only; no inherited credentials.",
+    "externalFetches": "Blocked in the test Node processes.",
+    "providerRequests": 0,
+    "publicationReservations": 0,
+    "publicationDatabaseCreated": false,
+    "stopped": true
+  },
+  "preservation": {
+    "checkedAt": "2026-09-18T10:27:10.509Z",
+    "unchangedFiles": 21,
+    "AJsonUnchanged": true,
+    "acceptanceD1Unchanged": true,
+    "forkFilesUnchanged": true,
+    "probeD1Files": [
+      "metadata.sqlite",
+      "metadata.sqlite-shm",
+      "metadata.sqlite-wal"
+    ],
+    "publicationDatabaseCreated": false,
+    "routeMatchesWorktree": true
+  },
+  "initialProbe": {
+    "requestCount": 10,
+    "bytesPerRequest": 0,
+    "results": [
+      {
+        "name": "browser loopback origin",
+        "origin": "http://127.0.0.1:3311",
+        "status": 400,
+        "body": "{\"code\":\"invalid_content\",\"error\":\"The content does not match its canonical bytes and identity. Review the proposal again.\"}"
+      },
+      {
+        "name": "normalized localhost origin",
+        "origin": "http://localhost:3311",
+        "status": 400,
+        "body": "{\"code\":\"invalid_content\",\"error\":\"The content does not match its canonical bytes and identity. Review the proposal again.\"}"
+      },
+      {
+        "name": "foreign origin",
+        "origin": "https://foreign.example",
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "missing origin",
+        "origin": null,
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "null origin",
+        "origin": "null",
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "different scheme",
+        "origin": "https://127.0.0.1:3311",
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "different port",
+        "origin": "http://127.0.0.1:3312",
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "origin containing path",
+        "origin": "http://127.0.0.1:3311/path",
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "forwarded foreign origin",
+        "origin": "https://foreign.example",
+        "status": 403,
+        "body": ""
+      },
+      {
+        "name": "forwarded loopback does not replace Host",
+        "origin": "http://127.0.0.1:3311",
+        "status": 400,
+        "body": "{\"code\":\"invalid_content\",\"error\":\"The content does not match its canonical bytes and identity. Review the proposal again.\"}"
+      }
+    ],
+    "limitation": "The fetch-based Host-override case unexpectedly returned 400. All exact Host cases were repeated with node:http and passed; initial results are retained."
+  },
+  "totalEmptyRouteRequests": 22,
+  "handoff": {
+    "anvilPid": 49883,
+    "anvilPort": 18545,
+    "acceptanceAppStopped": true,
+    "ports3310And18546Free": true,
+    "browserNotInspectedOrControlled": true,
+    "currentGatewayUnchanged": true
+  },
+  "privateRestart": [
+    "source /private/tmp/dao-pinata-acceptance-20260917/session.fish",
+    "node /Users/hydra/Developer/yearn/governance-apps.dao.m5.pinata/scripts/dao-pinata-acceptance.mjs launch /private/tmp/dao-pinata-acceptance-20260917"
+  ]
+}

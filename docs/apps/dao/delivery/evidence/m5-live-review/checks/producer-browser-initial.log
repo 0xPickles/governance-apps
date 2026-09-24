@@ -1,0 +1,58 @@
+[WebServer] (node:97730) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:97731) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:97732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:97732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+Running 1 test using 1 worker
+
+(node:97792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:97792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  ✘  1 [dao-live-feed] › tests/e2e/dao-live-feed/published.spec.ts:4:5 › displays published bytes retrieved by the released local producer (1.0m)
+
+
+  1) [dao-live-feed] › tests/e2e/dao-live-feed/published.spec.ts:4:5 › displays published bytes retrieved by the released local producer
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: /Open proposal #0:/ })
+
+
+      17 |   await page.clock.setFixedTime(new Date(feed.block.timestamp * 1000));
+      18 |   await page.goto("/dao");
+    > 19 |   await page.getByRole("link", { name: /Open proposal #0:/ }).click();
+         |                                                               ^
+      20 |   await expect(page.getByRole("heading", { name: "Local execution UAT", exact: true })).toBeVisible();
+      21 |   await expect(page.getByText("Set the local marker to 42.", { exact: true })).toBeVisible();
+      22 |   expect(rpc).toEqual([]); expect(errors).toEqual([]);
+        at $WORKTREE/tests/e2e/dao-live-feed/published.spec.ts:19:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../tmp/dao-fixes-producer-browser-results/published-displays-publish-43447-the-released-local-producer-dao-live-feed/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../../../../tmp/dao-fixes-producer-browser-results/published-displays-publish-43447-the-released-local-producer-dao-live-feed/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../tmp/dao-fixes-producer-browser-results/published-displays-publish-43447-the-released-local-producer-dao-live-feed/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../../../../tmp/dao-fixes-producer-browser-results/published-displays-publish-43447-the-released-local-producer-dao-live-feed/trace.zip
+    Usage:
+
+        npx playwright show-trace ../../../../../tmp/dao-fixes-producer-browser-results/published-displays-publish-43447-the-released-local-producer-dao-live-feed/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [dao-live-feed] › tests/e2e/dao-live-feed/published.spec.ts:4:5 › displays published bytes retrieved by the released local producer

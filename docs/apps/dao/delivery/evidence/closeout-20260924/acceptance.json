@@ -1,0 +1,154 @@
+{
+  "checkedAt": "2026-09-24T06:29:10.649Z",
+  "acceptedDate": "2026-09-23",
+  "provenance": {
+    "followup": "dao-pinata-followup-20260923",
+    "recoveryPacket": "dao-pinata-acceptance-20260917-recovery",
+    "applicationRevision": "6f78a0840feafdb26e8256e7212529156beb6c72",
+    "revisionBasis": "Operator handoff and unchanged branch at closeout start; saved provider artifacts do not independently embed an application commit.",
+    "originalSession": "September 17 historical accounting remains incomplete; this is a separate follow-up."
+  },
+  "b": {
+    "bytes": 567,
+    "createdAt": "2026-09-18T16:53:51.000Z",
+    "digest": "0xeddf3b10786df3496b3d36a2cc7cfc0df55af2676e4e47d885ea3065ba40903e",
+    "cid": "bafkreihn345ra6dn6newwpjwulghz7an6vnpez3ojzd5rbpkgbs3uqeqhy",
+    "createdBy": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "discussionUrl": "https://gov.yearn.fi/t/local-fork-uat/1234",
+    "script": "0x"
+  },
+  "checks": {
+    "packetBytesEqual": true,
+    "databaseBytesEqual": true,
+    "producerBytesEqual": true,
+    "applicationFeedEqual": true,
+    "checkpointChecksumsEqual": true,
+    "databaseIntegrity": "ok"
+  },
+  "failedPublication": {
+    "digest": "0xeddf3b10786df3496b3d36a2cc7cfc0df55af2676e4e47d885ea3065ba40903e",
+    "cid": "bafkreihn345ra6dn6newwpjwulghz7an6vnpez3ojzd5rbpkgbs3uqeqhy",
+    "byte_length": 567,
+    "published_at": null,
+    "upload_accepted": 0,
+    "upload_attempts": 1,
+    "retrieval_attempts": 0,
+    "reservations": 1,
+    "retry_after": 1790164632677,
+    "retry_after_utc": "2026-09-23T11:57:12.677Z"
+  },
+  "publication": {
+    "digest": "0xeddf3b10786df3496b3d36a2cc7cfc0df55af2676e4e47d885ea3065ba40903e",
+    "cid": "bafkreihn345ra6dn6newwpjwulghz7an6vnpez3ojzd5rbpkgbs3uqeqhy",
+    "byte_length": 567,
+    "admitted_at": 1790164571842,
+    "published_at": 1790164823,
+    "upload_accepted": 1,
+    "upload_attempts": 2,
+    "retrieval_attempts": 1,
+    "reservations": 2,
+    "lease_until": 0,
+    "retry_after": 1790164632677
+  },
+  "policy": {
+    "hourlyDocuments": 3,
+    "dailyDocuments": 3,
+    "monthlyDocuments": 3,
+    "documents": 3,
+    "bytes": 393216,
+    "concurrent": 2,
+    "uploadAttempts": 4,
+    "documentUploadAttempts": 2,
+    "retrievalAttempts": 12,
+    "documentRetrievalAttempts": 4,
+    "documentReservations": 4
+  },
+  "proposal": {
+    "chainId": 1,
+    "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+    "id": "0",
+    "epoch": "17",
+    "event": {
+      "type": "propose",
+      "log": {
+        "blockNumber": "26029074",
+        "blockHash": "0xac625fd924c284951f1452b657373c60227a4105d9862b27fda22d8b6b1a7869",
+        "timestamp": 1790165225,
+        "transactionHash": "0x848cec7b54c47430f0ac83c8c9b4a9f680d561949e59d0799bb91683f0ba1605",
+        "transactionIndex": 0,
+        "logIndex": 0
+      }
+    }
+  },
+  "producerBlock": {
+    "number": "26029079",
+    "hash": "0x35ad3942417da6b9f5404fdc49d93f56209ad534e0f3f81efcf7b7f07b5db1a1",
+    "timestamp": 1790165285
+  },
+  "helperLedger": {
+    "version": 1,
+    "requests": 3,
+    "events": [
+      {
+        "action": "verify-app",
+        "cid": "bafkreihn345ra6dn6newwpjwulghz7an6vnpez3ojzd5rbpkgbs3uqeqhy",
+        "outcome": "passed",
+        "at": "2026-09-23T12:00:38.968Z",
+        "status": 200,
+        "exactBytes": true,
+        "passed": true
+      },
+      {
+        "action": "cleanup",
+        "cid": "bafkreihn345ra6dn6newwpjwulghz7an6vnpez3ojzd5rbpkgbs3uqeqhy",
+        "outcome": "passed",
+        "at": "2026-09-23T12:12:52.976Z",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "action": "cleanup",
+        "cid": "bafkreifw2zodcepiojq7evoievuhxkfble27xxqkvghfiv76u63tk2dwxe",
+        "outcome": "passed",
+        "at": "2026-09-23T12:13:37.049Z",
+        "status": 200,
+        "passed": true
+      }
+    ]
+  },
+  "producerReservation": {
+    "requests": 1,
+    "outcome": "reserved",
+    "at": "2026-09-23T12:08:30.774Z"
+  },
+  "operatorObservations": {
+    "rendering": "Confirmed correct on 2026-09-23",
+    "credentials": "K1 revoked before first upload, K2 replacement used; K1/K2/cleanup keys reported revoked at closeout"
+  },
+  "limitations": [
+    "Forum responses were local fixtures.",
+    "Transactions occurred only on a disposable fork.",
+    "No remote acceptance directory or credential was changed or accessed during this check.",
+    "Provider success and cleanup were checked from saved records; no provider request was repeated."
+  ],
+  "sha256": {
+    "documents/B.json": "eddf3b10786df3496b3d36a2cc7cfc0df55af2676e4e47d885ea3065ba40903e",
+    "producer-feed.json": "0b4d6b73c93b40bc0a960607a9d92ad1a562981c8ccac0e941b5980073c50f8d",
+    "producer-config.json": "3f20374cad6c543c7d3e7e02a0fc446847db9e8e0ab88c1e250ebe58d02b4705",
+    "evidence/app-producer-feed.json": "0b4d6b73c93b40bc0a960607a9d92ad1a562981c8ccac0e941b5980073c50f8d",
+    "evidence/B-receipt.json": "21aad2a65990683e679a7f12ca619d226a078df9dad29f1978ccb2c784008e16",
+    "evidence/producer-comparison.json": "4052a28145c97e70f4f2d0f000b9a7259b7a5f706df72ffe2e88a5ce03f8b292",
+    "evidence/producer-reservation.json": "0ff8b5271c353ada15bf91444b486936b7f6c021ac5e39a721cbb6f1f58e4001",
+    "evidence/state-2026-09-23T11-57-46-340Z.json": "bdc69482d6e6977f8d2419a12b2986bebc75f944e0fcbb7233570a9df6e8145e",
+    "evidence/state-2026-09-23T12-11-33-208Z.json": "c80e9074338afa95002677b53c803ce480528ecff4b6e4177203846ebb7d2222",
+    "evidence/database-setup-repair.json": "fda7f111f490c8ed20fde18641b35b19f9605d0d73af4c151e7cee3c3c698555",
+    "evidence/operator-notes.txt": "5a63a2b416403b5ab386f5430ef3eb16adfbc399ef993b1666dec925d9e876b9",
+    "acceptance-ledger.json": "8974b9c52c92f34e19234f00c4b69d5a5e49650d9b2ac8ec9ec0636fb80670a4",
+    "checkpoints/2026-09-23T12-14-32-419Z/checksums.json": "eef5c41793591adefbf545fe69acdd63950857b0b1f16be182a96fe60b7f3b38"
+  },
+  "checkpointSha256": {
+    "publication.sqlite": "6dd27580bf7ec644cbaaf67fe3a3a99500a3d41c363697d165ade11b217aa3aa",
+    "acceptance-ledger.json": "8974b9c52c92f34e19234f00c4b69d5a5e49650d9b2ac8ec9ec0636fb80670a4",
+    "fork-state.hex": "1e29d85f46bef3cac914143d39ffdac7be76f8fb1b6ebebd1deb811652841c48"
+  }
+}

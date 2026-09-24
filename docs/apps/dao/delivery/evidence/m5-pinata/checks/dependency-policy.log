@@ -1,0 +1,5 @@
+
+> governance-apps@0.1.0 validate:deps
+> node ./scripts/validate-dependency-policy.mjs
+
+Dependency policy validation passed.

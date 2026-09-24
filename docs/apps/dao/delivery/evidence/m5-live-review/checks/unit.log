@@ -1,0 +1,15 @@
+
+> governance-apps@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.5 $WORKTREE
+
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's scrollBy() method
+
+ Test Files  151 passed (151)
+      Tests  1364 passed (1364)
+   Start at  15:23:05
+   Duration  32.06s (transform 10.08s, setup 67.89s, import 77.14s, tests 72.70s, environment 44.75s)

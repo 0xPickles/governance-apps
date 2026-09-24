@@ -118,3 +118,13 @@ describe("runtime feature flags", () => {
     expect(isSimulationTransportFallbackEnabled(env)).toBe(true);
   });
 });
+
+describe("DAO client selection", () => {
+  it.each(["development", "preview", "production"])("requires explicit mocks and never permits production fallback (%s)", (mode) => {
+    for (const flag of [undefined, "false", "true"]) {
+      const env = { NEXT_PUBLIC_RUNTIME_MODE: mode, NEXT_PUBLIC_ENABLE_DAO: "true", NEXT_PUBLIC_USE_MOCKS: flag };
+      expect(isDaoMockRuntimeEnabled(env)).toBe(mode !== "production" && flag === "true");
+      expect(isDaoEnabled(env)).toBe(true);
+    }
+  });
+});

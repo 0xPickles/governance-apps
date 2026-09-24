@@ -1,6 +1,6 @@
 # WP17: cross-repository lifecycle UAT
 
-Status: Deferred; explicit UAT acceptance required.
+Status: Acceptance coverage in the authorized combined `agent/dao/m5/live` implementation. Separate package sequencing is superseded by the [milestone plan](../milestone-plan.md).
 
 ## Scope
 
@@ -8,7 +8,7 @@ Exercise proposal zero; votes including zero accounts/weights and replacement; F
 
 ## Acceptance
 
-Acceptance: actual producer bytes pass actual consumer routes, connected/current wallet actions and confirmed receipt identity; no fabricated history/attribution; mobile/desktop/keyboard review and durability/publication recovery; user accepts evidence before rollout.
+Acceptance: distinguish actual producer route evidence from fixtures. Exercise connected/current wallet actions and confirmed receipt identity; no fabricated history/attribution; mobile/desktop/keyboard review and durability/publication recovery; user accepts evidence before rollout.
 
 ## Dependencies and validation
 

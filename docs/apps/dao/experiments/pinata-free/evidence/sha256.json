@@ -1,0 +1,10 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "report-2026-09-16T13-21-22-226Z.json": "b8123dcf4c7c8de46ebb8493fd2072465ab592df930be97a1222c1124f012427"
+  },
+  "reviewedRunnerSha256": "68f825ea1ee69bd4fa2682ebda3159db6f1e86d11c8665776fae9d5b773c794a",
+  "liveIntervalStart": "2026-09-16T13:21:22.226Z",
+  "liveIntervalEnd": "2026-09-16T13:47:10.487Z",
+  "liveIntervalEvents": 164
+}

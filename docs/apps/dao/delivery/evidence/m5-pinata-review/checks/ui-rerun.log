@@ -1,0 +1,2405 @@
+
+ RUN  v4.1.5 <WORKTREE>
+
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders the Team Finances shell, keeps debug presets off-route, and opens a workspace
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > shows one accessible pending-ownership notice only while a transfer exists
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > canonicalizes an invalid workspace route without dropping safe query state: /teams?trace=1&section=overview
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > canonicalizes an invalid workspace route without dropping safe query state: /teams?trace=1#ignored
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > canonicalizes an invalid workspace route without dropping safe query state: /teams?trace=1&section=overview&team=not-an-address
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > loads the saved Teams directory view
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > opens a team from the native stretched row link while nested controls stay independent
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > keeps hierarchy surfaces at the hero
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > restores a workspace on reload and browser history traversal
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > clears stale selected-team state when returning to the directory
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > does not duplicate history or reset the active workspace section
+ × |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > cleans an unknown but well-formed team address after data resolves 5687ms
+   → Unable to find role="heading" and name "Team Directory"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="bg-app text-text-primary"
+    >
+      <section
+        class="scroll-mt-24 border-b border-border bg-surface"
+        id="teams-page-top"
+      >
+        <div
+          class="container mx-auto px-4 md:px-6 py-10 md:py-12"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div
+              class="space-y-4"
+            >
+              <h1
+                class="text-balance font-bold text-3xl md:text-5xl"
+              >
+                Team Finances
+              </h1>
+              <p
+                class="max-w-2xl text-pretty text-base leading-7 text-text-secondary"
+              >
+                Review each team's revenue, costs, funding, bonus, and status.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div
+        class="w-full border-b border-border bg-app py-2"
+      >
+        <div
+          class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+        >
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Current period
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Active
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retiring
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retired
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Viewer
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+        </div>
+      </div>
+      <main
+        class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+      >
+        <section
+          class="min-w-0 overflow-x-hidden"
+          id="workspace"
+        >
+          <section
+            aria-busy="true"
+            class="space-y-8"
+          >
+            <section
+              class="scroll-mt-24"
+              id="overview"
+            >
+              <div
+                class="rounded-box border p-6 transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm space-y-5"
+              >
+                <div
+                  class="space-y-1"
+                >
+                  <h2
+                    class="text-2xl font-bold text-text-primary"
+                  >
+                    Loading team overview
+                  </h2>
+                  <p
+                    class="text-sm leading-6 text-text-secondary"
+                  >
+                    Loading team details.
+                  </p>
+                </div>
+                <div
+                  class="grid gap-4 md:grid-cols-2"
+                >
+                  <div
+                    class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                  />
+                  <div
+                    class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                  />
+                </div>
+              </div>
+            </section>
+            <section
+              class="space-y-4"
+            >
+              <div
+                class="space-y-2"
+              >
+                <div
+                  class="animate-pulse rounded-md bg-neutral-200/50 h-4 w-28"
+                />
+                <div
+                  class="animate-pulse rounded-md bg-neutral-200/50 h-8 w-full max-w-x...
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div
+        class="bg-app text-text-primary"
+      >
+        <section
+          class="scroll-mt-24 border-b border-border bg-surface"
+          id="teams-page-top"
+        >
+          <div
+            class="container mx-auto px-4 md:px-6 py-10 md:py-12"
+          >
+            <div
+              class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div
+                class="space-y-4"
+              >
+                <h1
+                  class="text-balance font-bold text-3xl md:text-5xl"
+                >
+                  Team Finances
+                </h1>
+                <p
+                  class="max-w-2xl text-pretty text-base leading-7 text-text-secondary"
+                >
+                  Review each team's revenue, costs, funding, bonus, and status.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div
+          class="w-full border-b border-border bg-app py-2"
+        >
+          <div
+            class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+          >
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Current period
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Active
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Retiring
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Retired
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Viewer
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+          </div>
+        </div>
+        <main
+          class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+        >
+          <section
+            class="min-w-0 overflow-x-hidden"
+            id="workspace"
+          >
+            <section
+              aria-busy="true"
+              class="space-y-8"
+            >
+              <section
+                class="scroll-mt-24"
+                id="overview"
+              >
+                <div
+                  class="rounded-box border p-6 transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm space-y-5"
+                >
+                  <div
+                    class="space-y-1"
+                  >
+                    <h2
+                      class="text-2xl font-bold text-text-primary"
+                    >
+                      Loading team overview
+                    </h2>
+                    <p
+                      class="text-sm leading-6 text-text-secondary"
+                    >
+                      Loading team details.
+                    </p>
+                  </div>
+                  <div
+                    class="grid gap-4 md:grid-cols-2"
+                  >
+                    <div
+                      class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                    />
+                    <div
+                      class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                    />
+                  </div>
+                </div>
+              </section>
+              <section
+                class="space-y-4"
+              >
+                <div
+      ...
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > mounts Teams controls inside the shared debug panel
+ × |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > mutates route coverage through the shared debug panel 14478ms
+   → Unable to find an element with the text: Loading team overview. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="bg-app text-text-primary"
+    >
+      <section
+        class="scroll-mt-24 border-b border-border bg-surface"
+        id="teams-page-top"
+      >
+        <div
+          class="container mx-auto px-4 md:px-6 py-7 md:py-8"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div
+              class="space-y-4"
+            >
+              <nav
+                aria-label="Teams hierarchy"
+              >
+                <ol
+                  class="flex min-h-10 min-w-0 items-center gap-1.5 font-number text-sm font-medium"
+                >
+                  <li
+                    class="min-w-0"
+                  >
+                    <a
+                      class="inline-flex min-h-10 items-center rounded-md px-2 text-text-secondary transition-[background-color,color] duration-150 ease-out hover:bg-surface-secondary hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary"
+                      href="/teams"
+                    >
+                      /teams
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="select-none text-text-tertiary"
+                  >
+                    /
+                  </li>
+                  <li
+                    aria-current="page"
+                    class="min-w-0 truncate px-1 text-text-secondary lowercase"
+                    title="security"
+                  >
+                    security
+                  </li>
+                </ol>
+              </nav>
+              <h1
+                class="text-balance font-bold text-3xl md:text-4xl"
+              >
+                Security
+              </h1>
+            </div>
+            <a
+              class="inline-flex min-w-10 items-center justify-center rounded-box transition-[background-color,border-color,color,box-shadow,scale,transform] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app disabled:cursor-not-allowed disabled:active:scale-100 bg-surface border border-border text-text-primary hover:bg-surface-secondary disabled:opacity-50 h-10 px-3 text-xs active:scale-[0.96] shrink-0"
+              href="/teams?section=admin"
+            >
+              Admin
+            </a>
+          </div>
+        </div>
+      </section>
+      <div
+        class="w-full border-b border-border bg-app py-2"
+      >
+        <div
+          class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+        >
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Current period
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              #4
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Active
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retiring
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retired
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              0
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Viewer
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              Operator/admin
+            </span>
+          </div>
+        </div>
+      </div>
+      <main
+        class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+      >
+        <section
+          class="min-w-0 overflow-x-hidden"
+          id="workspace"
+        >
+          <section
+            class="space-y-8"
+          >
+            <section
+              class="scroll-mt-24 space-y-5"
+              ...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="bg-app text-text-primary"
+    >
+      <section
+        class="scroll-mt-24 border-b border-border bg-surface"
+        id="teams-page-top"
+      >
+        <div
+          class="container mx-auto px-4 md:px-6 py-7 md:py-8"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div
+              class="space-y-4"
+            >
+              <nav
+                aria-label="Teams hierarchy"
+              >
+                <ol
+                  class="flex min-h-10 min-w-0 items-center gap-1.5 font-number text-sm font-medium"
+                >
+                  <li
+                    class="min-w-0"
+                  >
+                    <a
+                      class="inline-flex min-h-10 items-center rounded-md px-2 text-text-secondary transition-[background-color,color] duration-150 ease-out hover:bg-surface-secondary hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary"
+                      href="/teams"
+                    >
+                      /teams
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="select-none text-text-tertiary"
+                  >
+                    /
+                  </li>
+                  <li
+                    aria-current="page"
+                    class="min-w-0 truncate px-1 text-text-secondary lowercase"
+                    title="security"
+                  >
+                    security
+                  </li>
+                </ol>
+              </nav>
+              <h1
+                class="text-balance font-bold text-3xl md:text-4xl"
+              >
+                Security
+              </h1>
+            </div>
+            <a
+              class="inline-flex min-w-10 items-center justify-center rounded-box transition-[background-color,border-color,color,box-shadow,scale,transform] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app disabled:cursor-not-allowed disabled:active:scale-100 bg-surface border border-border text-text-primary hover:bg-surface-secondary disabled:opacity-50 h-10 px-3 text-xs active:scale-[0.96] shrink-0"
+              href="/teams?section=admin"
+            >
+              Admin
+            </a>
+          </div>
+        </div>
+      </section>
+      <div
+        class="w-full border-b border-border bg-app py-2"
+      >
+        <div
+          class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+        >
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Current period
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              #4
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Active
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retiring
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retired
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              0
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Viewer
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              Operator/admin
+            </span>
+          </div>
+        </div>
+      </div>
+      <main
+        class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+      >
+        <section
+          class="min-w-0 overflow-x-hidden"
+          id="workspace"
+        >
+          <section
+            class="space-y-8"
+          >
+            <section
+              class="scroll-mt-24 space-y-5"
+              ...
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders the admin console only when the runtime exposes operator/admin access
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > intercepts only unmodified primary clicks on hierarchy links
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > opens the canonical Teams admin route for operator/admin viewers
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > exposes deterministic loading and empty coverage through the shared runtime
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > keeps explicit admin empty coverage available under operator access
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > preserves the URL-selected workspace when the runtime preset changes
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > shows claimable bonus detail and resets staged bonus state when the preset changes
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > covers claimed and pending-finalization bonus states in the operator preset
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > keeps the read-only revenue blocker visible in the retired preset
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders the revenue preview, validation, and success state for the operator revenue preset
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > shows the explicit empty revenue history state when a selected team has no deposits
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > rejects a mock deposit when its deterministic credit fixture is missing
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > renders funding approval states and the separate claim and return flows for the owner preset
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > validates and completes the funding claim flow
+ ↓ |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > validates and completes the current-period funding return flow
+ × |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps published bytes available when receipt recovery confirms a revert 30478ms
+   → Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > connects accessible field errors and focuses the first invalid field
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > returns Preview to Write before focusing the located Markdown error
+ × |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > shows fixed parser code, byte offset, counts, targets, and hash 11843ms
+   → Unable to find an element with the text: TRUNCATED_HEADER. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-box border transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm min-w-0 space-y-8 overflow-hidden p-4 sm:p-6"
+    >
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+        role="status"
+      />
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-wide text-yearn-blue dark:text-blue-300"
+        >
+          Proposal authoring
+        </p>
+        <h2
+          class="w-fit max-w-full scroll-mt-24 rounded-box text-balance text-2xl font-bold outline-none focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:ring-offset-2 focus-visible:ring-offset-app md:text-3xl"
+          id="dao-proposal-authoring-heading"
+          tabindex="-1"
+        >
+          Proposal details
+        </h2>
+        <p
+          class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+        >
+          Complete each section on this page. Your draft stays in place if validation, publication, or proposal creation fails.
+        </p>
+      </div>
+      <div
+        class="rounded-box border border-red-300 bg-red-50 p-4 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"
+        role="alert"
+      >
+        <p
+          class="font-bold"
+        >
+          Review the highlighted fields
+        </p>
+      </div>
+      <form
+        class="space-y-8"
+        novalidate=""
+      >
+        <section
+          aria-labelledby="dao-authoring-section-1"
+          class="space-y-5 border-t border-border pt-8 first:border-0 first:pt-0"
+        >
+          <div
+            class="grid gap-3 sm:grid-cols-[2.5rem_minmax(0,1fr)]"
+          >
+            <span
+              aria-hidden="true"
+              class="flex size-10 items-center justify-center rounded-full bg-yearn-blue font-number text-sm font-bold tabular-nums text-white dark:bg-blue-950 dark:text-blue-200"
+            >
+              1
+            </span>
+            <div
+              class="space-y-1"
+            >
+              <h3
+                class="text-balance text-xl font-bold"
+                id="dao-authoring-section-1"
+              >
+                Forum discussion
+              </h3>
+              <p
+                class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+              >
+                Link a public topic from the Yearn forum Proposals category. The forum can continue to change after submission.
+              </p>
+            </div>
+          </div>
+          <div
+            class="space-y-5 sm:pl-[3.25rem]"
+          >
+            <div
+              class="space-y-2"
+            >
+              <label
+                class="block text-sm font-bold"
+                for="dao-forum-topic"
+              >
+                Forum discussion
+              </label>
+              <div
+                class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+              >
+                <input
+                  aria-describedby="dao-forum-help dao-forum-status"
+                  aria-invalid="false"
+                  autocomplete="url"
+                  class="w-full rounded-box border border-border bg-surface px-3 text-base text-text-primary shadow-sm transition-[border-color,box-shadow] duration-150 ease-out placeholder:text-text-secondary focus:border-text-primary focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app motion-reduce:transition-none h-12"
+                  id="dao-forum-topic"
+                  inputmode="url"
+                  placeholder="https://gov.yearn.fi/t/proposal-topic/1001"
+                  type="url"
+                  value="00000000000000000000000000000000000000000000000"
+                />
+                <button
+                  class="inline-flex min-w-10 items-center justify-center rounded-box transition-[background-color,border-color,color,box-shadow,scale,transform] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app disabled:cursor-not-allowed disabled:active:scale-100 bg-surface border border-border text-text-primary hover:bg-surface-secondary disabled:opacity-50 px-6 text-sm font-bold active:scale-[0.96] h-12 w-full motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto"
+                  type="button"
+                >
+                  Validate topic
+                </button>
+              </div>
+              <p
+                class="text-pretty text-xs leading-5 text-text-secondary"
+                id="dao-forum-help"
+              >
+                https://gov.yearn.fi/t/proposal-topic/1001
+              </p>
+              <span
+                id="dao-forum-status"
+              />
+            </div>
+          </div>
+        </section>
+        <section
+          aria-labelledby="dao-authoring-section-2"
+          class="space-y-5 border-t border-border pt-8 first:border-0 first:pt-0"
+        >
+          <div
+            class="grid gap-3 sm:grid-cols-[2.5rem_minmax(0,1fr)]"
+          >
+            <span
+              aria-hidden="true"
+              class="flex size-1...
+ × |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > publishes a Signal snapshot before starting the wallet step 22059ms
+   → Unable to find role="heading" and name "Proposal ready"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-box border transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm min-w-0 space-y-8 overflow-hidden p-4 sm:p-6"
+    >
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+        role="status"
+      >
+        DAO transaction reverted.
+      </p>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-wide text-yearn-blue dark:text-blue-300"
+        >
+          Final review
+        </p>
+        <h2
+          class="text-balance text-2xl font-bold outline-none md:text-3xl"
+          id="dao-proposal-final-review"
+          tabindex="-1"
+        >
+          Review the exact proposal
+        </h2>
+        <p
+          class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+        >
+          Publication fixes this content. Confirm every field and the exact script before continuing.
+        </p>
+      </div>
+      <section
+        aria-label="Forum topic"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Forum topic
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic title
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Fund protocol research
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Normalized topic
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              <a
+                aria-label="https://gov.yearn.fi/t/fund-protocol-research/1001 (opens in a new tab)"
+                class="-mx-1 inline-flex min-h-10 max-w-full items-center rounded-box px-1 text-yearn-blue underline decoration-yearn-blue/40 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-text-primary dark:text-blue-300 dark:decoration-blue-300/50"
+                href="https://gov.yearn.fi/t/fund-protocol-research/1001"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span
+                  class="break-all"
+                >
+                  https://gov.yearn.fi/t/fund-protocol-research/1001
+                </span>
+              </a>
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Category
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Proposals
+               · ID
+              5
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic author
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              yearn-contributor
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic created
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              <time
+                datetime="2024-08-01T00:00:00.000Z"
+              >
+                Aug 1, 2024, 12:00 AM UTC
+              </time>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        aria-label="Immutable content"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Immutable content
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Schema
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              yearn.dao.proposal.v1
+            </div>
+          </div>
+          <div
+            class="min-w-0 rounded-box border border-border bg-surface p-4 sm:p-5"
+          >
+            <div
+              class="min-w-0 s...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-box border transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm min-w-0 space-y-8 overflow-hidden p-4 sm:p-6"
+    >
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+        role="status"
+      >
+        DAO transaction reverted.
+      </p>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-wide text-yearn-blue dark:text-blue-300"
+        >
+          Final review
+        </p>
+        <h2
+          class="text-balance text-2xl font-bold outline-none md:text-3xl"
+          id="dao-proposal-final-review"
+          tabindex="-1"
+        >
+          Review the exact proposal
+        </h2>
+        <p
+          class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+        >
+          Publication fixes this content. Confirm every field and the exact script before continuing.
+        </p>
+      </div>
+      <section
+        aria-label="Forum topic"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Forum topic
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic title
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Fund protocol research
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Normalized topic
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              <a
+                aria-label="https://gov.yearn.fi/t/fund-protocol-research/1001 (opens in a new tab)"
+                class="-mx-1 inline-flex min-h-10 max-w-full items-center rounded-box px-1 text-yearn-blue underline decoration-yearn-blue/40 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-text-primary dark:text-blue-300 dark:decoration-blue-300/50"
+                href="https://gov.yearn.fi/t/fund-protocol-research/1001"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span
+                  class="break-all"
+                >
+                  https://gov.yearn.fi/t/fund-protocol-research/1001
+                </span>
+              </a>
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Category
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Proposals
+               · ID
+              5
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic author
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              yearn-contributor
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic created
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              <time
+                datetime="2024-08-01T00:00:00.000Z"
+              >
+                Aug 1, 2024, 12:00 AM UTC
+              </time>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        aria-label="Immutable content"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Immutable content
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Schema
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              yearn.dao.proposal.v1
+            </div>
+          </div>
+          <div
+            class="min-w-0 rounded-box border border-border bg-surface p-4 sm:p-5"
+          >
+            <div
+              class="min-w-0 s...
+ ✓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > shows the transaction before receipt identity and preserves the decoded route through indexing 12300ms
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > retries delayed indexing idempotently with the same visible proposal identity
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps the transaction link and hides proposal actions when identity decoding fails
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > locks the exact review throughout publication and exposes complete forum facts
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > supports keyboard navigation between Write and Preview
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > preserves every draft field when publication fails and never starts a wallet step
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps publication and all proposal state clean after user-rejected
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps publication and all proposal state clean after revert
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps publication and all proposal state clean after network-error
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > reuses the completed publication when a rejected request retries as Success
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary wrong network blocker with all current facts
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary blacklist blocker with all current facts
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary weight blocker with all current facts
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the primary cooldown blocker with all current facts
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > names full reward capacity as a shared system rule, not a user quota
+ ↓ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal eligibility presentation > shows the authoritative disconnected fact and keeps wallet priority
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > keeps published bytes available when receipt recovery confirms a revert
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/components/DaoProposalAuthoringForm.test.tsx:25:3
+     23|
+     24| describe("DAO proposal authoring form", () => {
+     25|   it("keeps published bytes available when receipt recovery confirms a…
+       |   ^
+     26|     const user = userEvent.setup();
+     27|     const receipt = vi.spyOn(mockServices, "confirmMockDaoProposalRece…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > shows fixed parser code, byte offset, counts, targets, and hash
+TestingLibraryElementError: Unable to find an element with the text: TRUNCATED_HEADER. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-box border transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm min-w-0 space-y-8 overflow-hidden p-4 sm:p-6"
+    >
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+        role="status"
+      />
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-wide text-yearn-blue dark:text-blue-300"
+        >
+          Proposal authoring
+        </p>
+        <h2
+          class="w-fit max-w-full scroll-mt-24 rounded-box text-balance text-2xl font-bold outline-none focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:ring-offset-2 focus-visible:ring-offset-app md:text-3xl"
+          id="dao-proposal-authoring-heading"
+          tabindex="-1"
+        >
+          Proposal details
+        </h2>
+        <p
+          class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+        >
+          Complete each section on this page. Your draft stays in place if validation, publication, or proposal creation fails.
+        </p>
+      </div>
+      <div
+        class="rounded-box border border-red-300 bg-red-50 p-4 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"
+        role="alert"
+      >
+        <p
+          class="font-bold"
+        >
+          Review the highlighted fields
+        </p>
+      </div>
+      <form
+        class="space-y-8"
+        novalidate=""
+      >
+        <section
+          aria-labelledby="dao-authoring-section-1"
+          class="space-y-5 border-t border-border pt-8 first:border-0 first:pt-0"
+        >
+          <div
+            class="grid gap-3 sm:grid-cols-[2.5rem_minmax(0,1fr)]"
+          >
+            <span
+              aria-hidden="true"
+              class="flex size-10 items-center justify-center rounded-full bg-yearn-blue font-number text-sm font-bold tabular-nums text-white dark:bg-blue-950 dark:text-blue-200"
+            >
+              1
+            </span>
+            <div
+              class="space-y-1"
+            >
+              <h3
+                class="text-balance text-xl font-bold"
+                id="dao-authoring-section-1"
+              >
+                Forum discussion
+              </h3>
+              <p
+                class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+              >
+                Link a public topic from the Yearn forum Proposals category. The forum can continue to change after submission.
+              </p>
+            </div>
+          </div>
+          <div
+            class="space-y-5 sm:pl-[3.25rem]"
+          >
+            <div
+              class="space-y-2"
+            >
+              <label
+                class="block text-sm font-bold"
+                for="dao-forum-topic"
+              >
+                Forum discussion
+              </label>
+              <div
+                class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+              >
+                <input
+                  aria-describedby="dao-forum-help dao-forum-status"
+                  aria-invalid="false"
+                  autocomplete="url"
+                  class="w-full rounded-box border border-border bg-surface px-3 text-base text-text-primary shadow-sm transition-[border-color,box-shadow] duration-150 ease-out placeholder:text-text-secondary focus:border-text-primary focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app motion-reduce:transition-none h-12"
+                  id="dao-forum-topic"
+                  inputmode="url"
+                  placeholder="https://gov.yearn.fi/t/proposal-topic/1001"
+                  type="url"
+                  value="00000000000000000000000000000000000000000000000"
+                />
+                <button
+                  class="inline-flex min-w-10 items-center justify-center rounded-box transition-[background-color,border-color,color,box-shadow,scale,transform] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app disabled:cursor-not-allowed disabled:active:scale-100 bg-surface border border-border text-text-primary hover:bg-surface-secondary disabled:opacity-50 px-6 text-sm font-bold active:scale-[0.96] h-12 w-full motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto"
+                  type="button"
+                >
+                  Validate topic
+                </button>
+              </div>
+              <p
+                class="text-pretty text-xs leading-5 text-text-secondary"
+                id="dao-forum-help"
+              >
+                https://gov.yearn.fi/t/proposal-topic/1001
+              </p>
+              <span
+                id="dao-forum-status"
+              />
+            </div>
+          </div>
+        </section>
+        <section
+          aria-labelledby="dao-authoring-section-2"
+          class="space-y-5 border-t border-border pt-8 first:border-0 first:pt-0"
+        >
+          <div
+            class="grid gap-3 sm:grid-cols-[2.5rem_minmax(0,1fr)]"
+          >
+            <span
+              aria-hidden="true"
+              class="flex size-1...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/components/DaoProposalAuthoringForm.test.tsx:156:19
+    154|     await user.type(script, `0x${"00".repeat(31)}`);
+    155|
+    156|     expect(screen.getByText("TRUNCATED_HEADER")).toBeVisible();
+       |                   ^
+    157|     expect(screen.getByText("Byte offset")).toBeVisible();
+    158|     expect(screen.getByText("Byte offset").parentElement).toHaveTextCo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > publishes a Signal snapshot before starting the wallet step
+TestingLibraryElementError: Unable to find role="heading" and name "Proposal ready"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-box border transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm min-w-0 space-y-8 overflow-hidden p-4 sm:p-6"
+    >
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+        role="status"
+      >
+        DAO transaction reverted.
+      </p>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-wide text-yearn-blue dark:text-blue-300"
+        >
+          Final review
+        </p>
+        <h2
+          class="text-balance text-2xl font-bold outline-none md:text-3xl"
+          id="dao-proposal-final-review"
+          tabindex="-1"
+        >
+          Review the exact proposal
+        </h2>
+        <p
+          class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+        >
+          Publication fixes this content. Confirm every field and the exact script before continuing.
+        </p>
+      </div>
+      <section
+        aria-label="Forum topic"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Forum topic
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic title
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Fund protocol research
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Normalized topic
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              <a
+                aria-label="https://gov.yearn.fi/t/fund-protocol-research/1001 (opens in a new tab)"
+                class="-mx-1 inline-flex min-h-10 max-w-full items-center rounded-box px-1 text-yearn-blue underline decoration-yearn-blue/40 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-text-primary dark:text-blue-300 dark:decoration-blue-300/50"
+                href="https://gov.yearn.fi/t/fund-protocol-research/1001"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span
+                  class="break-all"
+                >
+                  https://gov.yearn.fi/t/fund-protocol-research/1001
+                </span>
+              </a>
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Category
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Proposals
+               · ID
+              5
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic author
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              yearn-contributor
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic created
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              <time
+                datetime="2024-08-01T00:00:00.000Z"
+              >
+                Aug 1, 2024, 12:00 AM UTC
+              </time>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        aria-label="Immutable content"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Immutable content
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Schema
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              yearn.dao.proposal.v1
+            </div>
+          </div>
+          <div
+            class="min-w-0 rounded-box border border-border bg-surface p-4 sm:p-5"
+          >
+            <div
+              class="min-w-0 s...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="rounded-box border transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm min-w-0 space-y-8 overflow-hidden p-4 sm:p-6"
+    >
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        class="sr-only"
+        role="status"
+      >
+        DAO transaction reverted.
+      </p>
+      <div
+        class="space-y-2"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-wide text-yearn-blue dark:text-blue-300"
+        >
+          Final review
+        </p>
+        <h2
+          class="text-balance text-2xl font-bold outline-none md:text-3xl"
+          id="dao-proposal-final-review"
+          tabindex="-1"
+        >
+          Review the exact proposal
+        </h2>
+        <p
+          class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+        >
+          Publication fixes this content. Confirm every field and the exact script before continuing.
+        </p>
+      </div>
+      <section
+        aria-label="Forum topic"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Forum topic
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic title
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Fund protocol research
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Normalized topic
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              <a
+                aria-label="https://gov.yearn.fi/t/fund-protocol-research/1001 (opens in a new tab)"
+                class="-mx-1 inline-flex min-h-10 max-w-full items-center rounded-box px-1 text-yearn-blue underline decoration-yearn-blue/40 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-text-primary dark:text-blue-300 dark:decoration-blue-300/50"
+                href="https://gov.yearn.fi/t/fund-protocol-research/1001"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span
+                  class="break-all"
+                >
+                  https://gov.yearn.fi/t/fund-protocol-research/1001
+                </span>
+              </a>
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Category
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              Proposals
+               · ID
+              5
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic author
+            </p>
+            <div
+              class="mt-1 break-words text-sm leading-6"
+            >
+              yearn-contributor
+            </div>
+          </div>
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Topic created
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              <time
+                datetime="2024-08-01T00:00:00.000Z"
+              >
+                Aug 1, 2024, 12:00 AM UTC
+              </time>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        aria-label="Immutable content"
+        class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+      >
+        <h3
+          class="text-balance text-lg font-bold"
+        >
+          Immutable content
+        </h3>
+        <div
+          class="space-y-4"
+        >
+          <div
+            class="min-w-0"
+          >
+            <p
+              class="text-xs font-bold uppercase tracking-wide text-text-secondary"
+            >
+              Schema
+            </p>
+            <div
+              class="mt-1 text-sm leading-6 break-all font-number tabular-nums"
+            >
+              yearn.dao.proposal.v1
+            </div>
+          </div>
+          <div
+            class="min-w-0 rounded-box border border-border bg-surface p-4 sm:p-5"
+          >
+            <div
+              class="min-w-0 s...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/components/DaoProposalAuthoringForm.test.tsx:235:44
+    233|       screen.getByRole("button", { name: "Create onchain proposal" })
+    234|     );
+    235|     const completionHeading = await screen.findByRole("heading", {
+       |                                            ^
+    236|       name: "Proposal ready",
+    237|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > cleans an unknown but well-formed team address after data resolves
+TestingLibraryElementError: Unable to find role="heading" and name "Team Directory"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="bg-app text-text-primary"
+    >
+      <section
+        class="scroll-mt-24 border-b border-border bg-surface"
+        id="teams-page-top"
+      >
+        <div
+          class="container mx-auto px-4 md:px-6 py-10 md:py-12"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div
+              class="space-y-4"
+            >
+              <h1
+                class="text-balance font-bold text-3xl md:text-5xl"
+              >
+                Team Finances
+              </h1>
+              <p
+                class="max-w-2xl text-pretty text-base leading-7 text-text-secondary"
+              >
+                Review each team's revenue, costs, funding, bonus, and status.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div
+        class="w-full border-b border-border bg-app py-2"
+      >
+        <div
+          class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+        >
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Current period
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Active
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retiring
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retired
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Viewer
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              --
+            </span>
+          </div>
+        </div>
+      </div>
+      <main
+        class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+      >
+        <section
+          class="min-w-0 overflow-x-hidden"
+          id="workspace"
+        >
+          <section
+            aria-busy="true"
+            class="space-y-8"
+          >
+            <section
+              class="scroll-mt-24"
+              id="overview"
+            >
+              <div
+                class="rounded-box border p-6 transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm space-y-5"
+              >
+                <div
+                  class="space-y-1"
+                >
+                  <h2
+                    class="text-2xl font-bold text-text-primary"
+                  >
+                    Loading team overview
+                  </h2>
+                  <p
+                    class="text-sm leading-6 text-text-secondary"
+                  >
+                    Loading team details.
+                  </p>
+                </div>
+                <div
+                  class="grid gap-4 md:grid-cols-2"
+                >
+                  <div
+                    class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                  />
+                  <div
+                    class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                  />
+                </div>
+              </div>
+            </section>
+            <section
+              class="space-y-4"
+            >
+              <div
+                class="space-y-2"
+              >
+                <div
+                  class="animate-pulse rounded-md bg-neutral-200/50 h-4 w-28"
+                />
+                <div
+                  class="animate-pulse rounded-md bg-neutral-200/50 h-8 w-full max-w-x...
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div
+        class="bg-app text-text-primary"
+      >
+        <section
+          class="scroll-mt-24 border-b border-border bg-surface"
+          id="teams-page-top"
+        >
+          <div
+            class="container mx-auto px-4 md:px-6 py-10 md:py-12"
+          >
+            <div
+              class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div
+                class="space-y-4"
+              >
+                <h1
+                  class="text-balance font-bold text-3xl md:text-5xl"
+                >
+                  Team Finances
+                </h1>
+                <p
+                  class="max-w-2xl text-pretty text-base leading-7 text-text-secondary"
+                >
+                  Review each team's revenue, costs, funding, bonus, and status.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div
+          class="w-full border-b border-border bg-app py-2"
+        >
+          <div
+            class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+          >
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Current period
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Active
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Retiring
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Retired
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2 text-xs"
+            >
+              <span
+                class="font-bold uppercase tracking-wide text-text-tertiary"
+              >
+                Viewer
+                :
+              </span>
+              <span
+                class="font-number font-bold text-text-primary"
+              >
+                --
+              </span>
+            </div>
+          </div>
+        </div>
+        <main
+          class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+        >
+          <section
+            class="min-w-0 overflow-x-hidden"
+            id="workspace"
+          >
+            <section
+              aria-busy="true"
+              class="space-y-8"
+            >
+              <section
+                class="scroll-mt-24"
+                id="overview"
+              >
+                <div
+                  class="rounded-box border p-6 transition-[background-color,border-color,box-shadow] duration-150 ease-out border-border bg-surface shadow-sm space-y-5"
+                >
+                  <div
+                    class="space-y-1"
+                  >
+                    <h2
+                      class="text-2xl font-bold text-text-primary"
+                    >
+                      Loading team overview
+                    </h2>
+                    <p
+                      class="text-sm leading-6 text-text-secondary"
+                    >
+                      Loading team details.
+                    </p>
+                  </div>
+                  <div
+                    class="grid gap-4 md:grid-cols-2"
+                  >
+                    <div
+                      class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                    />
+                    <div
+                      class="animate-pulse rounded-md bg-neutral-200/50 h-64 w-full"
+                    />
+                  </div>
+                </div>
+              </section>
+              <section
+                class="space-y-4"
+              >
+                <div
+      ...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ tests/components/TeamsPageClient.test.tsx:483:11
+    481|     renderWithProviders(<TeamsPageClient />);
+    482|
+    483|     await waitFor(() => {
+       |           ^
+    484|       expect(screen.getByRole("heading", { name: teamsCopy.directory.t…
+    485|       expect(window.location.search).toBe("");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |jsdom| tests/components/TeamsPageClient.test.tsx > TeamsPageClient > mutates route coverage through the shared debug panel
+TestingLibraryElementError: Unable to find an element with the text: Loading team overview. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="bg-app text-text-primary"
+    >
+      <section
+        class="scroll-mt-24 border-b border-border bg-surface"
+        id="teams-page-top"
+      >
+        <div
+          class="container mx-auto px-4 md:px-6 py-7 md:py-8"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div
+              class="space-y-4"
+            >
+              <nav
+                aria-label="Teams hierarchy"
+              >
+                <ol
+                  class="flex min-h-10 min-w-0 items-center gap-1.5 font-number text-sm font-medium"
+                >
+                  <li
+                    class="min-w-0"
+                  >
+                    <a
+                      class="inline-flex min-h-10 items-center rounded-md px-2 text-text-secondary transition-[background-color,color] duration-150 ease-out hover:bg-surface-secondary hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary"
+                      href="/teams"
+                    >
+                      /teams
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="select-none text-text-tertiary"
+                  >
+                    /
+                  </li>
+                  <li
+                    aria-current="page"
+                    class="min-w-0 truncate px-1 text-text-secondary lowercase"
+                    title="security"
+                  >
+                    security
+                  </li>
+                </ol>
+              </nav>
+              <h1
+                class="text-balance font-bold text-3xl md:text-4xl"
+              >
+                Security
+              </h1>
+            </div>
+            <a
+              class="inline-flex min-w-10 items-center justify-center rounded-box transition-[background-color,border-color,color,box-shadow,scale,transform] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app disabled:cursor-not-allowed disabled:active:scale-100 bg-surface border border-border text-text-primary hover:bg-surface-secondary disabled:opacity-50 h-10 px-3 text-xs active:scale-[0.96] shrink-0"
+              href="/teams?section=admin"
+            >
+              Admin
+            </a>
+          </div>
+        </div>
+      </section>
+      <div
+        class="w-full border-b border-border bg-app py-2"
+      >
+        <div
+          class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+        >
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Current period
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              #4
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Active
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retiring
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retired
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              0
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Viewer
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              Operator/admin
+            </span>
+          </div>
+        </div>
+      </div>
+      <main
+        class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+      >
+        <section
+          class="min-w-0 overflow-x-hidden"
+          id="workspace"
+        >
+          <section
+            class="space-y-8"
+          >
+            <section
+              class="scroll-mt-24 space-y-5"
+              ...
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="bg-app text-text-primary"
+    >
+      <section
+        class="scroll-mt-24 border-b border-border bg-surface"
+        id="teams-page-top"
+      >
+        <div
+          class="container mx-auto px-4 md:px-6 py-7 md:py-8"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div
+              class="space-y-4"
+            >
+              <nav
+                aria-label="Teams hierarchy"
+              >
+                <ol
+                  class="flex min-h-10 min-w-0 items-center gap-1.5 font-number text-sm font-medium"
+                >
+                  <li
+                    class="min-w-0"
+                  >
+                    <a
+                      class="inline-flex min-h-10 items-center rounded-md px-2 text-text-secondary transition-[background-color,color] duration-150 ease-out hover:bg-surface-secondary hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary"
+                      href="/teams"
+                    >
+                      /teams
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="select-none text-text-tertiary"
+                  >
+                    /
+                  </li>
+                  <li
+                    aria-current="page"
+                    class="min-w-0 truncate px-1 text-text-secondary lowercase"
+                    title="security"
+                  >
+                    security
+                  </li>
+                </ol>
+              </nav>
+              <h1
+                class="text-balance font-bold text-3xl md:text-4xl"
+              >
+                Security
+              </h1>
+            </div>
+            <a
+              class="inline-flex min-w-10 items-center justify-center rounded-box transition-[background-color,border-color,color,box-shadow,scale,transform] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-text-primary focus:ring-offset-2 focus:ring-offset-app disabled:cursor-not-allowed disabled:active:scale-100 bg-surface border border-border text-text-primary hover:bg-surface-secondary disabled:opacity-50 h-10 px-3 text-xs active:scale-[0.96] shrink-0"
+              href="/teams?section=admin"
+            >
+              Admin
+            </a>
+          </div>
+        </div>
+      </section>
+      <div
+        class="w-full border-b border-border bg-app py-2"
+      >
+        <div
+          class="container mx-auto flex min-h-10 flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 md:px-6 sm:justify-start"
+        >
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Current period
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              #4
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Active
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retiring
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              1
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Retired
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              0
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2 text-xs"
+          >
+            <span
+              class="font-bold uppercase tracking-wide text-text-tertiary"
+            >
+              Viewer
+              :
+            </span>
+            <span
+              class="font-number font-bold text-text-primary"
+            >
+              Operator/admin
+            </span>
+          </div>
+        </div>
+      </div>
+      <main
+        class="container mx-auto space-y-6 px-4 py-8 md:px-6 md:py-10"
+      >
+        <section
+          class="min-w-0 overflow-x-hidden"
+          id="workspace"
+        >
+          <section
+            class="space-y-8"
+          >
+            <section
+              class="scroll-mt-24 space-y-5"
+              ...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/components/TeamsPageClient.test.tsx:534:25
+    532|     );
+    533|
+    534|     expect(await screen.findByText(teamsCopy.workspace.loadingTitle)).…
+       |                         ^
+    535|     expect(screen.getByText(teamsCopy.revenue.loadingTitle)).toBeInThe…
+    536|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 1 passed | 44 skipped (50)
+   Start at  21:08:14
+   Duration  199.02s (transform 37.44s, setup 10.63s, import 66.31s, tests 96.93s, environment 19.27s)

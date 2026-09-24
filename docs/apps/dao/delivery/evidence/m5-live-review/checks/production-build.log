@@ -1,0 +1,50 @@
+
+> governance-apps@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.2.11 (webpack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Using secrets defined in .dev.vars
+✓ Compiled successfully in 14.4s
+  Running TypeScript ...
+  Finished TypeScript in 11.5s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/12) ...
+  Generating static pages using 9 workers (3/12)
+  Generating static pages using 9 workers (6/12)
+  Generating static pages using 9 workers (9/12)
+✓ Generating static pages using 9 workers (12/12) in 315ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/dao-content
+├ ƒ /api/dao-data
+├ ƒ /api/dao-forum
+├ ƒ /api/global-data
+├ ƒ /api/teams-data
+├ ƒ /api/ybc-data
+├ ƒ /api/yeth-global-data
+├ ƒ /dao
+├ ƒ /dao/proposals/[id]
+├ ƒ /dao/propose
+├ ○ /debug/ui
+├ ƒ /llms.txt
+├ ƒ /robots.txt
+├ ƒ /sitemap.xml
+├ ƒ /styfi
+├ ○ /teams
+├ ƒ /veyfi
+├ ○ /ybc
+└ ○ /yeth
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

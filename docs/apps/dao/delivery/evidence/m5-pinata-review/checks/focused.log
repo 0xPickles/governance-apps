@@ -1,0 +1,8 @@
+
+ RUN  v4.1.5 <WORKTREE>
+
+
+ Test Files  4 passed (4)
+      Tests  57 passed (57)
+   Start at  20:41:55
+   Duration  61.46s (transform 13.13s, setup 21.75s, import 33.41s, tests 48.60s, environment 6.56s)

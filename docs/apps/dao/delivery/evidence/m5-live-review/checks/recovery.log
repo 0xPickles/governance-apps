@@ -1,0 +1,8 @@
+
+ RUN  v4.1.5 $WORKTREE
+
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  15:20:55
+   Duration  2.73s (transform 1.05s, setup 911ms, import 2.23s, tests 724ms, environment 943ms)

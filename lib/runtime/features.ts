@@ -9,6 +9,7 @@ function getPublicFeatureEnv(): FeatureEnv {
   return {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_RUNTIME_MODE: process.env.NEXT_PUBLIC_RUNTIME_MODE,
+    NEXT_PUBLIC_USE_MOCKS: process.env.NEXT_PUBLIC_USE_MOCKS,
     NEXT_PUBLIC_ENABLE_DAO: process.env.NEXT_PUBLIC_ENABLE_DAO,
     NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS:
       process.env.NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS,
@@ -37,11 +38,11 @@ export function isDaoEnabled(
   return !isProductionRuntime(env) || isEnabled(env.NEXT_PUBLIC_ENABLE_DAO);
 }
 
-/** Mock actions are available only outside production runtime. */
+/** Explicit mock selection outside production; live failures never select mocks. */
 export function isDaoMockRuntimeEnabled(
   env: FeatureEnv = getPublicFeatureEnv()
 ) {
-  return isDaoEnabled(env) && !isProductionRuntime(env);
+  return isDaoEnabled(env) && !isProductionRuntime(env) && isEnabled(env.NEXT_PUBLIC_USE_MOCKS);
 }
 
 /**

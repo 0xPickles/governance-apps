@@ -1,0 +1,35 @@
+
+ RUN  v4.1.5 <WORKTREE>
+
+ ❯ |jsdom| tests/integration/hooks/useDaoLiveRecovery.test.tsx (13 tests | 1 failed) 116ms
+     × publishes without a challenge and restores verified publication after reload 27ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |jsdom| tests/integration/hooks/useDaoLiveRecovery.test.tsx > public content publication > publishes without a challenge and restores verified publication after reload
+AssertionError: expected { state: 'failed', error: { …(2) } } to match object { state: 'published' }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "state": "published",
++   "state": "failed",
+  }
+
+ ❯ tests/integration/hooks/useDaoLiveRecovery.test.tsx:45:89
+     43|     vi.stubGlobal("fetch", fetcher);
+     44|     const first = renderHookWithProviders(() => useDaoAuthoringService…
+     45|     await act(async () => { expect(await first.result.current.services…
+       |                                                                                         ^
+     46|     expect(fetcher).toHaveBeenCalledTimes(2);
+     47|     first.unmount();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 30 passed (31)
+   Start at  16:30:32
+   Duration  6.45s (transform 986ms, setup 954ms, import 2.65s, tests 5.06s, environment 726ms)

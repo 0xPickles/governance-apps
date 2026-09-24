@@ -1,0 +1,33 @@
+{
+  "recoveredAt": "2026-09-23T08:18:56.332Z",
+  "source": "Exact proposal text and identities preserved in the review conversation; rebuilt using the repository canonical encoding.",
+  "originalSessionFilesFound": false,
+  "originalD1Recovered": false,
+  "documents": [
+    {
+      "file": "documents/A.json",
+      "bytes": 527,
+      "digest": "0xb6d65c3111e87261f255c825687ba8a15935fbde0aa98e5457fea7b7356876b9",
+      "createdAt": "2026-09-18T15:57:15.000Z",
+      "verifiedAgainstPreviouslyObservedDigest": true
+    },
+    {
+      "file": "documents/B.json",
+      "bytes": 567,
+      "digest": "0xeddf3b10786df3496b3d36a2cc7cfc0df55af2676e4e47d885ea3065ba40903e",
+      "createdAt": "2026-09-18T16:53:51.000Z",
+      "verifiedAgainstPreviouslyObservedDigest": true
+    },
+    {
+      "file": "documents/C.json",
+      "bytes": 536,
+      "digest": "0x483a8aa56688cf23c0036d191e136be8f919567c62c1f32d1d10a501806ce70c",
+      "createdAt": "2026-09-18T16:39:27.000Z",
+      "verifiedAgainstPreviouslyObservedDigest": true
+    }
+  ],
+  "caveat": "Matching historical SHA-256 proves recovered document identity. It does not recover D1 acknowledgements, counters, provider state, or the original ledger.",
+  "verifiedDuringCorrection": true,
+  "fixtureCopiesMatch": true,
+  "originalD1ValidationPossible": false
+}

@@ -4,6 +4,15 @@ import type {
 } from "@/lib/clients/dao";
 
 export const daoCopy = {
+  publicationErrors: {
+    disabled: "Publication is disabled. Keep your draft and try again later.",
+    unavailable: "Publication is temporarily unavailable. Keep your reviewed content and try again later.",
+    budget_reached: "The publication budget is reached. Keep your reviewed content and try again later.",
+    busy: "Publication is already in progress. Wait before retrying the same content.",
+    verification_pending: "Publication could not yet be verified. Wait before retrying the same content.",
+    invalid_content: "The content does not match its canonical bytes and identity. Review the proposal again.",
+    invalid_forum: "The discussion no longer passes forum validation. Validate the topic again.",
+  },
   feed: {
     snapshot: "Snapshot as of",
     snapshotTiming: "Proposal statuses and countdowns below describe this snapshot.",
@@ -11,7 +20,7 @@ export const daoCopy = {
     stale: "This snapshot is stale. Current eligibility is checked separately.",
     lastGood: "Showing the last valid snapshot.",
     trust: "This feed is an operator-produced cache of chain observations.",
-    writesDisabled: "Production DAO transactions are not enabled.",
+    pendingCreation: "The saved transaction is awaiting proposal indexing. Refresh to check the feed.",
     eligible: "The observed voting conditions permit participation.",
     currentWallet: "Current wallet eligibility",
     currentStatus: "Current protocol status",
@@ -21,7 +30,7 @@ export const daoCopy = {
     connect: "Connect a wallet to load current eligibility.",
     checking: "Checking current wallet eligibility…",
     notSigning: "Eligibility is provisional. Every signing flow requires fresh action checks and transaction simulation.",
-    creationDisabled: "Onchain proposal creation and content publication are not enabled in production yet.",
+
   },
   app: {
     name: "DAO Governance",
@@ -396,6 +405,10 @@ export const daoCopy = {
       signing: "Confirm in wallet",
       pending: "Transaction pending",
       confirmed: "Transaction confirmed",
+      receiptUnknown: "Transaction submitted · receipt not confirmed",
+      receiptUnknownBody: "The transaction hash is saved. Retry confirmation without submitting another transaction.",
+      retryReceipt: "Retry receipt confirmation",
+      viewTransaction: "View transaction",
       awaitingIndex: "Transaction confirmed · awaiting proposal indexing",
       awaitingIndexBody:
         "Live authorization has updated. Proposal history will update after the confirmed event is indexed.",

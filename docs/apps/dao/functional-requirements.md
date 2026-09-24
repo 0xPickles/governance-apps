@@ -6,7 +6,9 @@ DAO Governance lets users find Yearn proposals, review their immutable content
 and onchain actions, vote, create proposals, and perform permitted lifecycle
 actions without hiding the contract's timing or trust boundaries.
 
-The accepted mock product is preserved. This reset implements feed V2 reads and live wallet overlays. Production publication, authoring, governance writes, fork proof and rollout retain the later gates in the delivery plan.
+The accepted mock product is preserved. Feed V2 reads, live wallet overlays, publication, authoring, and writes are implemented.
+[Publication acceptance](publication-acceptance-20260923.md) is complete. Production rollout remains separately approved.
+Implementation-phase sequencing below is historical; the [current milestone plan](delivery/milestone-plan.md) controls remaining release work.
 
 ## 2. Roles
 
@@ -28,7 +30,7 @@ it does not grant authority based on labels from the feed.
 
 ### Included
 
-These are overall product requirements. This reset completes consumer reads and preserves mock action flows; production writes/publication remain later packages.
+These are overall product requirements. The combined implementation preserves mock action flows and completes live application behavior under the milestone plan.
 
 - proposal directory and filtering;
 - proposal detail, immutable content, forum discussion, vote totals, timeline,
@@ -299,7 +301,7 @@ detail. It shows:
 
 The review states that two separate actions are required. Step 2 stays visibly
 upcoming and unavailable until immutable content is published, and publication
-copy says it neither creates a proposal nor opens a wallet. After publication,
+copy distinguishes public content publication from the later wallet-authorized onchain proposal transaction. Publication requests no wallet signature. After publication,
 Step 1 retains its fingerprint receipt and focus moves to a distinct current
 Step 2 surface. When the transaction hash is known, View transaction appears
 before any proposal action. A successful receipt must bind the exact expected
@@ -311,12 +313,24 @@ with no trailing or dirty padding. Open proposal and Copy link appear only after
 that receipt supplies the composite identity. Receipt confirmation,
 awaiting-index, and indexed states retain the same identity. Publication failure
 never exposes Step 2. The typed review outcome controls proposal creation.
-Wallet rejection, onchain revert, and network failure preserve the published
-content and retry without republishing. They produce no hash, receipt, proposal
-identity, created record, pending action, feed event, proposal link, or index
-state. Registration applies its delay before persistence. An indexing delay
+Failures before wallet submission produce no transaction hash or proposal identity.
+Once the wallet returns a hash, temporary network or receipt failures retain that hash.
+Creation and ordinary actions retry confirmation without another wallet submission, including after reload.
+A successful fee replacement must consume the same nonce and preserve the exact intended call.
+Receipt decoding, recovery and indexing use the verified mined hash.
+A cancellation, changed call or canonical revert is a terminal outcome with its known transaction link.
+These outcomes preserve published content and require an explicit new action to retry.
+Only a successful matching Propose receipt supplies an accepted proposal identity. Registration applies its delay before persistence. An indexing delay
 shows `Retry indexing`, which re-registers and indexes the same receipt-derived
 reference without duplicate records or events.
+
+Publication requires a separate default-off server gate and durable global admission against configured content and attempt budgets.
+Enabling DAO reads alone must not enable uploads. Admission metadata stays outside the canonical proposal document.
+The server must reject invalid and over-budget content before forum or publication requests.
+Authors need no provider account, publication signature, or per-document operator approval.
+The durable ledger must preserve canonical bytes, spent allowances, and recoverable reservations across replicas and restarts.
+Verified content must be reused without another provider request. Ambiguous uploads and gateway retries must have finite durable allowances.
+See [publication operations](pinata-publication.md) for the selected Pinata path and exact accounting.
 
 ### DAO-FR-036: bounded optional content retrieval
 

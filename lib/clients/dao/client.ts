@@ -1,5 +1,5 @@
 import type { DaoReadContext } from "./onchain";
-import type { Address } from "viem";
+import type { Address, Hex } from "viem";
 import type { PreparedTransaction } from "@/lib/tx/types";
 import type {
   DaoAccountProposalState,
@@ -21,13 +21,14 @@ import { validateDaoVerifiedSource } from "./content";
 
 export interface DaoClient {
   getFeed(): Promise<DaoSnapshot>;
+  preparePropose?(address: Address, digest: Hex, script: Hex, expectedEpoch: bigint): Promise<PreparedTransaction>;
   getProposal(ref: DaoProposalRef): Promise<DaoProposalLookup>;
   getAccountProposalState(
     ref: DaoProposalRef,
     address: Address,
     context?: DaoReadContext
   ): Promise<DaoAccountProposalState>;
-  getProposerState(address: Address): Promise<DaoProposerState>;
+  getProposerState(address: Address, context?: DaoReadContext): Promise<DaoProposerState>;
   prepareVote(
     ref: DaoProposalRef,
     address: Address,

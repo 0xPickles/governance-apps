@@ -1,0 +1,18 @@
+[
+  {
+    "chainId": 1,
+    "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+    "deploymentBlock": "25883944",
+    "genesis": 1770249600,
+    "active": true,
+    "supportedVoters": [
+      "0x5069bce8c8e371a45ab113604b128bbdf5ee5c11"
+    ],
+    "supportedExecutors": [
+      "0xac7d4a37ba61c2cac7f64d3e2b5773d85613fe7b"
+    ],
+    "supportedProposeHooks": [
+      "0xa139250bcb3880a97c75fd4287d5bf2a6caf98a3"
+    ]
+  }
+]

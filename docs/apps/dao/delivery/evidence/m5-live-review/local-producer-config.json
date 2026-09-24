@@ -1,0 +1,33 @@
+{
+  "chainId": 1,
+  "chainGenesisHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+  "confirmations": 1,
+  "deployments": [
+    {
+      "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+      "deploymentBlock": 25883944,
+      "deploymentBlockHash": "0xf98a64fcf13bebeb7092632ee859be5035a20623b5f85ef3dd775dc3f8932848",
+      "genesis": 1770249600,
+      "votingCodeHash": "0xbb17fdf7ddfaf2b502b473edfcb10c7ff213eeb01f910abfbe70bab65dc48009",
+      "supportedVoters": [
+        {
+          "address": "0x5069bce8c8e371a45ab113604b128bbdf5ee5c11",
+          "codeHash": "0x35c839008b1f76fc822d779ec395af6f8de42df4adfb7e281b6c6550e2cff1c6"
+        }
+      ],
+      "supportedExecutors": [
+        {
+          "address": "0xac7d4a37ba61c2cac7f64d3e2b5773d85613fe7b",
+          "codeHash": "0x79f505f4a42c284951f3dfcba66a566279ed9e81d4140a19efac71d6b5977151"
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "logRange": 2000,
+    "requestSeconds": 10,
+    "retries": 0,
+    "cycleSeconds": 90,
+    "contentRequests": 8
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveDaoProposalAuthoringForm } from "./LiveDaoProposalAuthoringForm";
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import type {
@@ -66,7 +67,6 @@ export function DaoProposePageClient({
         ? "error"
         : "ready";
 
-  if (!runtime) return <DaoRouteFrame><h1 className="text-3xl font-bold">{daoProposeCopy.page.title}</h1><Card><p>{daoCopy.feed.creationDisabled}</p></Card></DaoRouteFrame>;
 
   return (
     <>
@@ -74,9 +74,11 @@ export function DaoProposePageClient({
         onRetry={() => {
           void proposerQuery.refetch();
         }}
+        live={!runtime}
+        eligibilityFresh={!proposerQuery.isFetching && !proposerQuery.isError}
         authoring={runtime?.authoring ?? null}
         hostname={hostname}
-        now={runtime?.now ?? 0}
+        now={runtime?.now ?? proposerQuery.data?.observation?.timestamp ?? 0}
         proposer={proposerQuery.data ?? null}
         state={state}
         transactionOutcome={runtime?.transactionOutcome ?? "success"}
@@ -87,6 +89,8 @@ export function DaoProposePageClient({
 }
 
 export function DaoProposeView({
+  live = false,
+  eligibilityFresh = true,
   authoring = null,
   hostname,
   now = 0,
@@ -95,6 +99,8 @@ export function DaoProposeView({
   state,
   transactionOutcome = "success",
 }: {
+  live?: boolean;
+  eligibilityFresh?: boolean;
   authoring?: DaoMockAuthoring | null;
   hostname?: string;
   now?: number;
@@ -104,8 +110,15 @@ export function DaoProposeView({
   transactionOutcome?: DaoMockTransactionOutcome;
 }) {
   const [isAuthoring, setIsAuthoring] = useState(false);
+  const [draftOwner, setDraftOwner] = useState<DaoProposerState | null>(null);
+  const current = proposer?.address.toLowerCase() === draftOwner?.address.toLowerCase() ? proposer : null;
+  const draftProposer = current ?? draftOwner;
+  const safeProposer = draftProposer && state === "ready" && eligibilityFresh && current
+    ? draftProposer
+    : draftProposer ? { ...draftProposer, canPropose: false, proposeBlockedReason: daoCopy.propose.errorBody } : null;
 
   const handleStart = () => {
+    setDraftOwner(proposer);
     setIsAuthoring(true);
     requestAnimationFrame(() => {
       const heading = document.getElementById("dao-proposal-authoring-heading");
@@ -169,7 +182,9 @@ export function DaoProposeView({
         />
       ) : null}
 
-      {state === "ready" && proposer && isAuthoring ? (
+      {live && isAuthoring && safeProposer ? (
+        <LiveDaoProposalAuthoringForm key={safeProposer.address} address={safeProposer.address} proposer={safeProposer} hostname={hostname} now={safeProposer.observation?.timestamp ?? now} />
+      ) : !live && state === "ready" && proposer && isAuthoring ? (
         <DaoProposalAuthoringForm
           address={proposer.address}
           authoringPreset={authoring}

@@ -32,6 +32,10 @@ import {
 } from "@/lib/clients/dao";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { cn } from "@/lib/cn";
+import { deriveDaoProposalContentIdentity } from "@/lib/clients/dao/content";
+import { restoreDaoAuthoringReview } from "@/lib/clients/dao/authoring-recovery";
+import { validateDaoPublicationBytes } from "@/lib/clients/dao/publication";
+import { DAO_CONTENT_MAX_BYTES } from "@/lib/schemas/dao-feed";
 import { getEtherscanTransactionUrl } from "@/lib/explorer";
 import { formatTokenAmount } from "@/lib/format";
 import {
@@ -55,6 +59,7 @@ import {
   type DaoForumTopic,
   type DaoPublishedContent,
 } from "./mock-services";
+import type { DaoAuthoringServices, DaoAuthoringRecovery } from "@/lib/clients/dao/authoring-services";
 import { daoProposeCopy } from "./messages";
 import { createDaoProposalHref } from "../route-state";
 
@@ -80,7 +85,8 @@ type WalletState =
   | { state: "waiting" }
   | {
       state: "failed";
-      code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "NETWORK_ERROR";
+      code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED" | "PREPARATION_CHANGED" | "NETWORK_ERROR";
+      failedTransactionHash?: Hex;
       message: string;
     }
   | { state: "receipt_pending"; transactionHash: Hex }
@@ -102,6 +108,8 @@ type WalletState =
     };
 
 type DaoProposalAuthoringFormProps = {
+  services?: DaoAuthoringServices;
+  recovery?: DaoAuthoringRecovery | null;
   address: Address;
   authoringPreset?: DaoMockAuthoring | null;
   hostname?: string;
@@ -122,6 +130,8 @@ export function DaoProposalAuthoringForm(
 
 function DaoProposalAuthoringFormState({
   address,
+  services,
+  recovery,
   authoringPreset,
   hostname,
   now,
@@ -129,26 +139,29 @@ function DaoProposalAuthoringFormState({
   serviceLatencyMs = 140,
   transactionOutcome = "success",
 }: DaoProposalAuthoringFormProps) {
-  const [markdown, setMarkdown] = useState(DAO_PROPOSAL_MARKDOWN_TEMPLATE);
+  const [markdown, setMarkdown] = useState(recovery?.review.content.markdown ?? DAO_PROPOSAL_MARKDOWN_TEMPLATE);
   const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
   const [proposalType, setProposalType] = useState<DaoProposalType>(
-    authoringPreset?.proposalType ?? "signal"
+    recovery?.review.content.proposalType ?? authoringPreset?.proposalType ?? "signal"
   );
   const [executableScript, setExecutableScript] = useState(
-    authoringPreset?.proposalType === "executable"
+    recovery?.review.scriptCheck.script ?? (authoringPreset?.proposalType === "executable"
       ? authoringPreset.scriptCheck.script
-      : "0x"
+      : "0x")
   );
-  const [forumInput, setForumInput] = useState("");
-  const [forumState, setForumState] = useState<ForumState>({ state: "idle" });
+  const [forumInput, setForumInput] = useState(recovery?.review.topic.normalizedUrl ?? "");
+  const [forumState, setForumState] = useState<ForumState>(recovery ? { state: "valid", topic: recovery.review.topic } : { state: "idle" });
   const [errors, setErrors] = useState<DaoAuthoringErrors>({});
-  const [review, setReview] = useState<DaoAuthoringReview | null>(null);
+  const [review, setReview] = useState<DaoAuthoringReview | null>(recovery?.review ?? null);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmationError, setConfirmationError] = useState<string | null>(null);
-  const [publication, setPublication] = useState<PublicationState>({ state: "idle" });
-  const [wallet, setWallet] = useState<WalletState>({ state: "idle" });
+  const [publication, setPublication] = useState<PublicationState>(recovery?.state === "published" ? { state: "published", publication: recovery.publication } : { state: "idle" });
+  const [storageWarning, setStorageWarning] = useState(false);
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [wallet, setWallet] = useState<WalletState>(recovery?.lastFailure ? { state: "failed", code: recovery.lastFailure.code, message: recovery.lastFailure.message, failedTransactionHash: recovery.lastFailure.transactionHash } : { state: "idle" });
   const forumRequest = useRef(0);
-  const publicationLock = useRef(false);
+  const publicationLock = useRef(recovery?.state === "published");
   const forumInputRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
   const scriptRef = useRef<HTMLTextAreaElement>(null);
@@ -240,7 +253,8 @@ function DaoProposalAuthoringFormState({
     const request = forumRequest.current + 1;
     forumRequest.current = request;
     setForumState({ state: "validating" });
-    const result = await validateMockDaoForumTopic(
+    setErrors((current) => ({ ...current, forum: undefined }));
+    const result = await (services?.validateForum ?? validateMockDaoForumTopic)(
       forumInput,
       serviceLatencyMs
     );
@@ -277,6 +291,7 @@ function DaoProposalAuthoringFormState({
       return;
     }
 
+    setStorageWarning(services?.retainReview?.(result.review) === false);
     setErrors({});
     setReview(result.review);
     setConfirmed(false);
@@ -288,11 +303,42 @@ function DaoProposalAuthoringFormState({
     });
   };
 
+  const handleImport = async (file: File) => {
+    if (!services || importing) return;
+    setImporting(true);
+    setImportStatus(daoProposeCopy.recovery.restoring);
+    try {
+      if (file.size > DAO_CONTENT_MAX_BYTES) throw new Error("Content too large");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const { content } = validateDaoPublicationBytes(bytes);
+      if (content.createdBy.toLowerCase() !== address.toLowerCase()) throw new Error("Wrong wallet");
+      const forum = await services.validateForum(content.discussionUrl);
+      if (forum.state !== "valid") throw new Error("Forum validation failed");
+      const restored = restoreDaoAuthoringReview(bytes, address, forum.topic, content.proposalType === "signal" ? "0x" : executableScript);
+      setStorageWarning(services.retainReview?.(restored) === false);
+      setMarkdown(restored.content.markdown);
+      setProposalType(restored.content.proposalType);
+      setExecutableScript(restored.scriptCheck.script);
+      setForumInput(restored.topic.normalizedUrl);
+      setForumState({ state: "valid", topic: restored.topic });
+      setReview(restored);
+      setConfirmed(false);
+      setConfirmationError(null);
+      setPublication({ state: "idle" });
+      setWallet({ state: "idle" });
+      setImportStatus(null);
+    } catch {
+      setImportStatus(daoProposeCopy.recovery.invalid);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const focusFirstError = (
     nextErrors: DaoAuthoringErrors,
     contentError: { offset: number | null } | null
   ) => {
-    const first = (Object.keys(nextErrors) as (keyof DaoAuthoringErrors)[])[0];
+    const first = (Object.keys(nextErrors) as (keyof DaoAuthoringErrors)[]).find(key => nextErrors[key]);
     if (!first) return;
     pendingErrorFocusRef.current = {
       field: first,
@@ -330,6 +376,7 @@ function DaoProposalAuthoringFormState({
     ) {
       return;
     }
+    setStorageWarning(services?.retainReview?.(null) === false);
     setReview(null);
     setConfirmed(false);
     setConfirmationError(null);
@@ -350,7 +397,7 @@ function DaoProposalAuthoringFormState({
     publicationLock.current = true;
     setPublication({ state: "publishing" });
     setWallet({ state: "idle" });
-    const result = await publishMockDaoProposalContent(
+    const result = await (services?.publish ?? publishMockDaoProposalContent)(
       review,
       now,
       serviceLatencyMs
@@ -368,13 +415,15 @@ function DaoProposalAuthoringFormState({
       !review ||
       publication.state !== "published" ||
       wallet.state === "waiting" ||
+      getWalletTransactionHash(wallet) !== null ||
       !proposer.canPropose
     ) {
       return;
     }
 
     setWallet({ state: "waiting" });
-    const result = await submitMockDaoProposal({
+    const result = await (services?.submit ?? submitMockDaoProposal)({
+      onSubmitted: hash => setWallet({ state: "receipt_pending", transactionHash: hash }),
       review,
       publication: publication.publication,
       outcome: transactionOutcome,
@@ -385,6 +434,7 @@ function DaoProposalAuthoringFormState({
         state: "failed",
         code: result.error.code,
         message: result.error.message,
+        failedTransactionHash: result.error.transactionHash,
       });
       return;
     }
@@ -393,36 +443,52 @@ function DaoProposalAuthoringFormState({
       transactionHash: result.transactionHash,
     });
 
-    const receipt = await confirmMockDaoProposalReceipt(
-      review,
-      publication.publication,
-      result.transactionHash,
-      proposer.expectedVotingEpoch,
-      serviceLatencyMs
-    );
-    if (receipt.decoded.state === "invalid") {
+    await confirmAndIndex(result.transactionHash);
+  };
+
+  const confirmAndIndex = async (hash: Hex) => {
+    if (!review || publication.state !== "published") return;
+    setWallet({ state: "receipt_pending", transactionHash: hash });
+    try {
+      const receipt = await (services?.confirm ?? confirmMockDaoProposalReceipt)(
+        review,
+        publication.publication,
+        hash,
+        proposer.expectedVotingEpoch,
+        serviceLatencyMs
+      );
+      if (receipt.decoded.state === "invalid") {
+        setWallet({
+          state: "receipt_failed",
+          transactionHash: hash,
+          code: receipt.decoded.error.code,
+          message: receipt.decoded.error.message,
+        });
+        return;
+      }
+
+      const identity = receipt.decoded.identity;
+      const acceptedHash = receipt.receipt.transactionHash;
       setWallet({
-        state: "receipt_failed",
-        transactionHash: result.transactionHash,
-        code: receipt.decoded.error.code,
-        message: receipt.decoded.error.message,
+        state: "identity_decoded",
+        transactionHash: acceptedHash,
+        identity,
       });
-      return;
+
+      await indexProposal(
+        review,
+        publication.publication,
+        acceptedHash,
+        identity
+      );
+    } catch (error) {
+      if (error instanceof Error && "code" in error && (error.code === "DAO_TRANSACTION_REVERTED" || error.code === "DAO_TRANSACTION_REPLACED")) {
+        setWallet({ state: "failed", code: error.code === "DAO_TRANSACTION_REPLACED" ? "PROPOSAL_REPLACED" : "PROPOSAL_REVERTED", message: error.message,
+          failedTransactionHash: "transactionHash" in error ? error.transactionHash as Hex : hash });
+      } else {
+        setWallet({ state: "receipt_failed", transactionHash: hash, code: "RECEIPT_UNAVAILABLE", message: error instanceof Error ? error.message : "Receipt confirmation failed." });
+      }
     }
-
-    const identity = receipt.decoded.identity;
-    setWallet({
-      state: "identity_decoded",
-      transactionHash: result.transactionHash,
-      identity,
-    });
-
-    await indexProposal(
-      review,
-      publication.publication,
-      result.transactionHash,
-      identity
-    );
   };
 
   const indexProposal = async (
@@ -438,7 +504,7 @@ function DaoProposalAuthoringFormState({
     });
 
     try {
-      await registerMockDaoProposalAwaitingIndex(
+      await (services?.register ?? registerMockDaoProposalAwaitingIndex)(
         proposalReview,
         publishedContent,
         identity,
@@ -449,7 +515,7 @@ function DaoProposalAuthoringFormState({
         transactionHash,
         identity,
       });
-      const indexed = await completeMockDaoProposalIndex(
+      const indexed = await (services?.index ?? completeMockDaoProposalIndex)(
         identity.ref,
         now,
         serviceLatencyMs
@@ -478,15 +544,23 @@ function DaoProposalAuthoringFormState({
     }
   };
 
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (!resumed.current && recovery?.transactionHash) {
+      resumed.current = true;
+      void confirmAndIndex(recovery.transactionHash);
+    }
+  });
   const handleRetryIndexing = async () => {
     if (
       !review ||
       publication.state !== "published" ||
-      wallet.state !== "index_failed"
+      (wallet.state !== "index_failed" && wallet.state !== "receipt_failed")
     ) {
       return;
     }
 
+    if (wallet.state === "receipt_failed") { await confirmAndIndex(wallet.transactionHash); return; }
     await indexProposal(
       review,
       publication.publication,
@@ -498,6 +572,8 @@ function DaoProposalAuthoringFormState({
   if (review) {
     return (
       <DaoFinalReview
+        live={Boolean(services)}
+        storageWarning={storageWarning}
         confirmed={confirmed}
         confirmationError={confirmationError}
         onConfirm={(value) => {
@@ -538,7 +614,7 @@ function DaoProposalAuthoringFormState({
         </p>
       </div>
 
-      {Object.keys(errors).length > 0 ? (
+      {Object.values(errors).some(Boolean) ? (
         <div
           role="alert"
           className="rounded-box border border-red-300 bg-red-50 p-4 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"
@@ -546,6 +622,18 @@ function DaoProposalAuthoringFormState({
           <p className="font-bold">{daoProposeCopy.form.validationTitle}</p>
         </div>
       ) : null}
+
+      {services ? <div className="space-y-2">
+        <label htmlFor="dao-review-import" className="block text-sm font-bold">{daoProposeCopy.recovery.importLabel}</label>
+        <p className="text-sm text-text-secondary">{daoProposeCopy.recovery.importHelp}</p>
+        <input id="dao-review-import" type="file" accept=".json,application/json" disabled={importing}
+          onChange={event => {
+            const file = event.currentTarget.files?.[0];
+            event.currentTarget.value = "";
+            if (file) void handleImport(file);
+          }} />
+        {importStatus ? <p role="status">{importStatus}</p> : null}
+      </div> : null}
 
       <form noValidate className="space-y-8" onSubmit={handleReview}>
         <AuthoringSection
@@ -588,7 +676,7 @@ function DaoProposalAuthoringFormState({
             <p id="dao-forum-help" className="text-pretty text-xs leading-5 text-text-secondary">
               {daoProposeCopy.discussion.placeholder}
             </p>
-            <ForumStatus state={forumState} error={errors.forum} />
+            <ForumStatus state={forumState} error={errors.forum} hasInput={forumInput.trim().length > 0} />
           </div>
         </AuthoringSection>
 
@@ -817,6 +905,8 @@ function DaoProposalAuthoringFormState({
 }
 
 function DaoFinalReview({
+  live,
+  storageWarning,
   confirmed,
   confirmationError,
   onConfirm,
@@ -832,6 +922,8 @@ function DaoFinalReview({
   hostname,
   wallet,
 }: {
+  live: boolean;
+  storageWarning: boolean;
   confirmed: boolean;
   confirmationError: string | null;
   onConfirm: (value: boolean) => void;
@@ -995,6 +1087,17 @@ function DaoFinalReview({
         <DaoProposalEligibility proposer={proposer} />
       </ReviewSection>
 
+      {live ? <ReviewSection title={daoProposeCopy.publication.downloadTitle}>
+        {storageWarning ? <p role="alert">{daoProposeCopy.recovery.storageUnavailable}</p> : null}
+        {!contentPublished ? <p>{daoProposeCopy.recovery.unpublished}</p> : null}
+        <p className="text-sm text-text-secondary">{daoProposeCopy.publication.downloadBody}</p>
+        <Button type="button" variant="secondary" size="sm" onClick={() => {
+          const identity = deriveDaoProposalContentIdentity(review.content);
+          const url = URL.createObjectURL(new Blob([new Uint8Array(identity.bytes)], { type: "application/json" }));
+          const link = document.createElement("a"); link.href = url; link.download = "dao-proposal-" + identity.digest + ".json"; link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }}>{daoProposeCopy.publication.downloadBytes}</Button>
+      </ReviewSection> : null}
       <ReviewSection title={daoProposeCopy.review.submissionSteps}>
         <p className="max-w-3xl text-pretty text-sm leading-6 text-text-secondary">
           {daoProposeCopy.review.submissionStepsBody}
@@ -1155,19 +1258,22 @@ function DaoFinalReview({
                 </p>
               </div>
 
-              {wallet.state === "failed" ? (
+              {wallet.state === "failed" ? (<>
                 <StateNotice
                   tone="error"
                   title={
-                    wallet.code === "WALLET_REJECTED"
+                    wallet.code === "PROPOSAL_REPLACED" ? daoProposeCopy.proposal.replacedTitle : wallet.code === "WALLET_REJECTED"
                       ? daoProposeCopy.proposal.rejectedTitle
+                      : wallet.code === "PREPARATION_CHANGED"
+                        ? daoProposeCopy.proposal.preparationChangedTitle
                       : wallet.code === "NETWORK_ERROR"
                         ? daoProposeCopy.proposal.networkErrorTitle
                         : daoProposeCopy.proposal.revertedTitle
                   }
                   body={wallet.message}
                 />
-              ) : null}
+                {wallet.failedTransactionHash ? <a className="block text-sm underline" href={getEtherscanTransactionUrl(wallet.failedTransactionHash) ?? undefined} target="_blank" rel="noopener noreferrer">{daoProposeCopy.proposal.viewTransaction}</a> : null}
+              </>) : null}
 
               <div className="space-y-3">
                 {!proposer.canPropose ? (
@@ -1280,7 +1386,7 @@ function DaoFinalReview({
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                {wallet.state === "index_failed" ? (
+                {wallet.state === "index_failed" || wallet.state === "receipt_failed" ? (
                   <Button
                     type="button"
                     className="w-full motion-reduce:transition-none motion-reduce:active:scale-100 sm:w-auto"
@@ -1288,7 +1394,7 @@ function DaoFinalReview({
                       void onRetryIndexing();
                     }}
                   >
-                    {daoProposeCopy.proposal.retryIndexing}
+                    {wallet.state === "receipt_failed" ? daoProposeCopy.proposal.retryReceipt : daoProposeCopy.proposal.retryIndexing}
                   </Button>
                 ) : null}
                 {proposalHref ? (
@@ -1541,9 +1647,11 @@ function AuthoringLiveRegion({ message }: { message: string }) {
 function ForumStatus({
   error,
   state,
+  hasInput,
 }: {
   error?: string;
   state: ForumState;
+  hasInput: boolean;
 }) {
   if (state.state === "validating") {
     return (
@@ -1569,7 +1677,9 @@ function ForumStatus({
       </div>
     );
   }
-  if (state.state !== "valid") return <span id="dao-forum-status" />;
+  if (state.state !== "valid") return <p id="dao-forum-status" className="text-sm text-text-secondary">
+    {hasInput ? daoProposeCopy.discussion.unvalidated : daoProposeCopy.discussion.empty}
+  </p>;
   return (
     <div id="dao-forum-status" className="space-y-3 rounded-box bg-green-50 p-4 text-sm text-green-950">
       <p className="font-bold">{daoProposeCopy.discussion.accepted}</p>

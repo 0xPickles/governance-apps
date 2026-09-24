@@ -22,6 +22,59 @@ import {
 const NOW = getDaoMockFixture("discussion").now;
 
 describe("DAO proposal authoring form", () => {
+  it("keeps empty, unvalidated and pending topics neutral, and reports an actual invalid result", async () => {
+    const user = userEvent.setup();
+    renderAuthoring();
+    const input = screen.getByRole("textbox", { name: "Forum discussion" });
+    expect(screen.getByText("Enter the proposal’s forum topic URL.")).toBeVisible();
+    for (const value of ["https://gov", "https://gov.yearn.fi/t/topic/1001"]) {
+      fireEvent.change(input, { target: { value } });
+      expect(screen.queryByText("Review the highlighted fields")).toBeNull();
+      expect(screen.getByText("Validate this topic before review.")).toBeVisible();
+      expect(input).toHaveAttribute("aria-invalid", "false");
+    }
+    await user.click(screen.getByRole("button", { name: "Validate topic" }));
+    expect(screen.queryByText("Review the highlighted fields")).toBeNull();
+    await screen.findByText("Forum topic accepted", { selector: "#dao-forum-status p" });
+    fireEvent.change(input, { target: { value: "https://example.com/topic/1001" } });
+    fireEvent.click(screen.getByRole("button", { name: "Validate topic" }));
+    expect(document.getElementById("dao-forum-status")).toHaveTextContent("Validating topic");
+    expect(input).toHaveAttribute("aria-invalid", "false");
+    await waitFor(() => expect(input).toHaveAttribute("aria-invalid", "true"));
+    expect(document.getElementById("dao-forum-status")).toHaveAttribute("role", "alert");
+    fireEvent.change(input, { target: { value: "https://gov.yearn.fi/t/topic/1001" } });
+    expect(input).toHaveAttribute("aria-invalid", "false");
+    expect(screen.queryByText("Review the highlighted fields")).toBeNull();
+  });
+  it("retains genuine Markdown errors when the forum field changes", async () => {
+    const user = userEvent.setup();
+    renderAuthoring();
+    fireEvent.change(screen.getByRole("textbox", { name: "Proposal Markdown" }), { target: { value: "" } });
+    await user.click(screen.getByRole("button", { name: "Review proposal" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Forum discussion" }), { target: { value: "https://gov.yearn.fi/t/topic/1001" } });
+    expect(screen.getByText("Review the highlighted fields")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Proposal Markdown" })).toHaveAttribute("aria-invalid", "true");
+  });
+  it("keeps published bytes available when receipt recovery confirms a revert", async () => {
+    const user = userEvent.setup();
+    const receipt = vi.spyOn(mockServices, "confirmMockDaoProposalReceipt").mockRejectedValueOnce(
+      Object.assign(new Error("DAO transaction reverted."), { code: "DAO_TRANSACTION_REVERTED" })
+    );
+    renderAuthoring();
+    await fillDraft(user, 1001);
+    await user.click(screen.getByRole("button", { name: "Review proposal" }));
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed/ }));
+    await user.click(screen.getByRole("button", { name: "Publish immutable content" }));
+    await screen.findByRole("heading", { name: "Immutable content published" });
+    const fingerprint = screen.getByText("Content fingerprint").parentElement?.textContent;
+    await user.click(screen.getByRole("button", { name: "Create onchain proposal" }));
+    await screen.findByText("Proposal creation failed");
+    expect(screen.getByRole("button", { name: "Retry proposal creation" })).toBeEnabled();
+    expect(screen.getByText("Content fingerprint").parentElement?.textContent).toBe(fingerprint);
+    expect(screen.queryByRole("button", { name: "Retry receipt confirmation" })).toBeNull();
+    receipt.mockRestore();
+  });
+
   beforeEach(() => {
     resetDaoMockStore();
   });
@@ -172,7 +225,7 @@ describe("DAO proposal authoring form", () => {
     ).toBeVisible();
     expect(
       within(submissionSteps).getByText(
-        /does not create the proposal or open your wallet/i
+        /The next step asks your wallet to create the onchain proposal/i
       )
     ).toBeVisible();
     expect(

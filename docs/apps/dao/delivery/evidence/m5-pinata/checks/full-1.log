@@ -1,0 +1,381 @@
+
+> governance-apps@0.1.0 test:e2e:full
+> playwright test --project=full --workers=1
+
+[WebServer] (node:74907) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+
+Running 34 tests using 1 worker
+
+(node:75016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   1 [full] › tests/e2e/full/caps-exhausted.spec.ts:11:5 › disables redeem when caps are exhausted (42.4s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75411) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75433) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75441) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75470) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   2 [full] › tests/e2e/full/dao-actions.spec.ts:28:5 › keeps the action panel reachable, responsive, and keyboard safe (24.8s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75538) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   3 [full] › tests/e2e/full/dao-actions.spec.ts:113:5 › submits one vote, preserves canonical totals, then indexes the event (12.3s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75607) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75649) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   4 [full] › tests/e2e/full/dao-actions.spec.ts:156:5 › keeps post-veto participation open and blocks an early veto (13.4s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75713) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75734) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   5 [full] › tests/e2e/full/dao-actions.spec.ts:171:5 › requires tiered confirmation when immutable content cannot be trusted (13.6s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75843) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75849) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   6 [full] › tests/e2e/full/dao-actions.spec.ts:196:5 › shows exact account, timing, and execution guard reasons (24.4s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:75990) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   7 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › retract proposal confirms its effect and indexes separately (11.6s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   8 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › flag proposal confirms its effect and indexes separately (12.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76109) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓   9 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › veto proposal confirms its effect and indexes separately (11.6s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76174) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  10 [full] › tests/e2e/full/dao-actions.spec.ts:301:7 › execute proposal confirms its effect and indexes separately (11.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76242) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  11 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after user-rejected (11.7s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  12 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after revert (11.4s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76374) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  13 [full] › tests/e2e/full/dao-actions.spec.ts:348:7 › keeps vote state unchanged after network-error (11.6s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76417) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  14 [full] › tests/e2e/full/dao-mock-uat.spec.ts:145:5 › keeps the deterministic account presentation consistent across shared and DAO routes (18.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  15 [full] › tests/e2e/full/dao-mock-uat.spec.ts:199:5 › synchronizes read-only E2E wallet truth for connected, disconnected, and wrong-network states (11.5s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  16 [full] › tests/e2e/full/dao-mock-uat.spec.ts:241:5 › makes the mobile menu a contained modal for every closure path (6.7s)
+[WebServer] NEXT_PUBLIC_WC_PROJECT_ID is not set.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76629) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76637) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76655) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76667) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76691) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76707) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76735) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76746) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76753) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  17 [full] › tests/e2e/full/dao-mock-uat.spec.ts:306:7 › reaches deterministic proposal fixtures 1–11 through the shared bridge (30.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76802) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76830) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76835) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76839) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76861) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76866) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76879) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76905) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76917) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:76936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  18 [full] › tests/e2e/full/dao-mock-uat.spec.ts:306:7 › reaches deterministic proposal fixtures 12–22 through the shared bridge (28.8s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  19 [full] › tests/e2e/full/dao-mock-uat.spec.ts:377:5 › reaches the non-visual proposal capacity fixture through the shared bridge (16.3s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77043) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  20 [full] › tests/e2e/full/dao-mock-uat.spec.ts:433:5 › keeps core review and authoring surfaces contained with a 200% root font size (5.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77071) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] Uncaught Error: Internal Next.js error: Router action dispatched before initialization.
+[WebServer] (node:77140) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77146) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77175) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77205) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77209) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77225) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77246) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77294) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  21 [full] › tests/e2e/full/dao-mock-uat.spec.ts:449:5 › keeps DAO status, purpose, and feedback text at AA contrast in both themes (39.1s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  22 [full] › tests/e2e/full/dao-proposal-read.spec.ts:24:5 › scans and filters the proposal board at every review viewport (17.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77459) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:77465) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  23 [full] › tests/e2e/full/dao-proposal-read.spec.ts:60:5 › presents proposal #19 execution integrity first on board and detail (13.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  24 [full] › tests/e2e/full/dao-proposal-read.spec.ts:95:5 › supports keyboard filters and reduced motion (11.0s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  25 [full] › tests/e2e/full/dao-proposal-read.spec.ts:112:5 › offers responsive keyboard shortcuts when Active has no proposals (1.2m)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  26 [full] › tests/e2e/full/dao-proposal-read.spec.ts:163:5 › keeps the last-good board visible while preserving outage semantics (11.3s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  27 [full] › tests/e2e/full/dao-proposal-read.spec.ts:199:5 › keeps a synthetic cold error distinct from a last-good outage (10.7s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:77959) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  28 [full] › tests/e2e/full/dao-proposal-read.spec.ts:219:5 › does not retain a found detail outside the surfaced feed snapshot (11.2s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78038) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78055) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78061) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78077) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  29 [full] › tests/e2e/full/dao-proposal-read.spec.ts:241:5 › contains proposed script and technical values at every review viewport (16.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78121) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  30 [full] › tests/e2e/full/dao-proposal-read.spec.ts:315:5 › keeps technical address copy controls visible for coarse pointers (11.3s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78169) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78170) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78186) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78199) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78217) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78221) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78245) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78246) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78262) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78266) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78274) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78309) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  31 [full] › tests/e2e/full/dao-proposal-read.spec.ts:357:5 › renders every terminal fixture with explicit status and vote rule copy (35.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78357) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78397) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78398) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  32 [full] › tests/e2e/full/dao-proposal-read.spec.ts:425:5 › keeps onchain records and trust failures explicit (20.1s)
+[WebServer] [browser] Uncaught Error: Internal Next.js error: Router action dispatched before initialization.
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78479) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  33 [full] › tests/e2e/full/dao-proposal-read.spec.ts:470:5 › contains long immutable Markdown at 200% text scaling (10.9s)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78529) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+[WebServer] (node:78537) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [browser] NEXT_PUBLIC_WC_PROJECT_ID is not set. (web3/wagmi.ts:68:11)
+  ✓  34 [full] › tests/e2e/full/dao-proposal-read.spec.ts:500:5 › loads an authenticated attachment only after explicit activation (13.6s)
+
+  34 passed (11.1m)

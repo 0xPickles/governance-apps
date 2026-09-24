@@ -1,0 +1,150 @@
+{
+  "date": "2026-09-24",
+  "sourceRevision": "d4441d46287f96d8f6b0a5928ed89ab3af3ae55d",
+  "baseRevision": "6f78a0840feafdb26e8256e7212529156beb6c72",
+  "sourceNote": "Functional/test/tooling tree; subsequent commit contains documentation and sanitized evidence only.",
+  "environments": {
+    "browser": "Isolated copy, development mocks, dummy values, port 3320; serial smoke then full.",
+    "fork": "Separate Anvil on 18551, public read-only fork source, test role/weight helper, offline Kubo on 15002, disposable D1; no Pinata requests.",
+    "production": "Isolated copy without private environment files, dummy JWT, local fixture upstream; ports 3322 and unused RPC 18550."
+  },
+  "results": {
+    "unitTests": 1478,
+    "unitFiles": 157,
+    "smokePassed": 44,
+    "smokeExistingConditionalSkip": 1,
+    "fullPassed": 37,
+    "forkPassed": 7,
+    "productionEnabledPassed": 3,
+    "productionUnconfiguredPassed": 1,
+    "productionDisabledPassed": 1,
+    "disabledUpstreamRequests": 0,
+    "workerGzipKiB": 3373.7,
+    "workerBudgetKiB": 9216,
+    "runtimeSourceFilesCompared": 340,
+    "cloudflareTypesUnchanged": true
+  },
+  "checks": {
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "logSha256": "3cf5a18f9cffbafe2469c5fd7b97fe3ab0bb1b5ce8e20923f5c86b0789972807"
+    },
+    "lint": {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "logSha256": "f38ded17c5451ba6cebe6a2cdc22ab1094a070537c5ee153dcbd08121340284d"
+    },
+    "unit": {
+      "command": "npm run test -- --maxWorkers=2",
+      "exitCode": 0,
+      "logSha256": "b927ea47fe5b5b2a8e0e0dccc93effda0bca3af7d23b6106d13e8d119c565303"
+    },
+    "smoke": {
+      "command": "npm run test:e2e",
+      "exitCode": 0,
+      "logSha256": "a891d08a181f5d5c0c04106515b337553b35e3d30f952cf5a3eca96848b83c2f"
+    },
+    "full": {
+      "command": "npm run test:e2e:full -- --workers=1",
+      "exitCode": 0,
+      "logSha256": "e2355145747b0ccf740bc023b46c2f5975e6eae9c5b20731eca33dbcdec86b9c"
+    },
+    "fork": {
+      "command": "npx playwright test --project=dao-live --workers=1",
+      "exitCode": 0,
+      "logSha256": "dd860540b28e64cb1cb93bb7ac860969bf96ede78aa1c5a9353e1f1255ecf703"
+    },
+    "productionEnabled": {
+      "command": "npm run test:e2e:dao-feed",
+      "exitCode": 0,
+      "logSha256": "dc45d7c87ca46a0e0b54f3ad57d72cba494c179b8090d4fb5c2240647c64d307"
+    },
+    "productionDisabled": {
+      "command": "npm run test:e2e:dao-feed -- --disabled",
+      "exitCode": 0,
+      "logSha256": "de042238ffa23ae5704ea485d3e070f69095d2cd72c2d35dbfe1654015613739"
+    },
+    "productionBuild": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "logSha256": "625224efde22345b86eede3c7072858160c1757660bcb54171b39a50bc9735b9"
+    },
+    "workerBuild": {
+      "command": "npm run worker:build",
+      "exitCode": 0,
+      "logSha256": "d05b3e6e94820b7907059d1ce6dc7f4b8415fbb84056d614afed0a0150ff3639"
+    },
+    "workerSize": {
+      "command": "npm run validate:worker-size",
+      "exitCode": 0,
+      "logSha256": "c3cf0425717daee2a1afa8ecdb1f7ade1a02c2b6bb44df31440e1596e9b94460"
+    },
+    "generatedFeed": {
+      "command": "npm run generate:dao-feed -- --check",
+      "exitCode": 0,
+      "logSha256": "977d432e59d19a99107d9d90fcf4de23b5c16ee4e84b34168a0c2d542a69fd3c"
+    },
+    "dependencies": {
+      "command": "npm run validate:deps",
+      "exitCode": 0,
+      "logSha256": "55e480ac691a996e319dcf5c96c388df113fd872d114e81532e89e715e0033ce"
+    },
+    "productionEnvironment": {
+      "command": "npm run validate:prod-env (explicit dummy inputs)",
+      "exitCode": 0,
+      "logSha256": "25a13e7bfa293c2674f1daad525606ac2261b583b60767d7bb5ad86d407703ef"
+    },
+    "cloudflareTypes": {
+      "command": "npm run cf-typegen (clean source checkout), then byte comparison",
+      "exitCode": 0,
+      "logSha256": "d69b01de03afd13d2e5f19458893ae6d4aecd102a20c21930f1a678e55ed80c3"
+    },
+    "documentation": {
+      "command": "node scripts/check-dao-doc-links.mjs",
+      "exitCode": 0,
+      "logSha256": "f8aef1ee471dc447adbee864636c80fd3ab42371846c06777c7e6301bf7d853a"
+    },
+    "beforeReproduction": {
+      "command": "npm run test -- tests/unit/lib/clients/dao.writes.test.ts -t \"ordinary head advancement\" (base write implementation in isolated copy)",
+      "exitCode": 1,
+      "logSha256": "3280c9093518895f84fcaff530abca572d54e87cae1a7a95ab7fc17378225b02"
+    }
+  },
+  "failures": [
+    {
+      "run": "before-reproduction",
+      "expected": true,
+      "result": "Five advancement regressions fail on the base implementation."
+    },
+    {
+      "run": "typecheck/lint first implementation pass",
+      "result": "New-test address widening and unused mock parameter corrected."
+    },
+    {
+      "run": "native viewport first launch",
+      "result": "macOS sandbox denied Chromium; isolated permitted rerun passed."
+    },
+    {
+      "run": "authoring focused runs 1–3",
+      "result": "Three cases failed each run due to incorrect new-test assumptions; corrected test passed all three cases, then passed within the full suite."
+    },
+    {
+      "run": "fork run 1",
+      "result": "One passed, six failed after retained upstream stopped responding; operator node untouched."
+    },
+    {
+      "run": "fork run 2",
+      "result": "Five passed, two failed on cold vote simulation/receipt deadlines; later read-only receipt inspection found success."
+    },
+    {
+      "run": "fork run 3",
+      "result": "Seven passed together with existing deadlines and unchanged assertions."
+    },
+    {
+      "run": "type generation after build",
+      "result": "Generated Worker output changed inferred types; clean-source generation matched the retained file."
+    }
+  ],
+  "evidencePolicy": "Raw diagnostic logs and traces stay outside Git. Their hashes identify these runs. This record retains counts, commands, significant failures, and representative screenshots."
+}

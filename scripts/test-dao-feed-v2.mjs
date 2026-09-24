@@ -7,12 +7,15 @@ const deployments = JSON.parse(await readFile("docs/apps/dao/examples/feed-v2/de
 const disabled = process.argv.includes("--disabled");
 const extraArgs = process.argv.slice(2).filter(arg => arg !== "--disabled");
 const port = process.env.E2E_PORT ?? "3131";
-const env = { ...process.env, E2E_PORT: port, E2E_BASE_URL: "http://127.0.0.1:" + port,
+const env = { ...process.env, E2E_PORT: port, E2E_BASE_URL: "http://localhost:" + port,
   NEXT_PUBLIC_RUNTIME_MODE: "production", NEXT_PUBLIC_ENABLE_DAO: String(!disabled),
   NEXT_PUBLIC_DAO_DEPLOYMENTS: JSON.stringify(disabled ? [] : deployments),
   NEXT_PUBLIC_USE_MOCKS: "false", NEXT_PUBLIC_E2E: "false",
   NEXT_PUBLIC_ENABLE_DEBUG_UI: "false", NEXT_PUBLIC_ENABLE_DAO_REVIEW_CONTROLS: "false",
   E2E_EXPECT_DAO_PRODUCTION_FAIL_CLOSED: String(disabled),
+  DAO_PUBLICATION_ENABLED: "false",
+  DAO_PINATA_JWT: "dao-publication-build-sentinel", DAO_PUBLICATION_TEST_ORIGIN: "",
+  DAO_IPFS_GATEWAY_URL: "https://gateway.invalid/ipfs/",
 };
 function run(args) {
   return new Promise((resolve, reject) => {
@@ -22,6 +25,7 @@ function run(args) {
   });
 }
 await run(["node_modules/next/dist/bin/next", "build", "--webpack"]);
+await run(["scripts/check-dao-publication-build.mjs"]);
 env.E2E_WEB_SERVER_COMMAND = "npm run start -- --hostname 127.0.0.1 --port " + port;
 const bytes = await readFile("docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json");
 let upstreamRequests = 0;
@@ -42,6 +46,12 @@ try {
   if (disabled) assert.equal(upstreamRequests, 0, "Disabled DAO must never contact its configured upstream");
   else assert.ok(upstreamRequests >= 2, "Enabled GET and HEAD must exercise the actual upstream");
   console.log(`DAO upstream requests (${disabled ? "disabled" : "enabled"}): ${upstreamRequests}`);
+  if (!disabled) {
+    env.DAO_PUBLICATION_ENABLED = "true";
+    env.DAO_PINATA_JWT = "";
+    env.E2E_DAO_PUBLICATION_UNCONFIGURED = "true";
+    await run(["node_modules/@playwright/test/cli.js", "test", "--workers=1", "--project=dao-feed", "--grep", "unconfigured publication"]);
+  }
 } finally {
   await new Promise((resolve, reject) => upstream.close(error => error ? reject(error) : resolve()));
 }

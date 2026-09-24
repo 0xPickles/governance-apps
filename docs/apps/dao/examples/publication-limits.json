@@ -1,0 +1,13 @@
+{
+  "hourlyDocuments": 2,
+  "dailyDocuments": 10,
+  "monthlyDocuments": 40,
+  "documents": 300,
+  "bytes": 39321600,
+  "concurrent": 2,
+  "uploadAttempts": 500,
+  "documentUploadAttempts": 3,
+  "retrievalAttempts": 1800,
+  "documentRetrievalAttempts": 6,
+  "documentReservations": 6
+}

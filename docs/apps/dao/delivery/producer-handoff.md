@@ -1,5 +1,8 @@
 # DAO feed V2 producer handoff
 
+> Historical producer handoff. Its V2 technical requirements remain applicable. Producer release and interoperability are recorded in [current acceptance](../publication-acceptance-20260923.md); the next-dependency statements below describe September 8.
+
+
 Status (2026-09-08): consumer external review completed; producer handoff approved and consumer integrated. WP9 producer implementation is the next dependency and may start in its own authorized producer task after lane and target preflight. This handoff supersedes the V1 handoff at `fb8bbb8735b336b5eadd6d42b26e56696ad688de`; historical acceptance remains recorded in [status](status.md). V2 remains open to small coordinated amendments supported by producer evidence and reviewed across both repositories.
 
 Approved consumer range: `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed`.

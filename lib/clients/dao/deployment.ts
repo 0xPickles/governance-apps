@@ -13,6 +13,7 @@ const deploymentSchema = z.strictObject({
   // App/operator-reviewed implementation allowlists; never supplied by a feed.
   supportedVoters: z.array(DaoAddressSchema).max(8),
   supportedExecutors: z.array(DaoAddressSchema).max(8),
+  supportedProposeHooks: z.array(DaoAddressSchema).max(8).optional(),
 });
 export type DaoDeployment = Omit<z.infer<typeof deploymentSchema>, "votingAddress" | "supportedVoters" | "supportedExecutors"> & {
   votingAddress: Address;

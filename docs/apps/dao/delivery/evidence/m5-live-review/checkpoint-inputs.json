@@ -1,0 +1,13 @@
+{
+  "producerCheckout": "23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6",
+  "approvedProducerAncestor": "7b67945253d91c495b148ee4f0a09a946a93390d",
+  "producerBinarySha256": "61c51b8528cb249b8290b0bc1fe9acc9f9514be7a5991d8af22fd61fedc8ff5c",
+  "producerOutputSha256": "f0bbf9f1ad64c192bf0052c5e60ed82dfa62e72f9fd6faa5992402516d985b24",
+  "publishedBytes": 382,
+  "publishedContentSha256": "da4dbf23f390d04e33d502e0deafd15be4143b4b2d3e8af9229e2b01bccad668",
+  "rpc": "http://127.0.0.1:18545",
+  "gateway": "http://127.0.0.1:18080/ipfs/",
+  "ipfsApi": "http://127.0.0.1:15001",
+  "contentRequests": 8,
+  "localOnly": true
+}

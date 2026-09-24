@@ -1,0 +1,47 @@
+
+> governance-apps@0.1.0 dao:scenario
+> node scripts/dao-fork.mjs reset
+
+{
+  "schema": "yearn.dao.feed.v2",
+  "chainId": 1,
+  "observedAt": 1789568606,
+  "block": {
+    "number": "25990610",
+    "hash": "0x30f16851af031f434f38df8ee837267bc76f7a05501d3055def3a278a704547d",
+    "timestamp": 1789568606
+  },
+  "deployments": [
+    {
+      "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+      "proposalCount": "0",
+      "configuration": {
+        "voter": "0x5069bce8c8e371a45ab113604b128bbdf5ee5c11",
+        "executor": "0xac7d4a37ba61c2cac7f64d3e2b5773d85613fe7b",
+        "voteStart": "604800",
+        "executeDelay": "0",
+        "executeGuard": true,
+        "threshold": "5000"
+      }
+    }
+  ],
+  "proposals": []
+}
+
+/bin/sh: and: command not found
+/bin/sh: and: command not found
+
+> governance-apps@0.1.0 dao:scenario
+> node scripts/dao-fork.mjs propose /tmp/governance-dao-uat/ui-content.json
+
+{
+  "hash": "0xd830a8ca032180d3f3d4dcaa107441d41cb32e41bd22eea8201139b1638475bd"
+}
+
+
+> governance-apps@0.1.0 dao:scenario
+> node scripts/dao-fork.mjs mine
+
+{
+  "timestamp": 1789568644
+}

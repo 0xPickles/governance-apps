@@ -7,6 +7,9 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "preview_urls": true,
 
+  // Separate preproduction ledger. Never replace an existing release ledger with an empty database.
+  "d1_databases": [{ "binding": "DAO_PUBLICATION_DB", "database_name": "dao-publication-preprod", "database_id": "00000000-0000-0000-0000-000000000001", "migrations_dir": "migrations/dao-publication" }],
+
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,

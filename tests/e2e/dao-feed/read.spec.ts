@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import saved from "@/docs/apps/dao/examples/feed-v2/dao-feed-v2.example.json";
 
-const captureDirectory = "docs/apps/dao/delivery/evidence/feed-v2/screenshots";
 test("renders saved V2 through real routes without wallet RPC or mocks", async ({ page }) => {
+  const captureDirectory = process.env.DAO_EVIDENCE_DIR ? process.env.DAO_EVIDENCE_DIR + "/screenshots" : test.info().outputPath("screenshots");
   let response = saved;
   let failed = false;
   let failureStatus = 503;
@@ -30,7 +30,7 @@ test("renders saved V2 through real routes without wallet RPC or mocks", async (
   }
   await zero.click();
   await expect(page.getByRole("heading", { name: "Immutable proposal content" })).toBeVisible();
-  await expect(page.getByText(/Production DAO transactions are not enabled/)).toBeVisible();
+  await expect(page.getByText(/Connect.*wallet.*(vote|eligibility|participate)/i).first()).toBeVisible();
   await expect(page.getByText("Vote account", { exact: true }).first()).toBeVisible();
 
   for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1280, height: 900 }, { width: 1280, height: 600 }]) {

@@ -1,0 +1,139 @@
+
+> governance-apps@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.5 <WORKTREE>
+
+{"level":10,"time":1789569931440,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","msg":"Initialized"}
+{"level":10,"time":1789569931441,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/history","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/history","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/expirer","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/expirer","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/subscription","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/subscription","msg":"Initialized"}
+{"level":20,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Successfully Restored records for messages"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","type":"method","method":"restore","size":0}
+{"level":20,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Successfully Restored records for messages"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","type":"method","method":"restore","size":0}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","context":"core/pairing/pairing","msg":"Initialized"}
+{"level":10,"time":1789569931442,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","context":"core/pairing/pairing","msg":"Initialized"}
+{"level":10,"time":1789569931443,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","msg":"Initialized"}
+{"level":10,"time":1789569931443,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","context":"core/pairing","msg":"Initialized"}
+{"level":30,"time":1789569931443,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","msg":"Core Initialization Success"}
+{"level":30,"time":1789569931443,"pid":78757,"hostname":"lerna.local","name":"core","context":"core","msg":"Core Initialization Success"}
+Not implemented: Window's scrollBy() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+ ❯ |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx (21 tests | 1 failed) 12230ms
+     × publishes a Signal snapshot before starting the wallet step 604ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |jsdom| tests/components/DaoProposalAuthoringForm.test.tsx > DAO proposal authoring form > publishes a Signal snapshot before starting the wallet step
+TestingLibraryElementError: Unable to find an element with the text: /does not send an onchain transaction/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<section
+  aria-label="Submission steps"
+  class="space-y-4 border-t border-border pt-6 first:border-0 first:pt-0"
+>
+  <h3
+    class="text-balance text-lg font-bold"
+  >
+    Submission steps
+  </h3>
+  <div
+    class="space-y-4"
+  >
+    <p
+      class="max-w-3xl text-pretty text-sm leading-6 text-text-secondary"
+    >
+      Two actions are required: publish the immutable content, then create the onchain proposal.
+    </p>
+    <ol
+      class="grid gap-3 text-sm md:grid-cols-2"
+    >
+      <li
+        class="flex min-h-24 items-start gap-3 rounded-box border p-4 border-yearn-blue/50 bg-yearn-blue/5 dark:border-blue-700 dark:bg-blue-950/30"
+      >
+        <span
+          class="flex size-8 shrink-0 items-center justify-center rounded-full font-number text-xs font-bold tabular-nums bg-yearn-blue text-white dark:bg-blue-800"
+        >
+          1
+        </span>
+        <span
+          class="min-w-0 space-y-1"
+        >
+          <span
+            class="block text-xs font-bold uppercase tracking-wide text-text-secondary"
+          >
+            Current
+          </span>
+          <span
+            class="block font-bold"
+          >
+            Publish immutable content
+          </span>
+          <span
+            class="block text-pretty text-xs leading-5 text-text-secondary"
+          >
+            Publishing stores and verifies the reviewed snapshot. The next step asks your wallet to create the onchain proposal.
+          </span>
+        </span>
+      </li>
+      <li
+        class="flex min-h-24 items-start gap-3 rounded-box border p-4 border-border bg-surface-secondary"
+      >
+        <span
+          class="flex size-8 shrink-0 items-center justify-center rounded-full font-number text-xs font-bold tabular-nums bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+        >
+          2
+        </span>
+        <span
+          class="min-w-0 space-y-1"
+        >
+          <span
+            class="block text-xs font-bold uppercase tracking-wide text-text-secondary"
+          >
+            Upcoming
+          </span>
+          <span
+            class="block font-bold"
+          >
+            Create onchain proposal
+          </span>
+          <span
+            class="block text-pretty text-xs leading-5 text-text-secondary"
+          >
+            This action becomes available only after the immutable content is published.
+          </span>
+        </span>
+      </li>
+    </ol>
+  </div>
+</section>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/components/DaoProposalAuthoringForm.test.tsx:194:31
+    192|     ).toBeVisible();
+    193|     expect(
+    194|       within(submissionSteps).getByText(
+       |                               ^
+    195|         /does not send an onchain transaction/i
+    196|       )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 152 passed (153)
+      Tests  1 failed | 1391 passed (1392)
+   Start at  16:45:28
+   Duration  29.17s (transform 9.86s, setup 56.30s, import 70.23s, tests 73.34s, environment 39.00s)

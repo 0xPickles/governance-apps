@@ -1,0 +1,37 @@
+
+> governance-apps@0.1.0 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v4.1.5 <WORKTREE>
+
+{"level":10,"time":1789628342691,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","msg":"Initialized"}
+{"level":10,"time":1789628342694,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","msg":"Initialized"}
+{"level":10,"time":1789628342695,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/history","msg":"Initialized"}
+{"level":10,"time":1789628342696,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/history","msg":"Initialized"}
+{"level":10,"time":1789628342696,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/expirer","msg":"Initialized"}
+{"level":10,"time":1789628342696,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/expirer","msg":"Initialized"}
+{"level":10,"time":1789628342696,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","msg":"Initialized"}
+{"level":10,"time":1789628342696,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Initialized"}
+{"level":10,"time":1789628342696,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/subscription","msg":"Initialized"}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","msg":"Initialized"}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Initialized"}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/subscription","msg":"Initialized"}
+{"level":20,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Successfully Restored records for messages"}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","type":"method","method":"restore","size":0}
+{"level":20,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","msg":"Successfully Restored records for messages"}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/relayer","context":"core/relayer/messages","type":"method","method":"restore","size":0}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/pairing","context":"core/pairing/pairing","msg":"Initialized"}
+{"level":10,"time":1789628342697,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/pairing","context":"core/pairing/pairing","msg":"Initialized"}
+{"level":10,"time":1789628342698,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/pairing","msg":"Initialized"}
+{"level":10,"time":1789628342698,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","context":"core/pairing","msg":"Initialized"}
+{"level":30,"time":1789628342698,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","msg":"Core Initialization Success"}
+{"level":30,"time":1789628342698,"pid":23714,"hostname":"<LOCAL_HOST>","name":"core","context":"core","msg":"Core Initialization Success"}
+Not implemented: Window's scrollBy() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+
+ Test Files  153 passed (153)
+      Tests  1397 passed (1397)
+   Start at  08:58:44
+   Duration  305.66s (transform 16.42s, setup 134.28s, import 146.67s, tests 163.91s, environment 100.57s)

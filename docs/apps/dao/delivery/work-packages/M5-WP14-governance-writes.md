@@ -1,6 +1,6 @@
 # WP14: live governance writes
 
-Status: Deferred; production write methods remain disabled in this reset.
+Status: Acceptance coverage in the authorized combined `agent/dao/m5/live` implementation. Separate package sequencing is superseded by the [milestone plan](../milestone-plan.md).
 
 ## Scope
 

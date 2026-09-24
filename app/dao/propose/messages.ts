@@ -38,6 +38,8 @@ export const daoProposeCopy = {
     placeholder: "https://gov.yearn.fi/t/proposal-topic/1001",
     validate: "Validate topic",
     validating: "Validating topic",
+    empty: "Enter the proposal’s forum topic URL.",
+    unvalidated: "Validate this topic before review.",
     accepted: "Forum topic accepted",
     topicTitle: "Topic title",
     normalizedUrl: "Normalized topic",
@@ -123,6 +125,14 @@ export const daoProposeCopy = {
     capacityFullBody: (first: string, last: string) =>
       `This proposal would affect reward epochs ${first}–${last}. The 64-proposal limit is shared system-wide; it is not a per-user quota.`,
   },
+  recovery: {
+    importLabel: "Restore exact content file",
+    importHelp: "Restore an exported JSON document as an unpublished review. For an executable proposal, enter its original script below before importing.",
+    invalid: "Cannot restore this file. Check its exact bytes, original wallet, forum topic, and script.",
+    restoring: "Checking the saved document and forum topic…",
+    storageUnavailable: "This tab cannot save the review. Download the exact content and keep its script before reloading. Enable browser storage before publishing.",
+    unpublished: "This review is unpublished. Confirm the retained content before publishing. No transaction is ready.",
+  },
   review: {
     eyebrow: "Final review",
     title: "Review the exact proposal",
@@ -147,7 +157,7 @@ export const daoProposeCopy = {
     complete: "Complete",
     publishStep: "Publish immutable content",
     publishStepBody:
-      "Publishing fixes the reviewed snapshot. It does not create the proposal or open your wallet.",
+      "Publishing stores and verifies the reviewed snapshot. The next step asks your wallet to create the onchain proposal.",
     proposeStep: "Create onchain proposal",
     proposeStepUpcoming:
       "This action becomes available only after the immutable content is published.",
@@ -158,6 +168,9 @@ export const daoProposeCopy = {
     indexedStatus: "Proposal indexed",
   },
   publication: {
+    downloadTitle: "Save reviewed content",
+    downloadBody: "You can save an exact copy of this reviewed proposal before publishing.",
+    downloadBytes: "Download exact content",
     publish: "Publish immutable content",
     retry: "Retry content publication",
     publishing: "Publishing immutable content",
@@ -168,6 +181,7 @@ export const daoProposeCopy = {
     failedTitle: "Proposal content was not published",
   },
   proposal: {
+    replacedTitle: "Transaction replaced",
     create: "Create onchain proposal",
     retry: "Retry proposal creation",
     waiting: "Waiting for wallet",
@@ -182,6 +196,7 @@ export const daoProposeCopy = {
     indexingDelayedTitle: "Proposal indexing is delayed",
     indexingDelayedBody:
       "The confirmed proposal address remains available while indexing catches up.",
+    retryReceipt: "Retry receipt confirmation",
     retryIndexing: "Retry indexing",
     submittedBody:
       "The transaction hash is known. Proposal actions appear after the confirmed receipt supplies its identity.",
@@ -194,5 +209,6 @@ export const daoProposeCopy = {
     rejectedTitle: "Wallet request cancelled",
     revertedTitle: "Proposal creation failed",
     networkErrorTitle: "Network request failed",
+    preparationChangedTitle: "Review proposal preparation",
   },
 } as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Address } from "viem";
 import { useAccount } from "wagmi";
@@ -55,7 +55,11 @@ import {
 import { daoKeys } from "@/lib/hooks/daoKeys";
 import { isDaoEnabled, isDaoMockRuntimeEnabled } from "@/lib/runtime/features";
 import { useTx } from "@/lib/tx/useTx";
+import { daoPreparedCall, type DaoTransactionCall } from "@/lib/clients/dao/writes";
+import type { TxState } from "@/lib/tx/types";
 import type { PreparedTransaction } from "@/lib/tx/types";
+
+import { daoActionStorageKey, subscribeDaoActionRecovery, readDaoActionRaw, parseDaoActionRecovery, saveDaoActionRecovery, confirmDaoAction, daoActionIsPending, type DaoActionRecovery } from "@/lib/clients/dao/action-recovery";
 
 let mockClient: DaoClient | null = null;
 let feedClient: { scope: string; client: DaoClient } | null = null;
@@ -186,6 +190,7 @@ export function useDaoProposal(proposalId: string, selection?: { chainId: string
     ...feedQuery,
     data: lookup,
     envelope,
+    proposalRef,
     error: invalidProposalId
       ? null
       : feedQuery.error ?? activeContractError,
@@ -200,11 +205,16 @@ export function useDaoProposal(proposalId: string, selection?: { chainId: string
 
 export function useDaoProposerState(address: Address | null) {
   const runtime = useDaoMockRuntime();
+  const protocol = useOptionalProtocol();
+  const wallet = useAccount();
   const query = useQuery({
-    queryKey: daoKeys.proposer(address),
-    queryFn: () => getDaoRouteClient().getProposerState(address as Address),
-    enabled: address !== null && isDaoMockRuntimeEnabled(),
-    staleTime: Infinity,
+    queryKey: [...daoKeys.proposer(address), daoReadScope(), wallet.chainId ?? null],
+    queryFn: () => getDaoRouteClient().getProposerState(address as Address,
+      !runtime && protocol?.mainnetPublicClient ? { rpc: daoRpcFromPublicClient(protocol.mainnetPublicClient), walletChainId: wallet.chainId } : undefined),
+    enabled: address !== null && (runtime !== null || wallet.isConnected),
+    staleTime: runtime ? Infinity : 0,
+    refetchInterval: runtime ? false : 15_000,
+    retry: false,
   });
   return applyDaoSurfaceState(query, runtime);
 }
@@ -250,10 +260,40 @@ export function useDaoProposalActions(
   const queryClient = useQueryClient();
   const { execute, reset, state } = useTx();
   const [activeAction, setActiveAction] = useState<DaoActionType | null>(null);
+  const live = !isDaoMockRuntimeEnabled();
+  const key = live && address ? daoActionStorageKey(daoDeploymentScope(getDaoDeployments()), ref, address) : null;
+  const raw = useSyncExternalStore(subscribeDaoActionRecovery, () => readDaoActionRaw(key), () => null);
+  const pending = useMemo(() => parseDaoActionRecovery(raw, ref, address), [raw, ref, address]);
+  const inFlight = useRef(false);
+  const [confirmationResult, setConfirmationResult] = useState<{ key: string; state: TxState } | null>(null);
+  const actionFeed = useDaoFeed();
   const invalidate = useCallback(
     () => invalidateDaoQueries(queryClient),
     [queryClient]
   );
+
+  useEffect(() => {
+    if (!key || pending?.receiptState !== "confirmed") return;
+    const indexed = actionFeed.data?.proposals.some(p => p.ref.chainId === ref.chainId && p.ref.proposalId === ref.proposalId &&
+      p.ref.votingAddress.toLowerCase() === ref.votingAddress.toLowerCase() && p.events.some(e =>
+        e.type === pending.action && e.log.transactionHash?.toLowerCase() === pending.transactionHash.toLowerCase() && e.log.blockHash === pending.receiptBlockHash));
+    if (indexed && readDaoActionRaw(key) === raw) saveDaoActionRecovery(key, null);
+  }, [actionFeed.data, key, pending, raw, ref]);
+
+  const retryConfirmation = useCallback(async () => {
+    if (!key || !pending || pending.receiptState !== "unknown" || inFlight.current) return;
+    inFlight.current = true;
+    setConfirmationResult({ key, state: { status: "mining", hash: pending.transactionHash } });
+    try {
+      const hash = await confirmDaoAction(key, pending);
+      setConfirmationResult({ key, state: { status: "success", hash } });
+      await invalidate();
+    } catch (error) {
+      const saved = parseDaoActionRecovery(readDaoActionRaw(key), ref, address);
+      setConfirmationResult({ key, state: { status: "error", hash: saved?.transactionHash ?? pending.transactionHash,
+        errorMessage: error instanceof Error ? error.message : "Receipt confirmation is unavailable." } });
+    } finally { inFlight.current = false; }
+  }, [invalidate, key, pending, ref, address]);
 
   const requireAddress = useCallback(() => {
     if (!address) throw new Error("Connect a wallet to continue.");
@@ -265,26 +305,44 @@ export function useDaoProposalActions(
       action: DaoActionType,
       prepare: (client: DaoClient, account: Address) => Promise<PreparedTransaction>
     ) => {
+      if (inFlight.current || (key && daoActionIsPending(parseDaoActionRecovery(readDaoActionRaw(key), ref, address)))) return;
+      inFlight.current = true;
+      let call: DaoTransactionCall | undefined;
+      let submitted: DaoActionRecovery | undefined;
+      setConfirmationResult(null);
       setActiveAction(action);
       reset();
-      await execute(
+      try { await execute(
         async () => {
           const prepared = await prepare(getDaoRouteClient(), requireAddress());
+          if (!isDaoMockRuntimeEnabled()) call = daoPreparedCall(prepared);
           return prepared();
         },
         {
           invalidate,
-          skipWaitForReceipt: true,
+          onSubmitted: !key ? undefined : hash => {
+            if (!call || !address) throw new Error("Missing DAO transaction expectation.");
+            submitted = { action, ref, actor: address, transactionHash: hash, submittedAt: Math.floor(Date.now() / 1000),
+              direction: null, effectiveVotingWeight: null, reason: null, call, receiptState: "unknown" };
+            saveDaoActionRecovery(key, submitted);
+          },
+          skipWaitForReceipt: isDaoMockRuntimeEnabled(),
+          waitForReceipt: !key ? undefined : async () => {
+            if (!submitted) throw new Error("Missing DAO submitted transaction.");
+            return confirmDaoAction(key, submitted);
+          },
           submittedMessage: options.submittedMessage,
         }
-      );
+      ); } finally { inFlight.current = false; }
     },
-    [execute, invalidate, options.submittedMessage, requireAddress, reset]
+    [execute, invalidate, options.submittedMessage, requireAddress, reset, ref, address, key]
   );
 
   return {
-    activeAction,
-    state,
+    pendingAction: pending,
+    retryConfirmation,
+    activeAction: pending?.action ?? activeAction,
+    state: confirmationResult?.key === key ? confirmationResult.state : state,
     reset: () => {
       setActiveAction(null);
       reset();

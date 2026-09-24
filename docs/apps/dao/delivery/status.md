@@ -5,14 +5,49 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current integration state (2026-09-08)
+## Current work (2026-09-24)
 
-- Consumer external review is complete and producer handoff is approved for the exact range `639782376bcaf05ab43ed9d9759c73154d0723b6..98a51bfe1b3fa258f0c3d443207dcad7a64eb6ed` on `agent/dao/m3/feed-v2`. The user supplied the external review approval and authorized local integration of this exact range.
-- Integration merge: `77a20d116c253a69945a85bd7213efb7f43cf2a8` on `agent/integration`, using `--no-ff`. Both worktrees were clean at the expected base and approved tip. The merge has no conflicts and its tree exactly matches the approved consumer tip. See the [integration record](evidence/feed-v2/integration.md) for included commits and post-integration checks.
-- Revised WP8/WP11/WP12 are integrated together. The three P2 findings and both additional improvements are resolved. The [review follow-up](feed-v2-review-fixes.md) preserves the earlier findings and validation; [reset evidence](feed-v2-reset.md) preserves the initial submission. Use the [V2 contract](../feed-schema-v2.md) and [producer handoff](producer-handoff.md) for current implementation inputs.
-- WP9 producer implementation is the next dependency. The consumer review gate is cleared; producer work may start in a separately authorized Gov Apps Stats task after its lane and target preflight. The recorded read-only producer inspection remains `943de11f539845200e23b02a61fbe1592bf90ed6`; this integration neither revalidates nor modifies that checkout.
-- Actual producer interoperability, live deployment/dependency verification, contract-executed lifecycle/reorg evidence, staging validation and production approval remain pending. Consumer approval and local production-build tests do not establish these later gates or production readiness.
-- The user-authorized reset supersedes the V1 freeze and old producer-before-consumer gate. Historical sections below record decisions at their original time. V2 remains open to small coordinated amendments supported by producer evidence and reviewed across both consumers and producers.
+- Publication acceptance completed on September 23. See the [checked record](../publication-acceptance-20260923.md).
+- Original B survived recovery unchanged, failed with revoked K1, then published with K2. Saved D1 shows two uploads and one retrieval.
+- The local proposal, released-producer output, application response, cleanup receipts, and operator rendering approval close the follow-up scope.
+- The interrupted September 17 run remains incomplete; its missing original accounting was not reconstructed.
+- Closeout fixes cover bounded preparation across newer blocks, accurate preparation errors, forum validation feedback, native browser viewport, and file-based local D1 setup.
+- [Closeout evidence](evidence/closeout-20260924/README.md) records validation of these changes. Earlier passing runs do not validate the new code.
+- Worktree: `governance-apps.dao.m5.pinata`; branch: `codex/dao/m5/pinata`; closeout review base: `6f78a0840feafdb26e8256e7212529156beb6c72`.
+- The package includes M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`. Integrating the package also integrates that dependency.
+- Independent closeout approval and the [production release inputs](../release-checklist.md) remain outstanding.
+- No merge, push, tag, deployment, or production transaction occurred during closeout. Production flags and infrastructure remain unchanged.
+- Integration remains `28dd8fff2e7ff00961174635715be8d18ecd8d42`. Local master is `06d9ec46458675e36d72b2165ff80189914efb03`.
+- Read-only comparison on September 24 shows 141 integration-only and 18 master-only commits. Reconcile this separately before rollout.
+- [Historical records](historical-index.md) retain significant failures, earlier review results, and the superseded preparation procedures.
+
+## Inherited M5 implementation evidence (2026-09-11)
+
+The following records the code inherited at package start. Statements about provider selection, grants and old next steps are superseded by the current task.
+Historical test results are retained. They do not count as validation of this publication package.
+
+- The [milestone plan](milestone-plan.md) remains the single active plan. Older sequencing and producer-start gates are superseded.
+- Accepted mock UX, reviewed V2 reads, historical acceptance and [original evidence](evidence/m5-live/README.md) remain unchanged.
+- The package remains on `agent/dao/m5/live`, based on `28dd8fff2e7ff00961174635715be8d18ecd8d42`.
+- Independent review of the original package requested five focused fixes before integration. The incremental review base is `f4f7e49bace1c26d2ba01d9c786cc92841e65d61`.
+- All five corrections are implemented. The [finding tracker](evidence/m5-live-review/README.md) records tests, evidence and pending re-review.
+- Publication is independently disabled by default. Configured uploads require an exact-content operator grant, uploader signature and finite unique-content budget.
+- Receipt recovery follows verified identical-call fee replacements. Cancellation and changed calls retain terminal transaction links.
+- Ordinary actions are saved when the hash arrives. Receipt timeouts retain a confirmation retry and prevent duplicate submission, including after reload.
+- Unpublished Markdown, forum input, scripts and review state survive eligibility refresh failures. Submission remains blocked until eligibility is fresh.
+- Oversized and failed response bodies reject without waiting for cancellation. DAO-FR-035 now distinguishes failures before and after submission.
+- Typecheck, lint and all 1364 tests in 151 files passed. Smoke E2E passed 44 tests with one expected skip.
+- The complete serial full suite passed all 34 cases in one run. Enabled/disabled production routes, production build, Worker build and size check passed.
+- The fork run passed six checks. Its creation/vote/execution case passed on a fresh-server rerun after a development browser script error.
+- The released producer retrieved the exact 382 UI-published bytes through native offline Kubo and emitted them in a local feed.
+- The producer-to-app browser check passed through actual routes, with zero wallet RPC and page errors. External provider and production configuration remain unverified.
+- The producer source remains clean at `23c4c1e85c1422f4cb2636ae5526bae6b8e89bb6`, with approved commit `7b67945253d91c495b148ee4f0a09a946a93390d` in its history.
+- The user reports producer release at [the live endpoint](https://data.dao-ops.com/prod/dao.json). Earlier direct and app reads verified its empty feed without wallet RPC.
+- The [local runbook](../local-fork-uat.md) covers signed uploads, scenario controls and optional producer content checks. [Live services](../live-services.md) defines configuration and recovery limits.
+- Operator inputs remain: reviewed deployment values, external provider, private credentials, retention policy, approved test target and production uploader-policy approval.
+- Independent re-review, user local UAT acceptance and external publication verification remain pending.
+- Integration remains clean and unchanged. Its 141 integration-only and 17 master-only commits require separate release reconciliation.
+- No merge, tag, app deployment, public exposure, forum post or production blockchain transaction occurred.
 
 ## Historical state before reset
 

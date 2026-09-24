@@ -1,0 +1,92 @@
+
+> governance-apps@0.1.0 test:e2e
+> playwright test --project=smoke --workers=1
+
+[WebServer] (node:98098) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:98102) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:98102) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+Running 45 tests using 1 worker
+
+(node:98485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:98485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:18:5 › authors, reviews, publishes, and submits a Signal proposal (15.6s)
+  ✓   2 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:82:5 › authors an executable proposal from the full raw script (10.9s)
+  ✓   3 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:138:5 › keeps the exact review locked and announces asynchronous progress (10.0s)
+  ✓   4 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:257:5 › starts authoring with keyboard focus below the sticky header (27.4s)
+  ✓   5 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:293:5 › shows deterministic forum validation failures without clearing content (11.8s)
+  ✓   6 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:316:5 › preserves the draft and does not start the wallet step after publication failure (10.3s)
+  ✓   7 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:340:5 › keeps publication after every failed typed transaction outcome (19.5s)
+[WebServer] (node:99065) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:386:5 › uses visible review controls for rejection then retries the same publication to Indexed (16.2s)
+  ✓   9 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:468:5 › renders every mutable proposer blocker and the shared capacity rule (10.9s)
+  ✓  10 [smoke] › tests/e2e/smoke/dao-authoring.spec.ts:492:5 › keeps normal eligibility compact while retaining the six-epoch range (9.2s)
+  ✓  11 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:18:5 › answers preview DAO HEAD probes without self-proxying (2.5s)
+  -  12 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:33:5 › fails closed for production DAO requests without a server error
+  ✓  13 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:61:5 › renders the DAO proposal board shell (2.5s)
+[WebServer] (node:99215) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  14 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:93:5 › links the shared DAO application label home on desktop and mobile (5.0s)
+  ✓  15 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:129:5 › wraps the long shared app label at 200% mobile text without clipping (4.3s)
+[WebServer] (node:99278) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:203:5 › preserves the board group through replace, reload, detail, and Back (5.7s)
+  ✓  17 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:249:5 › keeps nested row controls independent of the stretched proposal link (3.7s)
+[WebServer] (node:99325) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  18 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:277:5 › makes no dead-loopback RPC request while hydrating every DAO route (7.1s)
+[WebServer] (node:99383) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:347:5 › uses clean client-side paths on the guarded DAO beta host (7.7s)
+  ✓  20 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:431:5 › exposes the shared DAO debug section without route-local controls (2.0s)
+  ✓  21 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:462:5 › moves debug-panel focus and removes its entrance animation for reduced motion (2.1s)
+[WebServer] (node:99472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99483) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  22 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:486:5 › uses the typed bridge to mutate DAO facts and refresh infinitely fresh queries (20.5s)
+[WebServer] (node:99521) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:99536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  23 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:528:5 › renders DAO proposal detail and not-found shells (3.8s)
+  ✓  24 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:561:5 › renders the DAO proposal authoring shell without M2 form controls (2.0s)
+[WebServer] (node:99595) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  25 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:580:5 › contains every DAO route at 390px (6.7s)
+[WebServer] (node:99612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  26 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:616:5 › wraps an arbitrary-length numeric proposal ID at 390px (1.6s)
+  ✓  27 [smoke] › tests/e2e/smoke/dao-shell.spec.ts:629:5 › balances all six preview launcher apps across desktop rows (2.9s)
+  ✓  28 [smoke] › tests/e2e/smoke/discoverability.spec.ts:3:5 › publishes canonical metadata and nonce-protected WebSite JSON-LD (4.9s)
+  ✓  29 [smoke] › tests/e2e/smoke/discoverability.spec.ts:37:5 › scopes machine-readable discovery files to the approved yearn.fi host (3.3s)
+  ✓  30 [smoke] › tests/e2e/smoke/onboarding.spec.ts:4:5 › connects and defaults to stYFIx (9.8s)
+  ✓  31 [smoke] › tests/e2e/smoke/styfi-external-portfolio.spec.ts:9:5 › shows external portfolio and opens veYFI in a new tab (27.8s)
+  ✓  32 [smoke] › tests/e2e/smoke/styfi-flow.spec.ts:13:5 › stake, cooldown, and withdraw via bridge controls (41.3s)
+  ✓  33 [smoke] › tests/e2e/smoke/styfi-governance.spec.ts:17:5 › shows permanent Snapshot Voting navigation and an active vote banner (1.7s)
+  ✓  34 [smoke] › tests/e2e/smoke/styfi-governance.spec.ts:51:5 › keeps Snapshot Voting available in the mobile menu without an active vote (1.8s)
+  ✓  35 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:12:5 › renders the Team Finances route shell (5.8s)
+  ✓  36 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:76:5 › keeps loading and empty coverage reachable through the shared Teams runtime (4.3s)
+  ✓  37 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:104:5 › restores deep links and browser history without resetting active sections (9.5s)
+  ✓  38 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:232:5 › keeps DAI and USDC labels horizontal in the nested revenue pane (2.4s)
+  ✓  39 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:330:5 › contains long deposit-preview words and values at 375px (2.4s)
+  ✓  40 [smoke] › tests/e2e/smoke/teams-shell.spec.ts:415:5 › keeps bonus math inside the viewport at 375px (2.0s)
+  ✓  41 [smoke] › tests/e2e/smoke/veyfi-flow.spec.ts:13:5 › migrate legacy veYFI and redeem sdYFI (38.5s)
+  ✓  42 [smoke] › tests/e2e/smoke/ybc-shell.spec.ts:10:5 › renders the YBC overview and operator panel states (11.9s)
+  ✓  43 [smoke] › tests/e2e/smoke/ybc-shell.spec.ts:64:5 › contains YBC identity and timestamp layouts at 360px (10.2s)
+  ✓  44 [smoke] › tests/e2e/smoke/ybc-shell.spec.ts:146:7 › touch identity controls › keeps the compact member address as the tap target (8.6s)
+  ✓  45 [smoke] › tests/e2e/smoke/yeth-flow.spec.ts:14:5 › claim, stay, redeem, claim-ended, and empty-state flows (1.1m)
+
+  1 skipped
+  44 passed (8.4m)

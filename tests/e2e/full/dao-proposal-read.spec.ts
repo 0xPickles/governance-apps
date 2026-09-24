@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { waitForTestBridge } from "../utils";
 import { DAO_MOCK_GOVERNANCE_FLOW_ASSET_CID } from "@/lib/clients/dao";
 
 const PINNED_VOTING_SOURCE_URL =
@@ -13,6 +14,7 @@ const VIEWPORTS = [
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/dao");
+  await waitForTestBridge(page);
   await page.evaluate(async () => {
     if (!window.__TEST__) throw new Error("Test bridge is unavailable.");
     await window.__TEST__.reset();
@@ -115,6 +117,7 @@ test("offers responsive keyboard shortcuts when Active has no proposals", async 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     await page.goto("/dao?group=active");
+    await waitForTestBridge(page);
     await page.evaluate(async () => {
       if (!window.__TEST__) throw new Error("Test bridge is unavailable.");
       await window.__TEST__.reset();
@@ -163,6 +166,7 @@ test("keeps the last-good board visible while preserving outage semantics", asyn
   await page.goto("/dao");
   await expect(page.getByText("22 proposals are available.")).toBeVisible();
 
+  await waitForTestBridge(page);
   await page.evaluate(async () => {
     if (!window.__TEST__) throw new Error("Test bridge is unavailable.");
     await window.__TEST__.setDaoSurface?.("error");
@@ -184,6 +188,7 @@ test("keeps the last-good board visible while preserving outage semantics", asyn
   await expect(outage).toBeVisible();
   await expect(page.getByText("22 proposals are available.")).toBeVisible();
 
+  await waitForTestBridge(page);
   await page.evaluate(async () => {
     if (!window.__TEST__) throw new Error("Test bridge is unavailable.");
     await window.__TEST__.setDaoSurface?.("ready");
@@ -219,6 +224,7 @@ test("does not retain a found detail outside the surfaced feed snapshot", async 
     page.getByRole("heading", { name: "Fund protocol research" })
   ).toBeVisible();
 
+  await waitForTestBridge(page);
   await page.evaluate(async () => {
     if (!window.__TEST__) throw new Error("Test bridge is unavailable.");
     await window.__TEST__.setDaoEmpty?.(true);
