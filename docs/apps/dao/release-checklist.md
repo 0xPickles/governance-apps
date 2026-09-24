@@ -1,11 +1,13 @@
 # DAO release and integration checklist
 
 Publication acceptance is [complete](publication-acceptance-20260923.md).
+The approved package is now integrated. See the [integration delivery record](delivery/integration-20260924.md).
+Use [built local validation](local-validation.md) and the [preprod preparation checklist](preprod-validation.md) for the next gates.
 This checklist does not authorize a merge, deployment, remote change, or production transaction.
 
 ## Remaining release inputs
 
-1. Independent approval of the closeout range and inherited M5/publication changes.
+1. Review of the post-package local validation changes recorded in the integration delivery record.
 2. Reviewed production deployment allowlist, RPC URLs, and producer endpoint/identity.
 3. Distinct production and preproduction D1 IDs, the existing migration, and backup ownership.
 4. An upload-only Worker secret, public gateway, reviewed aggregate limits, and content-retention policy.
@@ -17,7 +19,7 @@ Keep `NEXT_PUBLIC_ENABLE_DAO` and `DAO_PUBLICATION_ENABLED` independently gated.
 Use [publication operations](pinata-publication.md) for provision, key replacement, backup, budget recovery, and rollback.
 Do not repeat the completed A/C/B experiment as a normal production procedure.
 
-## Integration after independent approval
+## Completed integration procedure (historical)
 
 The package includes M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c` and all reviewed publication/recovery commits.
 Do not cherry-pick the closeout onto the older integration baseline.

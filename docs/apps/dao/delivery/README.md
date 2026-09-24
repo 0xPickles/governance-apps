@@ -1,5 +1,8 @@
 # DAO Governance Delivery Plan
 
+Current entry points: [integration record](integration-20260924.md), [built local validation](../local-validation.md), and [preprod preparation](../preprod-validation.md).
+The dated sequencing below records the historical delivery plan.
+
 Status (2026-09-10): the accepted mock UI and reviewed V2 reads are integrated. The producer is reported released and active.
 
 Use the [milestone plan](milestone-plan.md) as the single active delivery plan. [Status](status.md) separates inspected evidence from user-reported facts.

@@ -7,13 +7,15 @@ The [closeout evidence](delivery/evidence/closeout-20260924/README.md) covers su
 | Purpose | Current entry point |
 | --- | --- |
 | Architecture, transaction checks, and recovery | [Live services](live-services.md) |
+| Built local walkthrough and real producer snapshots | [Local validation](local-validation.md) |
+| Mainnet preprod preparation, without deployment | [Preprod validation](preprod-validation.md) |
 | Publication configuration, budgets, backup, and rollback | [Publication operations](pinata-publication.md) |
 | Development, file-based D1 setup, and regression commands | [Local development](local-development.md) and [disposable fork UAT](local-fork-uat.md) |
 | Accepted validation and remaining release work | [Acceptance](publication-acceptance-20260923.md), [release checklist](release-checklist.md), and [delivery status](delivery/status.md) |
 | Dated plans, failed attempts, and evidence locations | [Historical index](delivery/historical-index.md) |
 
-The active package is `codex/dao/m5/pinata`, including inherited M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
-Independent approval of the closeout and a normal `--no-ff` integration merge remain required.
+The current candidate lives on `agent/integration`. The exact approved package is `da041f5eaa5abe55ed5221f2642d3f0b047e5315`.
+The [integration record](delivery/integration-20260924.md) identifies the merge, added tooling, validation, and remaining release inputs.
 Provider selection and live publication acceptance are closed. The completed A/C/B procedures are historical material.
 
 ## Canonical references

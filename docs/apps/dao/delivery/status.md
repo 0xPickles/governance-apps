@@ -7,6 +7,13 @@ package starts.
 
 ## Current work (2026-09-24)
 
+- The exact approved package `da041f5eaa5abe55ed5221f2642d3f0b047e5315` is integrated on `agent/integration`.
+- The [integration record](integration-20260924.md) is authoritative for merge identity, current validation, and the added review range.
+- Use [built local validation](../local-validation.md) for the UI walkthrough and [preprod preparation](../preprod-validation.md) for the later mainnet deployment gate.
+- The broader interactive walkthrough and preprod deployment remain outstanding.
+
+## Publication closeout before integration (historical, 2026-09-24)
+
 - Publication acceptance completed on September 23. See the [checked record](../publication-acceptance-20260923.md).
 - Original B survived recovery unchanged, failed with revoked K1, then published with K2. Saved D1 shows two uploads and one retrieval.
 - The local proposal, released-producer output, application response, cleanup receipts, and operator rendering approval close the follow-up scope.

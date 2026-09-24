@@ -1,5 +1,8 @@
 # DAO local development and regression checks
 
+For the next UI walkthrough, use [built local validation](local-validation.md) from `agent/integration`.
+The commands below remain useful for focused regression checks.
+
 Use [live services](live-services.md) for trust boundaries and [publication operations](pinata-publication.md) for production recovery.
 The [fork runbook](local-fork-uat.md) covers deployed contracts on a disposable node and an offline content substitute.
 Completed acceptance procedures are historical. Do not reuse their state as disposable test data.

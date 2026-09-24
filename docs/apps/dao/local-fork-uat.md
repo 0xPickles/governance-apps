@@ -1,9 +1,12 @@
 # DAO disposable fork UAT
 
+The current manual entry point is [built local validation](local-validation.md) on `agent/integration`.
+This lower-level development-server procedure remains a regression reference. Its multi-terminal setup is not required for the walkthrough.
+
 For isolated setup and file-based D1 initialization, first read [local development](local-development.md).
 Do not run this harness against retained acceptance state.
 
-Run these commands from the `codex/dao/m5/pinata` package worktree.
+Run these regression commands from an isolated export of `agent/integration`.
 The setup uses deployed mainnet contracts on a disposable local Anvil node.
 It funds throwaway wallets, substitutes a constant weight measure, and assigns local operator and guardian roles.
 Voting, Voter, Executor, blacklist and the reward hook remain deployed contracts.
