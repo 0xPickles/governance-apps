@@ -30,6 +30,7 @@
     "dao:fork": "node scripts/dao-start-fork.mjs",
     "dao:scenario": "node scripts/dao-fork.mjs",
     "dao:local": "node scripts/dao-local-app.mjs",
+    "dao:validate": "node scripts/dao-validation.mjs",
     "test:e2e:dao-live": "E2E_PORT=3310 E2E_WEB_SERVER_COMMAND=\"node scripts/dao-local-app.mjs\" playwright test --project=dao-live --workers=1",
     "test:e2e:dao-live-feed": "DAO_UAT_LIVE_FEED=true E2E_PORT=3310 E2E_WEB_SERVER_COMMAND=\"node scripts/dao-local-app.mjs\" playwright test --project=dao-live-feed --workers=1"
   },

@@ -144,10 +144,11 @@ export async function scenario(command, args = []) {
   }
   if (command === "mine") { await rpc("evm_mine"); return { timestamp: Number((await client.getBlock()).timestamp) }; }
   if (command === "phase") {
+    assert.ok(["vote", "execute", "expire"].includes(args[0]), "Choose vote, execute or expire.");
     const p = await read("proposals", [BigInt(args[1] ?? 0)]);
     assert.notEqual(p.proposer, "0x0000000000000000000000000000000000000000");
     const timestamp = state.deployment.genesis + Number(p.epoch) * 1209600 +
-      (args[0] === "vote" ? Number(await read("vote_start")) : args[0] === "execute" ? 1209600 + Number(await read("execute_delay")) : 0) + 10;
+      (args[0] === "vote" ? Number(await read("vote_start")) : args[0] === "execute" ? 1209600 + Number(await read("execute_delay")) : 2 * 1209600) + 10;
     assert.ok(timestamp > Number((await client.getBlock()).timestamp), "Phase time must move forward.");
     await rpc("evm_setNextBlockTimestamp", [timestamp]); await rpc("evm_mine");
     return { timestamp }; // Refreshing saved JSON is a separate, explicit command.

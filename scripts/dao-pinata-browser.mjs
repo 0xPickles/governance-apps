@@ -6,8 +6,12 @@ import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 
-export function installForkWallet({ account, rpc }) {
+export function installForkWallet({ account, rpc, identity = undefined }) {
   if (location.origin !== "http://127.0.0.1:3310") return;
+  const endpoint = new URL(rpc);
+  if (endpoint.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(endpoint.hostname) || endpoint.origin !== rpc) throw new Error("Only an exact loopback RPC is supported.");
+  const control = { account, rejectNext: false, hashes: [], changeAccount(value) { account = value; emit("accountsChanged", connected ? [account] : []); } };
+  window.daoLocalWalletControl = control;
   const listeners = new Map();
   let connected = localStorage.getItem("dao-test-connected") === "true";
   const emit = (event, value) => listeners.get(event)?.forEach(fn => fn(value));
@@ -27,11 +31,23 @@ export function installForkWallet({ account, rpc }) {
         return null;
       }
       if (method === "wallet_getCapabilities") return {};
-      if (!method.startsWith("eth_") || /sign/i.test(method)) throw new Error("Unsupported fork wallet request.");
+      if (!method.startsWith("eth_") || /sign/i.test(method) || method === "eth_sendRawTransaction") throw new Error("Unsupported fork wallet request.");
+      if (method === "eth_sendTransaction") {
+        if (control.rejectNext) { control.rejectNext = false; throw Object.assign(new Error("User rejected the request."), { code: 4001 }); }
+        if (params?.[0]?.from?.toLowerCase() !== account.toLowerCase()) throw new Error("Only the selected throwaway wallet can transact.");
+        const call = async (method, params = []) => {
+          const response = await fetch(rpc, { method: "POST", headers: { "content-type": "application/json" },
+            body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(5000) });
+          const body = await response.json(); if (body.error) throw new Error("Fork identity unavailable."); return body.result;
+        };
+        if (!/anvil/i.test(await call("web3_clientVersion")) || await call("eth_chainId") !== "0x1") throw new Error("Only Anvil chain 1 is supported.");
+        if (identity && (await call("eth_getBlockByNumber", [identity.number, false]))?.hash !== identity.hash) throw new Error("Selected fork identity changed.");
+      }
       const response = await fetch(rpc, { method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params: params ?? [] }) });
       const result = await response.json();
       if (result.error) throw Object.assign(new Error(result.error.message), { code: result.error.code });
+      if (method === "eth_sendTransaction") control.hashes.push(result.result);
       return result.result;
     },
   };

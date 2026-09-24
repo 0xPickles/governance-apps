@@ -53,7 +53,9 @@ describe("manual fork wallet", () => {
   });
   it("makes no automatic request and forwards operator transactions only to the local RPC", async () => {
     const browserWindow: { ethereum?: { request: (request: { method: string; params?: unknown[] }) => Promise<unknown> } } = {};
-    const fetch = vi.fn(async () => ({ json: async () => ({ result: "0xreceipt" }) }));
+    const fetch = vi.fn(async (_url: string, init: RequestInit) => ({ json: async () => ({ result:
+      JSON.parse(String(init.body)).method === "web3_clientVersion" ? "anvil/v1" :
+      JSON.parse(String(init.body)).method === "eth_chainId" ? "0x1" : "0xreceipt" }) }));
     vi.stubGlobal("window", browserWindow);
     vi.stubGlobal("location", { origin: "http://127.0.0.1:3310" });
     vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn() });
@@ -67,7 +69,8 @@ describe("manual fork wallet", () => {
       await expect(wallet.request({ method: "personal_sign" })).rejects.toThrow("Unsupported");
       await expect(wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xa" }] })).rejects.toThrow("Only the disposable");
       await wallet.request({ method: "eth_sendTransaction", params: [{ from: "0xlocal" }] });
-      expect(fetch).toHaveBeenCalledExactlyOnceWith("http://127.0.0.1:18545", expect.objectContaining({ method: "POST" }));
+      expect(fetch).toHaveBeenCalledTimes(3);
+      expect(fetch.mock.calls.every(([url]) => url === "http://127.0.0.1:18545")).toBe(true);
     } finally { vi.unstubAllGlobals(); }
   });
 
