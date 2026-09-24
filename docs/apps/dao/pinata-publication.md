@@ -1,6 +1,8 @@
 # DAO publication operations
 
-Publication is implemented but disabled by default. Implementation and acknowledgement correction review are approved; live release acceptance remains pending.
+Publication is implemented and disabled by default. Publication acceptance completed on 23 September 2026.
+See the [accepted result](publication-acceptance-20260923.md) and [release checklist](release-checklist.md).
+Independent approval of the closeout corrections and production configuration remain release requirements.
 The author needs no provider account, upload key, document grant, or publication signature.
 An eligible author publishes reviewed content, then separately authorizes the governance transaction.
 
@@ -23,7 +25,8 @@ Import checks exact canonical bytes, the connected author, the forum topic, and 
 It preserves the snapshot timestamp and creates an unpublished review, even when those bytes were previously published.
 The normal server flow must establish publication status. Do not edit browser-storage JSON to manufacture acknowledgement.
 
-See the [recovery checklist](pinata-recovery.md) for original B, durable session checkpoints, and the separate bounded follow-up.
+For application transaction recovery, see [live services](live-services.md#transactions-and-recovery).
+The completed B experiment is historical evidence, not a production recovery procedure.
 
 ## Configuration
 
@@ -125,7 +128,7 @@ Before reusing a ledger written by the pre-correction build, inspect rows with `
 The corrected app rejects these rows for deduplication and retained-content recovery.
 If any exist, keep publication disabled and preserve the complete ledger for operator reconciliation.
 Do not invent an acknowledgement, delete rows, or reset spent counters.
-No remote ledger was used during implementation; the local acceptance session starts with its own preserved ledger.
+No remote ledger was used during implementation. The completed local acceptance used its own preserved ledger.
 
 The existing editor, template, preview, draft storage, and browser recovery remain.
 Real proposer eligibility, simulation, transaction signatures, receipt identity, ID zero, replacement handling, cancellation, and indexing recovery remain.
@@ -142,7 +145,7 @@ These commands are operator release steps. They were not run remotely during imp
 5. Privately create a fresh Pinata JWT with only `pinning.pinFileToIPFS`.
 6. Store it through the interactive secret prompt: `npx wrangler secret put DAO_PINATA_JWT --config wrangler.jsonc`.
 7. Configure the public gateway and reviewed limits.
-8. Complete [operator acceptance](pinata-acceptance.md) before public publication.
+8. Check the [accepted publication record](publication-acceptance-20260923.md) and complete the environment checks in the [release checklist](release-checklist.md).
 9. Enable publication only after separate rollout authorization.
 
 For preproduction, use `wrangler.preprod.jsonc` and its separate database.

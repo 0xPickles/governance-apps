@@ -1,5 +1,10 @@
 # Unpublished review recovery and private follow-up
 
+> Historical procedure/task. Publication acceptance completed on September 23 in a separate follow-up.
+> Use [current acceptance](publication-acceptance-20260923.md), [operations](pinata-publication.md), and [local setup](local-development.md).
+> Dates, pending statements, paths, and commands below describe the earlier session; they are not current release instructions.
+
+
 The 17 September acceptance run is **interrupted and incomplete**. Do not resume its missing temporary directory.
 The original D1, request ledger, scenario metadata, and producer configuration are unavailable.
 The separate recovery packet preserves exact documents and historical observations, not publication authority.
@@ -61,29 +66,10 @@ set -gx DAO_ACCEPTANCE_DB "$DAO_ACCEPTANCE_DIR/d1/d1/miniflare-D1DatabaseObject/
 umask 077
 ```
 
-**Checks — initialize once, only for this explicitly new follow-up.** If the directory exists, use the resume checks instead.
-
-```fish
-test ! -e "$DAO_ACCEPTANCE_DIR"; or exit 1
-mkdir "$DAO_ACCEPTANCE_DIR"; or exit 1
-mkdir "$DAO_ACCEPTANCE_DIR/documents" "$DAO_ACCEPTANCE_DIR/evidence" "$DAO_FORK_DIR" "$DAO_ACCEPTANCE_DIR/checkpoints"
-cp "$DAO_RECOVERY_PACKET/documents/B.json" "$DAO_ACCEPTANCE_DIR/documents/B.json"
-node --input-type=module -e '
-import {writeFile,readFile} from "node:fs/promises";
-import {getPlatformProxy} from "wrangler";
-const dir=process.env.DAO_ACCEPTANCE_DIR;
-await writeFile(dir+"/acceptance-ledger.json",JSON.stringify({version:1,requests:0,events:[]})+"\n",{flag:"wx",mode:0o600});
-await writeFile(dir+"/evidence/session-kind.txt","Separate bounded follow-up. Original acceptance accounting is missing.\n",{flag:"wx"});
-const p=await getPlatformProxy({configPath:"wrangler.jsonc",persist:{path:dir+"/d1"}});
-try { const sql=await readFile("migrations/dao-publication/0001_publications.sql","utf8");
-await p.env.DAO_PUBLICATION_DB.batch(sql.split(";").filter(s=>s.trim()).map(s=>p.env.DAO_PUBLICATION_DB.prepare(s)));
-} finally {await p.dispose();}
-'
-```
-
-If initialization fails, preserve that directory and diagnose it. Do not rerun initialization over existing files.
-The database path uses `getPlatformProxy` persistence directly. It has no extra `v3` segment.
-Never substitute the repository's unrelated `.wrangler` database.
+**Historical setup correction.** The inline initializer originally printed here stalled in Miniflare's worker path.
+The file-based repair completed on September 23. The completed database must not be initialized again.
+Use the reusable [fresh/resume initializer](local-development.md#file-based-local-d1-initialization) only for separate local development.
+The original command remains available at `6f78a0840feafdb26e8256e7212529156beb6c72:docs/apps/dao/pinata-recovery.md`.
 
 **Fork — start a separate local child fork on 18547.** Keep the original Anvil and old Browser alive.
 First check ports with `lsof -nP -iTCP:18545 -iTCP:18547 -iTCP:18546 -iTCP:3310 -sTCP:LISTEN`.

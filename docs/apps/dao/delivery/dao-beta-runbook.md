@@ -1,5 +1,8 @@
 # DAO feed V2 local review and later rollout runbook
 
+> Historical V2 consumer review runbook. Use [local development](../local-development.md) and the [release checklist](../release-checklist.md) for current setup and operation. The host and fail-closed requirements below remain applicable.
+
+
 This reset performs no deployment, feed publication or infrastructure change.
 Existing production DAO flags remain off. Production runtime no longer permits
 the former mock-beta exception; an enabled production review build uses only V2.

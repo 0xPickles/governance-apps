@@ -5,29 +5,21 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current work (2026-09-17)
+## Current work (2026-09-24)
 
-- The [publication acknowledgement correction](evidence/m5-pinata-review/README.md) addresses the review P2 after `6886f447da52006f9659b91a5129572b944a92e5`.
-  Unacknowledged uploads retry within their existing allowance; gateway availability alone cannot complete publication.
-  The user approved this correction on 2026-09-17. The prepared operator acceptance session remains next.
-- The [validation closure](evidence/m5-pinata-validation/README.md) records 1,397 passing tests across all 153 files and 50 passing affected-file tests.
-  Typecheck and lint also passed. Application code, tests, assertions, and timeout settings are unchanged.
-  The earlier failures remain in the historical correction evidence.
-- The user authorized the [Pinata publication implementation](pinata-publication-task.md) after the live provider run.
-- [The decision](../experiments/pinata-free/decision.md) selects server-side legacy upload and public bounded admission.
-- [The live review](../experiments/pinata-free/live-review-2026-09-16.md) records exact-content compatibility, producer retrieval, limitations and completed cleanup.
-- Worktree: `governance-apps.dao.m5.pinata`; branch: `codex/dao/m5/pinata`.
-- Application base: `fc81ae0502efe45ed84367062a57df16c6dab46c` from `agent/dao/m5/live`.
-- Server-side Pinata publication, durable D1 admission, retained bytes, and bounded recovery are implemented.
-- The implementation started at `e1bd671b87758c49311bb0d8c3e6d93fbeeca61c`. See [initial package validation](evidence/m5-pinata/README.md).
-- Initial package validation passed: typecheck, lint, 1,392 unit tests, 44 smoke tests with one expected skip, all 34 serial full tests,
-  seven fork tests, released-producer/app retrieval, production route checks, builds, and Worker size.
-- Production flags and remote infrastructure remain unchanged.
-- The inherited document grants and publication-only signature are removed. Governance transaction safeguards remain.
-- Small credential checks remain staging acceptance items. Live provider requests, deployment, and production transactions were not part of implementation.
-- The original spike is retained for audit. Its runner, private configuration and runtime ledger are not application dependencies.
-- Integration is still `28dd8fff2e7ff00961174635715be8d18ecd8d42`; M5 live is a dependency of this package, not an integrated baseline.
-- Integrate reviewed M5 live before or with the new publication package. Reconcile the 141/17 master divergence separately before rollout.
+- Publication acceptance completed on September 23. See the [checked record](../publication-acceptance-20260923.md).
+- Original B survived recovery unchanged, failed with revoked K1, then published with K2. Saved D1 shows two uploads and one retrieval.
+- The local proposal, released-producer output, application response, cleanup receipts, and operator rendering approval close the follow-up scope.
+- The interrupted September 17 run remains incomplete; its missing original accounting was not reconstructed.
+- Closeout fixes cover bounded preparation across newer blocks, accurate preparation errors, forum validation feedback, native browser viewport, and file-based local D1 setup.
+- [Closeout evidence](evidence/closeout-20260924/README.md) records validation of these changes. Earlier passing runs do not validate the new code.
+- Worktree: `governance-apps.dao.m5.pinata`; branch: `codex/dao/m5/pinata`; closeout review base: `6f78a0840feafdb26e8256e7212529156beb6c72`.
+- The package includes M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`. Integrating the package also integrates that dependency.
+- Independent closeout approval and the [production release inputs](../release-checklist.md) remain outstanding.
+- No merge, push, tag, deployment, or production transaction occurred during closeout. Production flags and infrastructure remain unchanged.
+- Integration remains `28dd8fff2e7ff00961174635715be8d18ecd8d42`. Local master is `06d9ec46458675e36d72b2165ff80189914efb03`.
+- Read-only comparison on September 24 shows 141 integration-only and 18 master-only commits. Reconcile this separately before rollout.
+- [Historical records](historical-index.md) retain significant failures, earlier review results, and the superseded preparation procedures.
 
 ## Inherited M5 implementation evidence (2026-09-11)
 

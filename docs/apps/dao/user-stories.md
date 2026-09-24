@@ -1,6 +1,7 @@
 # DAO Governance User Stories
 
-V2 reset: consumer reads are implemented for review. Production write/publication stories remain later gated packages; mock action flows remain available in preview. [Status](delivery/status.md) controls sequencing.
+Consumer reads, publication, and live write flows are implemented. [Publication acceptance](publication-acceptance-20260923.md) is complete.
+Production rollout remains gated; supported mock flows remain available in preview. [Status](delivery/status.md) controls remaining release work.
 
 ## Observers
 

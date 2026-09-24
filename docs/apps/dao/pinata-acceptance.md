@@ -1,5 +1,10 @@
 # Small Pinata release acceptance
 
+> Historical procedure/task. Publication acceptance completed on September 23 in a separate follow-up.
+> Use [current acceptance](publication-acceptance-20260923.md), [operations](pinata-publication.md), and [local setup](local-development.md).
+> Dates, pending statements, paths, and commands below describe the earlier session; they are not current release instructions.
+
+
 > Current status: the original A/C/B run is interrupted and incomplete. Its database and ledger are missing.
 > Preserve its historical observations. Use the [revised recovery checklist](pinata-recovery.md) for a separately authorized, bounded follow-up.
 > The original procedure below remains a reference. Its prior preparation status is historical.

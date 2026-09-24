@@ -1,0 +1,18 @@
+[
+  {
+    "mode": "default",
+    "innerWidth": 1280,
+    "innerHeight": 720,
+    "outerWidth": 820,
+    "outerHeight": 620,
+    "clientWidth": 1280
+  },
+  {
+    "mode": "native",
+    "innerWidth": 820,
+    "innerHeight": 533,
+    "outerWidth": 820,
+    "outerHeight": 620,
+    "clientWidth": 820
+  }
+]

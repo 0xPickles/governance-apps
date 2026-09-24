@@ -1,7 +1,8 @@
 # DAO delivery dependencies
 
 The [milestone plan](milestone-plan.md) is the single active delivery plan.
-The 2026-09-10 authorization supersedes older package sequencing and producer-start gates.
+The September 23 publication acceptance closes implementation and operator UAT in the graph below.
+Closeout approval, integration, separate release reconciliation, and rollout approval remain.
 Historical acceptance and evidence remain in [status](status.md).
 
 ```mermaid
@@ -14,6 +15,7 @@ flowchart TD
   Approval --> Rollout["WP18 gated rollout"]
 ```
 
-The implementation and UAT use one package. The [current review evidence](evidence/m5-live-review/README.md) and [local runbook](../local-fork-uat.md) record its delivered behavior and validation. A continuous producer and permanent fork infrastructure are unnecessary.
-Producer checkpoints are optional. Fixture refresh is not indexing proof, and fixture tests are not producer interoperability evidence.
+The implementation and UAT use one package. [Current closeout evidence](evidence/closeout-20260924/README.md) and the [local runbook](../local-fork-uat.md) record delivered behavior and validation.
+A continuous producer and permanent fork infrastructure are unnecessary. The required released-producer checkpoint passed in the [accepted follow-up](../publication-acceptance-20260923.md).
+Fixture refresh is not indexing proof, and fixture tests are not producer interoperability evidence.
 Production transaction and deployment authority remain separate from local fork authorization.

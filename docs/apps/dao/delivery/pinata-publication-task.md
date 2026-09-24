@@ -1,5 +1,10 @@
 # Implement DAO publication through Pinata
 
+> Historical procedure/task. Publication acceptance completed on September 23 in a separate follow-up.
+> Use [current acceptance](../publication-acceptance-20260923.md), [operations](../pinata-publication.md), and [local setup](../local-development.md).
+> Dates, pending statements, paths, and commands below describe the earlier session; they are not current release instructions.
+
+
 Implement this package to completion on `codex/dao/m5/pinata` in the prepared worktree `governance-apps.dao.m5.pinata`.
 The application base is `fc81ae0502efe45ed84367062a57df16c6dab46c` from `agent/dao/m5/live`.
 Documentation-only setup commits may follow that base. Record the actual implementation-start commit before editing application code.

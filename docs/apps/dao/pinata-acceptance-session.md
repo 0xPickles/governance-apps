@@ -1,5 +1,10 @@
 # Prepared Pinata session — 2026-09-17
 
+> Historical procedure/task. Publication acceptance completed on September 23 in a separate follow-up.
+> Use [current acceptance](publication-acceptance-20260923.md), [operations](pinata-publication.md), and [local setup](local-development.md).
+> Dates, pending statements, paths, and commands below describe the earlier session; they are not current release instructions.
+
+
 > Historical preparation record, superseded on 2026-09-23. The live run was interrupted and remains incomplete.
 > The temporary session files, original D1, request ledger, and scenario metadata are missing.
 > Exact A/B/C bytes were recovered, but acknowledgements and counters were not recovered.

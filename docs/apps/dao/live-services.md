@@ -13,8 +13,8 @@ Success also requires a recorded upload acknowledgement. A rejected or uncertain
 Acknowledged uploads retry gateway retrieval without reuploading.
 
 [Publication operations](pinata-publication.md) defines configuration, atomic budgets, retries, backup, key replacement, and rollback.
-[Operator acceptance](pinata-acceptance.md) defines the small release session. It remains unperformed.
-[Implementation evidence](delivery/evidence/m5-pinata/README.md) records current local validation.
+[Publication acceptance](publication-acceptance-20260923.md) records the completed 23 September follow-up.
+[Closeout validation](delivery/evidence/closeout-20260924/README.md) records the subsequent offline checks.
 [Publication review correction](delivery/evidence/m5-pinata-review/README.md) tracks the acknowledgement requirement and its regression results.
 Historical grant and Kubo evidence remains historical. Those settings are obsolete for production.
 
@@ -33,12 +33,18 @@ The app never posts to the forum. Provider credentials stay in deployment secret
 ## Transactions and recovery
 
 Domain clients read one canonical block, check current roles and commitments, and simulate the exact call.
-Preparation is single-use. A changed account, network, trusted configuration, input or canonical head requires another review.
+Preparation is single-use. A newer head can trigger at most two fresh preparations before wallet submission.
+Each preparation repeats the live reads and exact-call simulation at its own canonical block.
+This includes actual `Voting.execute`; an earlier execution simulation cannot authorize a later block.
+The original observed block must remain canonical and fresh throughout preparation.
+Changed eligibility, review facts, account, network, trusted configuration, or inputs require another review.
+Repeated advancement stops with a preparation message. No transaction was submitted in that case.
+Once the wallet send starts, this preparation never sends again, even if its result is uncertain.
 DAO simulation and receipt checks have no alternate-transport shortcut.
 Receipt confirmation verifies success, sender, exact transaction input and destination, zero value, chain and canonical block.
 Creation also decodes and validates the actual Propose event, including ID zero.
 
-Published review data and submitted creation or action hashes survive reloads in the same browser tab.
+Unpublished reviews, published review data, and submitted creation or action hashes survive reloads in the same browser tab.
 Wallet rejection and confirmed reverts retain the publication.
 A known hash is confirmed again; it is not submitted again while the feed lags.
 Only an exact proposal and Propose-log match completes indexing and retires that recovery record.

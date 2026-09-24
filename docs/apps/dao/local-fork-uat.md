@@ -1,5 +1,8 @@
 # DAO disposable fork UAT
 
+For isolated setup and file-based D1 initialization, first read [local development](local-development.md).
+Do not run this harness against retained acceptance state.
+
 Run these commands from the `codex/dao/m5/pinata` package worktree.
 The setup uses deployed mainnet contracts on a disposable local Anvil node.
 It funds throwaway wallets, substitutes a constant weight measure, and assigns local operator and guardian roles.
@@ -7,7 +10,7 @@ Voting, Voter, Executor, blacklist and the reward hook remain deployed contracts
 The helper also provides a marker that an executable proposal can set to 42.
 
 The generated deployment configuration is local test evidence. It is not an independently reviewed production allowlist.
-The configured upstream at `http://127.0.0.1:8546` was unavailable during this task.
+Historical M5 validation could not reach its configured upstream at `http://127.0.0.1:8546`.
 The successful fork used the public viem mainnet default, `https://ethereum.reth.rs/rpc`, for upstream reads.
 
 ## Start and test

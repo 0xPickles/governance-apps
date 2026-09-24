@@ -1,22 +1,20 @@
 # DAO Governance
 
-Current implementation task (2026-09-16): [public publication through Pinata](delivery/pinata-publication-task.md).
-The [provider decision](experiments/pinata-free/decision.md) closes the exploratory spike and selects a private server-side upload path.
-This package builds on M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
-The server-side Pinata path and durable public D1 admission are implemented.
-See [current evidence](delivery/evidence/m5-pinata/README.md), [operations](pinata-publication.md), and [operator acceptance](pinata-acceptance.md).
-The [publication review correction](delivery/evidence/m5-pinata-review/README.md) tracks acknowledgement enforcement and incremental validation.
-The user approved that correction on 2026-09-17. The [validation closure](delivery/evidence/m5-pinata-validation/README.md) records the complete passing rerun.
-No complete experiment rerun is required. Small credential checks move into release acceptance.
+Publication acceptance completed on 23 September 2026. Production exposure remains disabled pending release approval.
+The [acceptance record](publication-acceptance-20260923.md) separates checked artifacts, operator observations, and historical limitations.
+The [closeout evidence](delivery/evidence/closeout-20260924/README.md) covers subsequent corrections and offline validation.
 
-DAO Governance lets users read Yearn proposals, review immutable content and exact scripts, and use permitted governance actions as those flows pass their later release gates.
+| Purpose | Current entry point |
+| --- | --- |
+| Architecture, transaction checks, and recovery | [Live services](live-services.md) |
+| Publication configuration, budgets, backup, and rollback | [Publication operations](pinata-publication.md) |
+| Development, file-based D1 setup, and regression commands | [Local development](local-development.md) and [disposable fork UAT](local-fork-uat.md) |
+| Accepted validation and remaining release work | [Acceptance](publication-acceptance-20260923.md), [release checklist](release-checklist.md), and [delivery status](delivery/status.md) |
+| Dated plans, failed attempts, and evidence locations | [Historical index](delivery/historical-index.md) |
 
-The accepted mock product and reviewed V2 reads are integrated. The user reports that the reviewed producer is released and active at https://data.dao-ops.com/prod/dao.json.
-The combined live implementation follows the [single active milestone plan](delivery/milestone-plan.md). It covers publication, wallet transactions, disposable fork UAT, and review preparation.
-See [live services](live-services.md), the [local fork runbook](local-fork-uat.md), and [status](delivery/status.md) for configuration, inspected evidence and remaining inputs. Production rollout remains separately gated.
-
-The [review-fix tracker](delivery/evidence/m5-live-review/README.md) records publication controls, receipt recovery, draft retention and bounded cleanup.
-Independent re-review and operator configuration remain pending.
+The active package is `codex/dao/m5/pinata`, including inherited M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
+Independent approval of the closeout and a normal `--no-ff` integration merge remain required.
+Provider selection and live publication acceptance are closed. The completed A/C/B procedures are historical material.
 
 ## Canonical references
 
