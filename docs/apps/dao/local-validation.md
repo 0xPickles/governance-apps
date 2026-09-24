@@ -23,7 +23,9 @@ See the upstream [macOS instructions](https://github.com/wolfcw/libfaketime/blob
 
 The session stores its source SHA, dependency lock hash, clock-library hash, producer hash, upstream block, and fork checkpoint.
 It exports tracked source into its directory and shares the installed `node_modules` directory.
-Do not change dependencies during a session. Use a new session for a new source revision or dependency installation.
+Do not change dependencies during a session. Use a new session after a dependency installation.
+After committing source changes, `npm run dao:validate -- rebuild "$session"` retains the old source and builds a new export.
+Rebuild stops owned services first, preserves fork and D1 state, then resumes with the new source revision.
 Initialization requires a clean committed candidate and refuses existing directories.
 It never copies `.env` files, acceptance checkpoints, or private credentials.
 
@@ -168,7 +170,9 @@ Close the browser before reset so its saved receipts cannot cross branches. Refr
 
 Each refresh mines one confirmation block, then runs the hash-verified binary once in `local` mode.
 It reads only loopback RPC, retrieves content from the offline loopback gateway, and writes a new isolated state directory.
-The one-shot producer's wall clock stays fixed at the fork time plus two seconds. Its monotonic clock remains real.
+The producer clock starts at the fork time plus two seconds and advances normally. Its monotonic clock remains real.
+After acquisition, the wrapper advances Anvil to the producer observation time with another ordinary block.
+It rejects snapshots outside the application's 300-second freshness window and verifies the resulting clock alignment.
 The wrapper verifies the output time and canonical block before replacing the served file atomically.
 It never changes `observedAt`, block timestamps, or document bytes.
 The browser clock follows the greater of the actual fork timestamp and producer observation time.

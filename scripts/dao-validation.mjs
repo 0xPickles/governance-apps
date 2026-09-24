@@ -27,17 +27,22 @@ export async function session(directory) {
     // A disposable walkthrough can publish more than two documents. Accounting remains durable.
     DAO_PUBLICATION_LIMITS: JSON.stringify({ hourlyDocuments: 40, dailyDocuments: 40, monthlyDocuments: 40 }),
     PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH ?? join(process.env.HOME, "Library/Caches/ms-playwright") };
-  return { directory, manifest, env, source: join(directory, "source") };
+  return { directory, manifest, env, source: join(directory, manifest.sourceDirectory ?? "source") };
 }
 async function run(s, command, args, label, extra = {}, timeout = 120_000) {
   const fd = openSync(join(s.directory, "logs", label + ".log"), "a", 0o600);
   const child = spawn(command, args, { cwd: s.source, env: { ...s.env, ...extra }, stdio: ["ignore", fd, fd], detached: true });
   let timedOut = false;
-  const timer = setTimeout(() => { timedOut = true; process.kill(-child.pid, "SIGTERM"); }, timeout);
+  let force;
+  const signal = name => { try { process.kill(-child.pid, name); } catch (error) { if (error.code !== "ESRCH") throw error; } };
+  const timer = setTimeout(() => {
+    timedOut = true; signal("SIGTERM");
+    force = setTimeout(() => signal("SIGKILL"), 5000);
+  }, timeout);
   try {
     const code = await new Promise((done, reject) => { child.on("error", reject); child.on("exit", done); });
     assert.equal(code, 0, label + (timedOut ? " timed out" : " failed") + ". See logs/" + label + ".log");
-  } finally { clearTimeout(timer); closeSync(fd); }
+  } finally { clearTimeout(timer); clearTimeout(force); closeSync(fd); }
 }
 async function bounded(check, label, seconds = 60) {
   const deadline = Date.now() + seconds * 1000;
@@ -58,13 +63,18 @@ function processIdentity(pid) {
   catch { return null; }
 }
 async function launch(s, name, command, args) {
+  const path = join(s.directory, name + ".process.json");
+  if (await exists(path)) {
+    const previous = await read(path);
+    assert.ok(!processIdentity(previous.pid), "An owned " + name + " process already exists. Inspect status before starting another.");
+  }
   const fd = openSync(join(s.directory, "logs", name + ".log"), "a", 0o600);
   const child = spawn(command, args, { cwd: s.source, env: s.env, stdio: ["ignore", fd, fd], detached: true });
   await new Promise((done, reject) => { child.once("spawn", done); child.once("error", reject); });
   closeSync(fd); child.unref();
   const owner = { pid: child.pid, identity: processIdentity(child.pid) };
   assert.ok(owner.identity);
-  await save(join(s.directory, name + ".process.json"), owner);
+  await save(path, owner);
 }
 async function stopOwned(s, name) {
   const path = join(s.directory, name + ".process.json");
@@ -90,19 +100,28 @@ export async function refresh(s) {
   await forkRequest(rpc, "evm_mine");
   const head = await forkRequest(rpc, "eth_getBlockByNumber", ["latest", false]);
   const timestamp = Number(BigInt(head.timestamp));
-  // Freeze only this one-shot process's wall clock. A cold acquisition can take
-  // over a minute; elapsed acquisition time must not move it away from Anvil.
-  const producerTime = new Date((timestamp + 2) * 1000).toISOString().slice(0, 19).replace("T", " ");
+  const offset = timestamp + 2 - Math.floor(Date.now() / 1000);
   const directory = join(s.directory, "producer", String(Date.now()));
   await mkdir(directory, { recursive: true });
   await run(s, s.manifest.producer, ["local", join(s.directory, "producer-config.json"), join(directory, "state"), join(directory, "dao.json")], "producer", {
     DAO_RPC_TRANSPORT: "http", DAO_RPC_URL: rpc, DAO_CONTENT_GATEWAY: "http://127.0.0.1:18080/ipfs/",
     DYLD_INSERT_LIBRARIES: s.manifest.clockLibrary, DYLD_FORCE_FLAT_NAMESPACE: "1",
-    TZ: "UTC", FAKETIME: producerTime, FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
+    FAKETIME: (offset >= 0 ? "+" : "") + offset, FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
   }, 120_000);
   const bytes = await readFile(join(directory, "dao.json"));
   const feed = JSON.parse(bytes);
-  assert.ok(feed.observedAt >= feed.block.timestamp && Math.abs(feed.observedAt - timestamp) < 60, "Producer clock differs from fork.");
+  assert.ok(feed.observedAt >= feed.block.timestamp && feed.observedAt - feed.block.timestamp <= 300,
+    "Producer snapshot exceeds the application's freshness window.");
+  // The producer clock advances during acquisition. Advance the real local
+  // chain by those elapsed seconds, without changing any snapshot bytes.
+  await guarded(s);
+  const beforeAlignment = await forkRequest(rpc, "eth_getBlockByNumber", ["latest", false]);
+  if (feed.observedAt > Number(BigInt(beforeAlignment.timestamp))) {
+    await forkRequest(rpc, "evm_setNextBlockTimestamp", [feed.observedAt]);
+    await forkRequest(rpc, "evm_mine");
+  }
+  const aligned = await forkRequest(rpc, "eth_getBlockByNumber", ["latest", false]);
+  assert.ok(Math.abs(feed.observedAt - Number(BigInt(aligned.timestamp))) < 60, "Producer clock differs from fork.");
   const canonical = await forkRequest(rpc, "eth_getBlockByNumber", ["0x" + BigInt(feed.block.number).toString(16), false]);
   assert.equal(canonical.hash, feed.block.hash);
   await writeFile(join(s.directory, "fork/feed.next.json"), bytes);
@@ -120,6 +139,7 @@ async function start(s) {
     await launch(s, "anvil", "anvil", ["--host", "127.0.0.1", "--port", "18545", "--chain-id", "1", "--fork-url", s.manifest.upstream,
       "--fork-block-number", s.manifest.forkBlock, "--state", state, "--state-interval", "30", "--preserve-historical-states", "--silent"]);
     await bounded(() => verifyFork(rpc), "Anvil");
+    await verifyFork(rpc, { number: "0x" + BigInt(s.manifest.forkBlock).toString(16), hash: s.manifest.upstreamBlockHash });
     const containerExists = (() => { try { execFileSync("docker", ["inspect", s.manifest.container], { stdio: "ignore" }); return true; } catch { return false; } })();
     if (containerExists) { await checkContainer(s); await docker(s, ["start", s.manifest.container]); }
     else await docker(s, ["run", "--detach", "--name", s.manifest.container, "--label", "dao.validation=" + s.directory,
@@ -187,6 +207,22 @@ export async function main([command, argument, ...args]) {
   if (command === "init") return init(directory);
   const s = await session(directory);
   if (command === "start") return start(s);
+  if (command === "rebuild") {
+    assert.equal(execFileSync("git", ["status", "--porcelain"], { cwd: root, encoding: "utf8" }).trim(), "", "Commit the candidate before rebuilding.");
+    const revision = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+    assert.notEqual(revision, s.manifest.revision, "This source revision is already prepared. Use start.");
+    await stop(s);
+    const sourceDirectory = "source-" + revision;
+    await mkdir(join(directory, sourceDirectory));
+    const archive = join(directory, sourceDirectory + ".tar");
+    execFileSync("git", ["archive", "--format=tar", "--output=" + archive, revision], { cwd: root });
+    execFileSync("tar", ["-xf", archive, "-C", join(directory, sourceDirectory)]);
+    await symlink(join(root, "node_modules"), join(directory, sourceDirectory, "node_modules"), "dir");
+    s.manifest.previousSources = [...(s.manifest.previousSources ?? []), { revision: s.manifest.revision, sourceDirectory: s.manifest.sourceDirectory ?? "source" }];
+    Object.assign(s.manifest, { revision, sourceDirectory, dependencyLockSha256: digest(await readFile(join(root, "package-lock.json"))) });
+    await save(join(directory, "session.json"), s.manifest);
+    return start(await session(directory));
+  }
   if (command === "stop") return stop(s);
   if (command === "refresh") return refresh(s);
   if (command === "browser") {

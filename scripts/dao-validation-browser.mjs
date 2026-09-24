@@ -42,15 +42,18 @@ export async function openValidationBrowser(directory, { headless = false, persi
     if (configured.has(page)) return;
     configured.add(page);
     page.on("download", async download => {
-      await download.saveAs(join(directory, "documents", Date.now() + "-" + download.suggestedFilename()));
+      try { await download.saveAs(join(directory, "documents", Date.now() + "-" + download.suggestedFilename())); }
+      catch (error) { console.error("Download could not be retained: " + error.message); }
     });
     const block = await forkRequest(rpc, "eth_getBlockByNumber", ["latest", false]);
     await page.clock.setFixedTime(new Date(Number(BigInt(block.timestamp)) * 1000));
   };
   context.on("page", page => void configure(page));
   const page = context.pages()[0] ?? await context.newPage();
-  await configure(page);
-  await page.goto("http://127.0.0.1:3310/dao", { timeout: 30_000 });
+  try {
+    await configure(page);
+    await page.goto("http://127.0.0.1:3310/dao", { timeout: 30_000 });
+  } catch (error) { await context.close(); await browser?.close(); throw error; }
   let polling = false;
   const timer = setInterval(async () => {
     if (polling) return; polling = true;
