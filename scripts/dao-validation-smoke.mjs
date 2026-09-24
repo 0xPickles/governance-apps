@@ -6,12 +6,13 @@ import { expect } from "@playwright/test";
 import { createPublicClient, http, parseAbi, decodeEventLog, keccak256, sha256 } from "viem";
 import { openValidationBrowser } from "./dao-validation-browser.mjs";
 import { refresh } from "./dao-validation.mjs";
+import { validationOrigin } from "./dao-local-validation-config.mjs";
 
 const directory = resolve(process.argv[2]);
 const { s, page, close } = await openValidationBrowser(directory, { headless: true, persistent: false });
 try {
   const state = JSON.parse(await readFile(join(directory, "fork/state.json"), "utf8"));
-  await page.goto("http://127.0.0.1:3310/dao/propose");
+  await page.goto(validationOrigin + "/dao/propose");
   await page.getByRole("button", { name: /^Connect wallet$/i }).first().click();
   await page.getByRole("button", { name: "Browser Wallet", exact: true }).first().click();
   await page.getByRole("button", { name: "Start proposal", exact: true }).click();
@@ -49,11 +50,11 @@ try {
   assert.equal(proposal.scriptBytes, state.script);
   assert.deepEqual(Buffer.from(proposal.contentBytes, "base64"), bytes);
   assert.ok(proposal.events.some(e => e.type === "propose" && e.log.transactionHash === hash && e.log.blockHash === receipt.blockHash && e.log.logIndex === log.logIndex));
-  const route = "http://127.0.0.1:3310/dao/proposals/" + proposal.id + "?chain=1&voting=" + proposal.votingAddress;
+  const route = validationOrigin + "/dao/proposals/" + proposal.id + "?chain=1&voting=" + proposal.votingAddress;
   await page.clock.setFixedTime(new Date(feed.observedAt * 1000));
   await page.goto(route);
   await expect(page.getByRole("heading", { name: "Built application checkpoint", exact: true })).toBeVisible();
-  const served = await (await page.request.get("http://127.0.0.1:3310/api/dao-data")).body();
+  const served = await (await page.request.get(validationOrigin + "/api/dao-data")).body();
   assert.deepEqual(JSON.parse(served), feed);
   await page.screenshot({ path: join(directory, "producer-render-desktop.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });

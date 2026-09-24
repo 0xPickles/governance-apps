@@ -4,6 +4,9 @@ import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 
 export const producerSha256 = "61c51b8528cb249b8290b0bc1fe9acc9f9514be7a5991d8af22fd61fedc8ff5c";
+// Next normalizes local request URLs to localhost. Matching that origin keeps
+// the production same-origin check intact even with NODE_ENV=production.
+export const validationOrigin = "http://localhost:3310";
 export const producerBinary = "/Users/hydra/Developer/dao-operations/gov-apps-stats.agent.integration/target/release/gov-apps-dao";
 export const digest = bytes => createHash("sha256").update(bytes).digest("hex");
 export function loopbackOrigin(value) {

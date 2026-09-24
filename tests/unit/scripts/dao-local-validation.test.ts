@@ -47,4 +47,16 @@ describe("isolated built validation", () => {
     await expect(window.ethereum!.request({ method: "eth_sendTransaction", params: [{ from: "0xlocal" }] })).rejects.toThrow("Only Anvil");
     expect(fetch).toHaveBeenCalledOnce();
   });
+  it("confines a built-session wallet to its explicitly selected localhost origin", () => {
+    const window = {};
+    vi.stubGlobal("window", window);
+    vi.stubGlobal("localStorage", { getItem: () => null });
+    vi.stubGlobal("location", { origin: "http://127.0.0.1:3310" });
+    const configuration = { account: "0xlocal", rpc: "http://127.0.0.1:18545", origin: "http://localhost:3310" };
+    installForkWallet(configuration);
+    expect(window).not.toHaveProperty("ethereum");
+    vi.stubGlobal("location", { origin: configuration.origin });
+    installForkWallet(configuration);
+    expect(window).toHaveProperty("ethereum");
+  });
 });

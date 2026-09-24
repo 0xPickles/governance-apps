@@ -6,8 +6,8 @@ import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 
-export function installForkWallet({ account, rpc, identity = undefined }) {
-  if (location.origin !== "http://127.0.0.1:3310") return;
+export function installForkWallet({ account, rpc, identity = undefined, origin = "http://127.0.0.1:3310" }) {
+  if (!["http://127.0.0.1:3310", "http://localhost:3310"].includes(origin) || location.origin !== origin) return;
   const endpoint = new URL(rpc);
   if (endpoint.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(endpoint.hostname) || endpoint.origin !== rpc) throw new Error("Only an exact loopback RPC is supported.");
   const control = { account, rejectNext: false, hashes: [], changeAccount(value) { account = value; emit("accountsChanged", connected ? [account] : []); } };

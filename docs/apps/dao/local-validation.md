@@ -75,7 +75,8 @@ npm run dao:validate -- browser "$session"
 
 For the prepared session, omit `init`. The delivery record identifies its retained directory and source revision.
 Open the browser with the session command. Connect **Browser Wallet** in the app.
-The injected wallet exists only at `http://127.0.0.1:3310` and sends requests only to the selected loopback Anvil.
+The session wallet exists only at `http://localhost:3310` and sends requests only to the selected loopback Anvil.
+This canonical local origin matches Next's request normalization. The production publication origin guard remains unchanged.
 Every transaction checks Anvil identity, chain ID, selected checkpoint, and the throwaway sender.
 No real key import is required. Local transactions execute immediately.
 

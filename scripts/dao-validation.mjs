@@ -6,7 +6,7 @@ import { openSync, closeSync } from "node:fs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:net";
-import { cleanEnvironment, digest, producerBinary, producerSha256, verifyProducer, verifyFork, forkRequest } from "./dao-local-validation-config.mjs";
+import { cleanEnvironment, digest, producerBinary, producerSha256, verifyProducer, verifyFork, forkRequest, validationOrigin } from "./dao-local-validation-config.mjs";
 
 const rpc = "http://127.0.0.1:18545";
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -185,7 +185,7 @@ async function start(s) {
       const response = await fetch("http://127.0.0.1:3310/api/dao-data", { signal: AbortSignal.timeout(3000) });
       assert.ok(response.ok); assert.equal((await response.json()).schema, "yearn.dao.feed.v2");
     }, "Built app", 90);
-    console.log("Ready: http://127.0.0.1:3310/dao — use the session browser for its fork wallet and clock.");
+    console.log("Ready: " + validationOrigin + "/dao — use the session browser for its fork wallet and clock.");
   } catch (error) { await stop(s); throw error; }
 }
 async function stop(s) {

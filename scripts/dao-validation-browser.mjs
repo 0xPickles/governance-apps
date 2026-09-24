@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { installForkWallet } from "./dao-pinata-browser.mjs";
 import { session } from "./dao-validation.mjs";
-import { verifyFork, forkRequest } from "./dao-local-validation-config.mjs";
+import { verifyFork, forkRequest, validationOrigin } from "./dao-local-validation-config.mjs";
 
 export async function openValidationBrowser(directory, { headless = false, persistent = true } = {}) {
   const s = await session(directory);
@@ -19,9 +19,9 @@ export async function openValidationBrowser(directory, { headless = false, persi
   const browser = persistent ? null : await chromium.launch({ headless });
   const context = persistent ? await chromium.launchPersistentContext(join(directory, "browser-profile"), { headless, viewport: null, acceptDownloads: true }) :
     await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
-  await context.addInitScript(installForkWallet, { account: state.accounts[control.account], rpc, identity: s.manifest.identity });
+  await context.addInitScript(installForkWallet, { account: state.accounts[control.account], rpc, identity: s.manifest.identity, origin: validationOrigin });
   let current = control;
-  await context.route("http://127.0.0.1:3310/api/dao-data", async route => {
+  await context.route(validationOrigin + "/api/dao-data", async route => {
     if (current.feed === "producer") return route.continue();
     if (current.feed === "unavailable") return route.fulfill({ status: 503, body: "Local display fixture: unavailable feed" });
     const feed = JSON.parse(await readFile(join(directory, "fork/feed.json"), "utf8"));
@@ -54,7 +54,7 @@ export async function openValidationBrowser(directory, { headless = false, persi
   const page = context.pages()[0] ?? await context.newPage();
   try {
     await configure(page);
-    await page.goto("http://127.0.0.1:3310/dao", { timeout: 30_000 });
+    await page.goto(validationOrigin + "/dao", { timeout: 30_000 });
   } catch (error) { await context.close(); await browser?.close(); throw error; }
   let polling = false;
   const timer = setInterval(async () => {
@@ -66,7 +66,7 @@ export async function openValidationBrowser(directory, { headless = false, persi
       const feed = JSON.parse(await readFile(join(directory, "fork/feed.json"), "utf8"));
       const clock = Math.max(Number(BigInt(block.timestamp)), feed.observedAt) + (current.clock === "stale" ? 3600 : 0);
       for (const page of context.pages()) {
-        if (new URL(page.url()).origin !== "http://127.0.0.1:3310") continue;
+        if (new URL(page.url()).origin !== validationOrigin) continue;
         await page.clock.setFixedTime(new Date(clock * 1000));
         if (viewports.get(page) !== current.viewport) {
           if (current.viewport === "mobile") await page.setViewportSize({ width: 390, height: 844 });
