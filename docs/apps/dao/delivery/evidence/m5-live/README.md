@@ -39,9 +39,9 @@ See [live service configuration](../../../live-services.md) and the [local runbo
 | --- | --- | --- |
 | [Direct live feed](live-empty-direct.json) | Live endpoint returned one deployment and zero proposals at block 25947670 | Endpoint availability only |
 | [Live feed through the app](live-empty-app.json) | Real app proxy and empty board passed; no wallet RPC requests; block 25947944 | Local reviewed-test candidate configuration; no production identity approval |
-| [Released producer creation](producer-created.json) | Existing binary acquired one proposal and one Propose event from the local fork | Content retrieval was disabled; content is null |
+| [Released producer creation](../../../../../../tests/fixtures/dao-live-evidence/producer-created.json) | Existing binary acquired one proposal and one Propose event from the local fork | Content retrieval was disabled; content is null |
 | [Producer logs](producer-created.log) | Empty and creation checkpoints both succeeded | No later lifecycle, producer reorg or producer restart checkpoint was run |
-| [Fork execution fixture](fork-execution.json) | Saved JSON built from canonical receipts and current contract reads; proposal zero executed | Scenario output, not producer output |
+| [Fork execution fixture](../../../../../../tests/fixtures/dao-live-evidence/fork-execution.json) | Saved JSON built from canonical receipts and current contract reads; proposal zero executed | Scenario output, not producer output |
 | [Local retention](local-retention.json) | Exact 382-byte raw block and recursive pin survived a Kubo restart | No external provider or retention SLA tested |
 | [Production screenshots](screenshots/detail-390x844.png) | Compiled application rendered saved feed data across four viewport sizes | Saved-fixture UI evidence |
 | [Fork screenshot](screenshots/fork-awaiting-execution-index.png) | Actual execution receipt confirmed while the displayed feed still awaited indexing | The older displayed status is intentional feed-lag evidence |
@@ -61,7 +61,7 @@ Voting, Voter, Executor, blacklist and the proposal hook came from the deployed 
 Disposable setup replaced the weight measure and assigned local roles to throwaway wallets.
 The helper also supplied an execution marker, which changed from zero to 42 after successful UI execution.
 
-The [local deployment configuration](local-deployments.json) records test candidates.
+The [local deployment configuration](../../../../../../tests/fixtures/dao-live-evidence/local-deployments.json) records test candidates.
 The [temporary producer configuration](local-producer-config.json) records observed code hashes and deployment identity fields.
 Neither is an independently reviewed production allowlist.
 The pinned and producer-vendored Voting, Voter and Executor sources were compared and matched.

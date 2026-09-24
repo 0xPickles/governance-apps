@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import fork from "@/docs/apps/dao/delivery/evidence/m5-live/fork-execution.json";
-import producer from "@/docs/apps/dao/delivery/evidence/m5-live/producer-created.json";
-import deployment from "@/docs/apps/dao/delivery/evidence/m5-live/local-deployments.json";
+import fork from "@/tests/fixtures/dao-live-evidence/fork-execution.json";
+import producer from "@/tests/fixtures/dao-live-evidence/producer-created.json";
+import deployment from "@/tests/fixtures/dao-live-evidence/local-deployments.json";
 import { parseDaoFeed } from "@/lib/schemas/dao-feed";
 import { parseDaoDeployments } from "@/lib/clients/dao/deployment";
 import { adaptDaoFeed } from "@/lib/clients/dao/feed-adapter";
