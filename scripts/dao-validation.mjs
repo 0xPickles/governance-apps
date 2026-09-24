@@ -103,7 +103,18 @@ export async function refresh(s) {
   const offset = timestamp + 2 - Math.floor(Date.now() / 1000);
   const directory = join(s.directory, "producer", String(Date.now()));
   await mkdir(directory, { recursive: true });
-  await run(s, s.manifest.producer, ["local", join(s.directory, "producer-config.json"), join(directory, "state"), join(directory, "dao.json")], "producer", {
+  let statePath = join(directory, "state");
+  const previousPath = join(s.directory, "snapshot.json");
+  if (await exists(previousPath)) {
+    const previous = await read(previousPath);
+    const previousBlock = await forkRequest(rpc, "eth_getBlockByNumber", ["0x" + BigInt(previous.block.number).toString(16), false]);
+    // Reuse released-producer history only on the same canonical branch and
+    // a forward clock. Replaced branches retain their old state directories.
+    if (previousBlock?.hash === previous.block.hash && timestamp >= previous.observedAt) {
+      statePath = previous.statePath ?? join(dirname(previous.output), "state");
+    }
+  }
+  await run(s, s.manifest.producer, ["local", join(s.directory, "producer-config.json"), statePath, join(directory, "dao.json")], "producer", {
     DAO_RPC_TRANSPORT: "http", DAO_RPC_URL: rpc, DAO_CONTENT_GATEWAY: "http://127.0.0.1:18080/ipfs/",
     DYLD_INSERT_LIBRARIES: s.manifest.clockLibrary, DYLD_FORCE_FLAT_NAMESPACE: "1",
     FAKETIME: (offset >= 0 ? "+" : "") + offset, FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
@@ -126,7 +137,7 @@ export async function refresh(s) {
   assert.equal(canonical.hash, feed.block.hash);
   await writeFile(join(s.directory, "fork/feed.next.json"), bytes);
   await rename(join(s.directory, "fork/feed.next.json"), join(s.directory, "fork/feed.json"));
-  await save(join(s.directory, "snapshot.json"), { output: join(directory, "dao.json"), sha256: digest(bytes), observedAt: feed.observedAt,
+  await save(join(s.directory, "snapshot.json"), { output: join(directory, "dao.json"), statePath, sha256: digest(bytes), observedAt: feed.observedAt,
     block: feed.block, proposals: feed.proposals.length, source: s.manifest.revision, configuration: "optimized-local-development" });
   console.log("Producer snapshot: " + feed.proposals.length + " proposals, block " + feed.block.number);
   return feed;
@@ -140,6 +151,17 @@ async function start(s) {
       "--fork-block-number", s.manifest.forkBlock, "--state", state, "--state-interval", "30", "--preserve-historical-states", "--silent"]);
     await bounded(() => verifyFork(rpc), "Anvil");
     await verifyFork(rpc, { number: "0x" + BigInt(s.manifest.forkBlock).toString(16), hash: s.manifest.upstreamBlockHash });
+    // Anvil can restore the tip with a timestamp older than its parent. Mine
+    // two explicit monotonic blocks so the producer's confirmed snapshot is
+    // after both retained headers. Never patch the producer's observations.
+    const tip = await forkRequest(rpc, "eth_getBlockByNumber", ["latest", false]);
+    const parent = await forkRequest(rpc, "eth_getBlockByNumber", ["0x" + (BigInt(tip.number) - 1n).toString(16), false]);
+    const previousSnapshot = await exists(join(s.directory, "snapshot.json")) ? await read(join(s.directory, "snapshot.json")) : null;
+    const resumeTime = Math.max(Number(BigInt(tip.timestamp)), Number(BigInt(parent.timestamp)), previousSnapshot?.observedAt ?? 0);
+    for (const timestamp of [resumeTime + 1, resumeTime + 2]) {
+      await forkRequest(rpc, "evm_setNextBlockTimestamp", [timestamp]);
+      await forkRequest(rpc, "evm_mine");
+    }
     const containerExists = (() => { try { execFileSync("docker", ["inspect", s.manifest.container], { stdio: "ignore" }); return true; } catch { return false; } })();
     if (containerExists) { await checkContainer(s); await docker(s, ["start", s.manifest.container]); }
     else await docker(s, ["run", "--detach", "--name", s.manifest.container, "--label", "dao.validation=" + s.directory,

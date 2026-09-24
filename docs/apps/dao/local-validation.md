@@ -76,6 +76,8 @@ Startup bounds are 60 seconds for Anvil and Kubo, ten minutes for the first buil
 An acquisition has a 90-second producer budget and a 120-second process deadline.
 A failed startup stops owned services. Inspect `logs/` before retrying.
 Anvil saves state every 30 seconds and at clean shutdown, including historical states.
+Startup mines two explicit monotonic blocks after the retained tip, parent, and producer observation times.
+This handles Anvil's restored tip-clock behavior before a confirmed producer snapshot is acquired.
 In-memory reset and replacement checkpoints can disappear after an Anvil restart.
 If a checkpoint is lost, preserve this session and initialize a new directory. Do not restore unrelated acceptance state.
 
@@ -169,7 +171,9 @@ Close the browser before reset so its saved receipts cannot cross branches. Refr
 ## Clocks and producer evidence
 
 Each refresh mines one confirmation block, then runs the hash-verified binary once in `local` mode.
-It reads only loopback RPC, retrieves content from the offline loopback gateway, and writes a new isolated state directory.
+It reads only loopback RPC and retrieves content from the offline loopback gateway.
+It retains each output separately and reuses producer history while the previous snapshot remains canonical and the clock moves forward.
+After a branch replacement or backward reset, it starts another state directory and preserves the previous one.
 The producer clock starts at the fork time plus two seconds and advances normally. Its monotonic clock remains real.
 After acquisition, the wrapper advances Anvil to the producer observation time with another ordinary block.
 It rejects snapshots outside the application's 300-second freshness window and verifies the resulting clock alignment.
