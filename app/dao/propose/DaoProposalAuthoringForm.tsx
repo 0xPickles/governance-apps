@@ -85,7 +85,7 @@ type WalletState =
   | { state: "waiting" }
   | {
       state: "failed";
-      code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED" | "NETWORK_ERROR";
+      code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED" | "PREPARATION_CHANGED" | "NETWORK_ERROR";
       failedTransactionHash?: Hex;
       message: string;
     }
@@ -1263,6 +1263,8 @@ function DaoFinalReview({
                   title={
                     wallet.code === "PROPOSAL_REPLACED" ? daoProposeCopy.proposal.replacedTitle : wallet.code === "WALLET_REJECTED"
                       ? daoProposeCopy.proposal.rejectedTitle
+                      : wallet.code === "PREPARATION_CHANGED"
+                        ? daoProposeCopy.proposal.preparationChangedTitle
                       : wallet.code === "NETWORK_ERROR"
                         ? daoProposeCopy.proposal.networkErrorTitle
                         : daoProposeCopy.proposal.revertedTitle

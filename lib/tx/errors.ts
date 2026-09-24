@@ -24,6 +24,12 @@ export function normalizeTxError(raw: unknown): NormalizedError {
     maybeObj?.shortMessage || maybeObj?.message || String(raw)
   ).toLowerCase();
 
+  // A bounded pre-submission refresh is recoverable through review. Preserve its
+  // explanation even when it mentions the RPC; it is not a transport failure.
+  if (maybeObj?.name === "DaoPreparationChangedError") {
+    return { code: "unknown", message: maybeObj.message ?? "Review the DAO action again." };
+  }
+
   if (maybeObj?.name === "UserRejectedRequestError" || text.includes("rejected")) {
     return { code: "user_rejected", message: "Transaction cancelled." };
   }

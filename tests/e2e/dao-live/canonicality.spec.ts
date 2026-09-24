@@ -6,7 +6,7 @@ import { parseDaoFeed } from "@/lib/schemas/dao-feed";
 import { parseDaoDeployments } from "@/lib/clients/dao/deployment";
 import { prepareDaoLiveAction, type DaoWalletContext } from "@/lib/clients/dao/writes";
 
-test("invalidates real fork preparation after head advancement and canonical replacement", async () => {
+test("refreshes on fork advancement, rejects canonical replacement, and submits only once", async () => {
   const directory = process.env.DAO_FORK_DIR ?? "/tmp/governance-dao-uat";
   const url = process.env.DAO_FORK_RPC ?? "http://127.0.0.1:18545";
   const parsed = new URL(url);
@@ -29,9 +29,12 @@ test("invalidates real fork preparation after head advancement and canonical rep
   fork("propose", directory + "/canonical.json", "signal");
   const feed = parseDaoFeed(fork("fixture"));
   const deployments = parseDaoDeployments(await readFile(directory + "/deployments.json", "utf8"));
-  let sent = false;
+  let sent = 0;
   const context: DaoWalletContext = { rpc: { request }, walletChainId: 1, getWallet: async () => ({ address: account, chainId: 1 }),
-    send: async () => { sent = true; throw new Error("An invalidated preparation must not reach the wallet."); } };
+    send: async ({ from, to, data }) => {
+      sent++;
+      return await request({ method: "eth_sendTransaction", params: [{ from, to, data, gas: "0x2dc6c0" }] }) as `0x${string}`;
+    } };
   const ref = { chainId: 1, votingAddress: deployments[0].votingAddress, proposalId: 0n };
   const actualNow = Date.now;
   const setClock = async () => {
@@ -40,9 +43,6 @@ test("invalidates real fork preparation after head advancement and canonical rep
   };
   try {
     await setClock();
-    const prepared = await prepareDaoLiveAction({ deployments, feed, ref, address: account, action: "retract", context });
-    await request({ method: "evm_mine" });
-    await expect(prepared()).rejects.toThrow("canonical block changed");
     const snapshot = await request({ method: "evm_snapshot" });
     await request({ method: "evm_mine" });
     const timestamp = await setClock();
@@ -51,6 +51,15 @@ test("invalidates real fork preparation after head advancement and canonical rep
     await request({ method: "evm_setNextBlockTimestamp", params: [timestamp + 20] });
     await request({ method: "evm_mine" });
     await expect(reorgPrepared()).rejects.toThrow("canonical block changed");
-    expect(sent).toBe(false);
+    expect(sent).toBe(0);
+    await setClock();
+    const prepared = await prepareDaoLiveAction({ deployments, feed, ref, address: account, action: "retract", context });
+    await request({ method: "evm_mine" });
+    const hash = await prepared();
+    const receipt = await request({ method: "eth_getTransactionReceipt", params: [hash] }) as { status: string };
+    expect(receipt.status).toBe("0x1");
+    expect(sent).toBe(1);
+    await expect(prepared()).rejects.toThrow("already submitted");
+    expect(sent).toBe(1);
   } finally { Date.now = actualNow; }
 });

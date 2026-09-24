@@ -60,7 +60,7 @@ export type DaoProposalSubmissionResult =
   | {
       state: "failed";
       error: {
-        code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED" | "NETWORK_ERROR";
+        code: "WALLET_REJECTED" | "PROPOSAL_REVERTED" | "PROPOSAL_REPLACED" | "PREPARATION_CHANGED" | "NETWORK_ERROR";
         transactionHash?: Hex;
         message: string;
       };

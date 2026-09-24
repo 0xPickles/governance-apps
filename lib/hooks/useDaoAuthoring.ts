@@ -9,7 +9,7 @@ import { decodeDaoProposeReceipt } from "@/lib/clients/dao/receipt";
 import { normalizeTxError } from "@/lib/tx/errors";
 import { daoContentBase64, retrieveDaoPublishedContent } from "@/lib/clients/dao/publication";
 import { readDaoContentBytes } from "@/lib/clients/dao/content-bytes";
-import { daoProposeCall } from "@/lib/clients/dao/writes";
+import { daoProposeCall, DaoPreparationChangedError } from "@/lib/clients/dao/writes";
 import { DaoTransactionReplacedError, isDaoTerminalTransactionError, waitForDaoReceipt } from "@/lib/clients/dao/live-receipt";
 import { daoAuthoringStorageKey, readDaoAuthoringRecovery, saveDaoAuthoringRecovery, saveDaoPendingCreation } from "@/lib/clients/dao/authoring-recovery";
 import type { DaoAuthoringServices } from "@/lib/clients/dao/authoring-services";
@@ -112,7 +112,7 @@ export function useDaoAuthoringServices(address: Address, proposer: DaoProposerS
       });
       return { state: "failed", error: {
         transactionHash: isDaoTerminalTransactionError(failure) ? failure.transactionHash ?? hash ?? undefined : hash ?? undefined,
-        code: failure instanceof DaoTransactionReplacedError ? "PROPOSAL_REPLACED" : isDaoTerminalTransactionError(failure) ? "PROPOSAL_REVERTED" : error.code === "user_rejected" ? "WALLET_REJECTED" : error.code === "revert" ? "PROPOSAL_REVERTED" : "NETWORK_ERROR",
+        code: failure instanceof DaoPreparationChangedError ? "PREPARATION_CHANGED" : failure instanceof DaoTransactionReplacedError ? "PROPOSAL_REPLACED" : isDaoTerminalTransactionError(failure) ? "PROPOSAL_REVERTED" : error.code === "user_rejected" ? "WALLET_REJECTED" : error.code === "revert" ? "PROPOSAL_REVERTED" : "NETWORK_ERROR",
         message: error.message,
       } };
     },

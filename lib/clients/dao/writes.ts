@@ -51,11 +51,17 @@ const actionsAbi = parseAbi([
   "function veto(uint256,string)",
 ]);
 const eq = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+const sameBlock = (a: DaoStateObservation, b: DaoStateObservation) =>
+  eq(a.hash, b.hash) && a.number === b.number && a.timestamp === b.timestamp;
+const reviewKey = (value: unknown) => JSON.stringify(value, (_key, item) => typeof item === "bigint" ? item.toString() : item);
+export class DaoPreparationChangedError extends Error {
+  readonly name = "DaoPreparationChangedError";
+}
 
 export function assertDaoFreshObservation(observation: DaoStateObservation) {
   const now = Math.floor(Date.now() / 1000);
   if (observation.timestamp < now - 300 || observation.timestamp > now + 60) {
-    throw new Error("DAO RPC head is stale or has an invalid future time.");
+    throw new DaoPreparationChangedError("DAO RPC head is stale or has an invalid future time. Refresh and review the action again. No transaction was submitted.");
   }
 }
 
@@ -70,14 +76,14 @@ async function latest(context: DaoReadContext, deployment: DaoDeployment): Promi
   return observation;
 }
 
-export async function assertDaoCanonical(context: DaoReadContext, observation: DaoStateObservation, requireHead = false) {
+export async function assertDaoCanonical(context: DaoReadContext, observation: DaoStateObservation) {
   assertDaoFreshObservation(observation);
   const block = daoBlockSchema.parse(await context.rpc.request({
     method: "eth_getBlockByNumber",
-    params: [requireHead ? "latest" : "0x" + observation.number.toString(16), false],
+    params: ["0x" + observation.number.toString(16), false],
   }));
   if (!eq(block.hash, observation.hash) || BigInt(block.number) !== observation.number || Number(BigInt(block.timestamp)) !== observation.timestamp) {
-    throw new Error("DAO canonical block changed. Review the action again.");
+    throw new DaoPreparationChangedError("DAO canonical block changed. Review the action again. No transaction was submitted.");
   }
 }
 
@@ -94,7 +100,7 @@ async function assertWallet(context: DaoWalletContext, address: Address, chainId
   if (!eq(current.address, address) || current.chainId !== chainId) throw new Error("Wallet account or network changed. Review the action again.");
 }
 
-export async function readDaoLiveProposer(deployment: DaoDeployment, address: Address, context: DaoReadContext): Promise<DaoProposerState> {
+export async function readDaoLiveProposer(deployment: DaoDeployment, address: Address, context: DaoReadContext): Promise<DaoProposerState & { preparationConfiguration: string }> {
   const observation = await latest(context, deployment);
   const call = (name: string, args: readonly unknown[] = []) => readDaoRpc(context.rpc, deployment.votingAddress, authoringAbi, name, args, observation.hash);
   const [genesis, hooks, measure, blacklist, minimum, cooldown, last] = await Promise.all([
@@ -116,6 +122,7 @@ export async function readDaoLiveProposer(deployment: DaoDeployment, address: Ad
   if (cooldown > BigInt(DAO_EPOCH_SECONDS) || last > BigInt(observation.timestamp) || counts.some(count => count > 64n)) throw new Error("Invalid current proposer state.");
   await assertDaoCanonical(context, observation);
   return {
+    preparationConfiguration: reviewKey([genesis, hooks, measure, blacklist, minimum, cooldown]),
     ...deriveDaoProposerState({
       address, connected: true, correctChain: true, now: observation.timestamp,
       currentWeight: weight, minimumWeight: minimum, blacklisted, lastProposedAt: last === 0n ? null : Number(last),
@@ -157,41 +164,53 @@ export async function prepareDaoLiveAction(args: {
   const scope = daoDeploymentScope(deployments);
   const deployment = deployments.find(d => d.chainId === ref.chainId && eq(d.votingAddress, ref.votingAddress));
   if (!deployment) throw new Error("Unknown trusted DAO deployment.");
-  await assertWallet(context, address, ref.chainId);
-  let state = await readDaoLiveAccount(feed, deployments, ref, address, context);
-  if (action === "execute") state = await addDaoExecutionPreflight(state, context);
-  const proposal = state.liveProposal!, observation = state.observation!;
-  const genesis = await readDaoRpc(context.rpc, deployment.votingAddress, authoringAbi, "genesis", [], observation.hash);
-  if (genesis !== BigInt(deployment.genesis)) throw new Error("Voting genesis differs from the trusted deployment.");
-  const capability = { vote: "canVote", retract: "canRetract", flag: "canFlag", veto: "canVeto", execute: "canExecute" } as const;
-  if (!state.capabilities[capability[action]]) throw new Error("This action is not permitted by current DAO state.");
-  let to = deployment.votingAddress;
-  let data: Hex;
-  if (action === "vote") {
-    if (args.direction !== "yea" && args.direction !== "nay") throw new Error("Choose Yea or Nay.");
-    const voter = await readDaoRpc(context.rpc, to, DAO_VOTING_ABI, "voter", [], observation.hash) as Address;
-    if (!deployment.supportedVoters.some(a => eq(a, voter))) throw new Error("Unsupported current Voter.");
-    data = encodeFunctionData({ abi: actionsAbi, functionName: args.direction === "yea" ? "vote_yea" : "vote_nay", args: [to, ref.proposalId] });
-    to = voter;
-  } else if (action === "execute") {
-    const executor = await readDaoRpc(context.rpc, to, DAO_VOTING_ABI, "executor", [], observation.hash) as Address;
-    if (!deployment.supportedExecutors.some(a => eq(a, executor)) || !proposal.script.bytes ||
-        !eq(keccak256(proposal.script.bytes), proposal.script.hash)) throw new Error("Execution script or current Executor is unsupported.");
-    data = createDaoExecuteCall(ref, address, proposal.script.bytes).data;
-  } else if (action === "retract") {
-    data = encodeFunctionData({ abi: actionsAbi, functionName: "retract", args: [ref.proposalId] });
-  } else {
-    const reason = validateDaoModerationReason(args.reason ?? "");
-    if (reason.error) throw new Error(reason.error);
-    data = encodeFunctionData({ abi: actionsAbi, functionName: action, args: [ref.proposalId, reason.value] });
-  }
-  const call = Object.freeze({ chainId: ref.chainId, from: address, to, data });
-  await simulateDaoCall(context, call, observation);
-  return preparedSubmission(context, call, observation, () => {
-    if (scope !== daoDeploymentScope(deployments)) throw new Error("DAO deployment configuration changed.");
-    const current = feed.proposals.find(p => p.votingAddress === ref.votingAddress.toLowerCase() && p.id === ref.proposalId.toString());
-    if (!current || current.scriptHash !== proposal.script.hash || current.scriptBytes !== proposal.script.bytes) throw new Error("Proposal inputs changed.");
-  });
+  const inputKey = () => reviewKey([args.action, args.direction, args.reason, ref, address,
+    feed.proposals.find(p => p.votingAddress === ref.votingAddress.toLowerCase() && p.id === ref.proposalId.toString())]);
+  const reviewedInputs = inputKey();
+  const checkInputs = () => {
+    if (scope !== daoDeploymentScope(deployments) || inputKey() !== reviewedInputs) {
+      throw new DaoPreparationChangedError("DAO proposal inputs or deployment configuration changed. Review the action again. No transaction was submitted.");
+    }
+  };
+  const prepare = async (): Promise<DaoPreparation> => {
+    await assertWallet(context, address, ref.chainId);
+    const live = await readDaoLiveAccount(feed, deployments, ref, address, context);
+    let state: DaoAccountProposalState = live;
+    if (action === "execute") state = await addDaoExecutionPreflight(state, context);
+    const proposal = state.liveProposal!, observation = state.observation!;
+    const genesis = await readDaoRpc(context.rpc, deployment.votingAddress, authoringAbi, "genesis", [], observation.hash);
+    if (genesis !== BigInt(deployment.genesis)) throw new Error("Voting genesis differs from the trusted deployment.");
+    const capability = { vote: "canVote", retract: "canRetract", flag: "canFlag", veto: "canVeto", execute: "canExecute" } as const;
+    if (!state.capabilities[capability[action]]) throw new DaoPreparationChangedError("This action is not permitted by current DAO state. Refresh and review it again. No transaction was submitted.");
+    let to = deployment.votingAddress;
+    let data: Hex;
+    if (action === "vote") {
+      if (args.direction !== "yea" && args.direction !== "nay") throw new Error("Choose Yea or Nay.");
+      const voter = await readDaoRpc(context.rpc, to, DAO_VOTING_ABI, "voter", [], observation.hash) as Address;
+      if (!deployment.supportedVoters.some(a => eq(a, voter))) throw new Error("Unsupported current Voter.");
+      data = encodeFunctionData({ abi: actionsAbi, functionName: args.direction === "yea" ? "vote_yea" : "vote_nay", args: [to, ref.proposalId] });
+      to = voter;
+    } else if (action === "execute") {
+      const executor = await readDaoRpc(context.rpc, to, DAO_VOTING_ABI, "executor", [], observation.hash) as Address;
+      if (!deployment.supportedExecutors.some(a => eq(a, executor)) || !proposal.script.bytes ||
+          !eq(keccak256(proposal.script.bytes), proposal.script.hash)) throw new Error("Execution script or current Executor is unsupported.");
+      data = createDaoExecuteCall(ref, address, proposal.script.bytes).data;
+    } else if (action === "retract") {
+      data = encodeFunctionData({ abi: actionsAbi, functionName: "retract", args: [ref.proposalId] });
+    } else {
+      const reason = validateDaoModerationReason(args.reason ?? "");
+      if (reason.error) throw new Error(reason.error);
+      data = encodeFunctionData({ abi: actionsAbi, functionName: action, args: [ref.proposalId, reason.value] });
+    }
+    const call = Object.freeze({ chainId: ref.chainId, from: address, to, data });
+    await simulateDaoCall(context, call, observation);
+    // Block identity and the simulation belong to this preparation only. All other
+    // displayed facts, permissions and contract configuration must survive a refresh.
+    return { call, observation, review: reviewKey({ ...state, observation: undefined, executionPreflight: undefined,
+      liveProposal: { ...proposal, rules: { ...proposal.rules, observationBlockNumber: undefined } },
+      configuration: live.preparationConfiguration }) };
+  };
+  return preparedSubmission(context, deployment, await prepare(), checkInputs, prepare);
 }
 
 export async function prepareDaoLivePropose(
@@ -203,37 +222,64 @@ export async function prepareDaoLivePropose(
   if (!/^0x[0-9a-fA-F]{64}$/.test(digest)) throw new Error("Invalid published content digest.");
   const type = script === "0x" ? "signal" : "executable";
   if (checkDaoExecutorScript(script, type).state === "invalid") throw new Error("Invalid proposal script.");
-  await assertWallet(context, address, deployment.chainId);
-  const proposer = await readDaoLiveProposer(deployment, address, context);
-  if (!proposer.canPropose || proposer.expectedVotingEpoch !== expectedEpoch) throw new Error(proposer.proposeBlockedReason ?? "Proposal epoch changed. Review the action again.");
-  const observation = proposer.observation!;
-  if (type === "executable") {
-    const executor = await readDaoRpc(context.rpc, deployment.votingAddress, authoringAbi, "executor", [], observation.hash) as Address;
-    if (!deployment.supportedExecutors.some(a => eq(a, executor))) throw new Error("Unsupported current Executor.");
-  }
-  const call = daoProposeCall(deployment.chainId, address, deployment.votingAddress, digest, script);
   const scope = daoDeploymentScope(deployments);
-  // This call runs the real blacklist, weight measure, capacity hook, and downstream calls.
-  await simulateDaoCall(context, call, observation);
-  return preparedSubmission(context, call, observation, () => {
-    if (scope !== daoDeploymentScope(deployments)) throw new Error("DAO deployment configuration changed.");
-  });
+  const checkInputs = () => {
+    if (scope !== daoDeploymentScope(deployments)) throw new DaoPreparationChangedError("DAO deployment configuration changed. Review the action again. No transaction was submitted.");
+  };
+  const prepare = async (): Promise<DaoPreparation> => {
+    await assertWallet(context, address, deployment.chainId);
+    const proposer = await readDaoLiveProposer(deployment, address, context);
+    if (!proposer.canPropose || proposer.expectedVotingEpoch !== expectedEpoch) throw new DaoPreparationChangedError(proposer.proposeBlockedReason ?? "Proposal epoch changed. Review the action again. No transaction was submitted.");
+    const observation = proposer.observation!;
+    const executor = await readDaoRpc(context.rpc, deployment.votingAddress, authoringAbi, "executor", [], observation.hash) as Address;
+    if (type === "executable") {
+      if (!deployment.supportedExecutors.some(a => eq(a, executor))) throw new Error("Unsupported current Executor.");
+    }
+    const call = daoProposeCall(deployment.chainId, address, deployment.votingAddress, digest, script);
+    // This call runs the real blacklist, weight measure, capacity hook, and downstream calls.
+    await simulateDaoCall(context, call, observation);
+    return { call, observation, review: reviewKey({ ...proposer, observation: undefined, executor }) };
+  };
+  return preparedSubmission(context, deployment, await prepare(), checkInputs, prepare);
 }
 
-function preparedSubmission(context: DaoWalletContext, call: { chainId: number; from: Address; to: Address; data: Hex }, observation: DaoStateObservation, checkInputs: () => void): DaoPreparedTransaction {
+type DaoPreparation = { call: DaoTransactionCall; observation: DaoStateObservation; review: string };
+function preparedSubmission(context: DaoWalletContext, deployment: DaoDeployment, initial: DaoPreparation, checkInputs: () => void, refresh: () => Promise<DaoPreparation>): DaoPreparedTransaction {
   let used = false;
+  let preparing = false;
   const submit = async () => {
-    if (used) throw new Error("This preparation was already submitted. Check its receipt before retrying.");
-    checkInputs();
-    await assertWallet(context, call.from, call.chainId);
-    await assertDaoCanonical(context, observation, true);
-    // Repeat required simulation immediately before wallet submission. There is no transport fallback.
-    await simulateDaoCall(context, call, observation);
-    await assertWallet(context, call.from, call.chainId);
-    await assertDaoCanonical(context, observation, true);
-    checkInputs();
-    used = true;
-    return context.send(call);
+    if (used || preparing) throw new Error("This preparation was already submitted or is in progress. Check its receipt before retrying.");
+    preparing = true;
+    try {
+      let current = initial;
+      // At most two fresh preparations. Never retry send, even after an uncertain result.
+      for (let attempt = 0; attempt < 3; attempt++) {
+        checkInputs();
+        await assertWallet(context, initial.call.from, initial.call.chainId);
+        await assertDaoCanonical(context, initial.observation);
+        await assertDaoCanonical(context, current.observation);
+        let head = await latest(context, deployment);
+        if (sameBlock(head, current.observation)) {
+          await simulateDaoCall(context, current.call, current.observation);
+          await assertWallet(context, current.call.from, current.call.chainId);
+          head = await latest(context, deployment);
+          await assertDaoCanonical(context, initial.observation);
+          await assertDaoCanonical(context, current.observation);
+          if (sameBlock(head, current.observation)) {
+            checkInputs();
+            used = true;
+            return await context.send(current.call);
+          }
+        }
+        if (head.number <= current.observation.number) throw new DaoPreparationChangedError("DAO canonical block changed. Review the action again. No transaction was submitted.");
+        if (attempt === 2) break;
+        current = await refresh();
+        if (current.review !== initial.review || reviewKey(current.call) !== reviewKey(initial.call)) {
+          throw new DaoPreparationChangedError("DAO eligibility or review details changed while preparing. Refresh and review the action again. No transaction was submitted.");
+        }
+      }
+      throw new DaoPreparationChangedError("DAO blocks advanced repeatedly during preparation. Retry when the RPC can provide a stable preparation. No transaction was submitted.");
+    } finally { preparing = false; }
   };
-  return Object.assign(submit, { daoCall: Object.freeze({ ...call }) });
+  return Object.assign(submit, { daoCall: Object.freeze({ ...initial.call }) });
 }

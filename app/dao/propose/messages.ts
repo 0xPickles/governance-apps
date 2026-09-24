@@ -207,5 +207,6 @@ export const daoProposeCopy = {
     rejectedTitle: "Wallet request cancelled",
     revertedTitle: "Proposal creation failed",
     networkErrorTitle: "Network request failed",
+    preparationChangedTitle: "Review proposal preparation",
   },
 } as const;

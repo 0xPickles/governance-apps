@@ -54,7 +54,7 @@ async function acquireDaoLiveAccount(
   ref: DaoProposalRef,
   account: Address,
   context: DaoReadContext,
-): Promise<DaoAccountProposalState> {
+): Promise<DaoAccountProposalState & { preparationConfiguration: string }> {
   const deployment = deployments.find((d) => d.chainId === ref.chainId && d.votingAddress === ref.votingAddress.toLowerCase());
   const original = feed.proposals.find((p) => p.votingAddress === ref.votingAddress.toLowerCase() && p.id === ref.proposalId.toString());
   if (!deployment || !original) throw new Error("Unknown DAO proposal or deployment.");
@@ -126,6 +126,7 @@ async function acquireDaoLiveAccount(
     executionPreflight: { call: null, state: "idle" as const, scriptHash: stored.script_hash, observation: null, contextKey: null, simulatedAt: null, error: null },
   };
   return {
+    preparationConfiguration: JSON.stringify([config, operator, guardian, measure, String(voterGenesis), String(decayLength)]),
     ...facts, observation, liveProposal, writesEnabled: true,
     capabilities: deriveDaoCapabilities({
       proposal: liveProposal, account: facts, now: timestamp,
@@ -176,7 +177,7 @@ export class OnchainDaoClient implements DaoClient {
   }
 }
 
-export async function readDaoLiveAccount(...args: Parameters<typeof acquireDaoLiveAccount>): Promise<DaoAccountProposalState> {
+export async function readDaoLiveAccount(...args: Parameters<typeof acquireDaoLiveAccount>) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([

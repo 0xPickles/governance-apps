@@ -11,6 +11,7 @@ import { daoAuthoringStorageKey, saveDaoAuthoringRecovery, readDaoAuthoringRecov
 import { daoDeploymentScope, getDaoDeployments } from "@/lib/clients/dao/deployment";
 import { createDaoAuthoringReview } from "@/app/dao/propose/authoring";
 import { recoveredReview } from "@/tests/fixtures/dao-pinata-recovery";
+import { DaoPreparationChangedError } from "@/lib/clients/dao/writes";
 vi.mock("@/lib/clients/dao/live-receipt", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/clients/dao/live-receipt")>(), waitForDaoReceipt: vi.fn() }));
 const hash = ("0x" + "11".repeat(32)) as Hex, replacement = ("0x" + "22".repeat(32)) as Hex, blockHash = ("0x" + "33".repeat(32)) as Hex;
 const receipt = { transactionHash: replacement, status: "success" as const, blockNumber: 1n, blockHash, blockTimestamp: 1789000000, transactionIndex: 0, logs: [] };
@@ -48,6 +49,26 @@ describe("public content publication", () => {
     first.unmount();
     const second = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
     expect(second.result.current.recovery?.publication).toMatchObject({ fingerprint: identity.digest, cid: identity.cid });
+  });
+  it("reports unstable preparation as review recovery without republishing or discarding publication", async () => {
+    const { proposer, review, identity } = reviewedContent();
+    const publication = { fingerprint: identity.digest, cid: identity.cid, canonicalBytes: identity.bytes, publishedAt: 100 };
+    const key = daoAuthoringStorageKey(daoDeploymentScope(getDaoDeployments()), proposer.address);
+    saveDaoAuthoringRecovery(key, review, publication);
+    const fetcher = vi.fn(async (url: string) => {
+      expect(url).toBe("/api/dao-content?digest=" + identity.digest);
+      return new Response(new Uint8Array(identity.bytes));
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const message = "DAO blocks advanced repeatedly during preparation. Retry when the RPC can provide a stable preparation. No transaction was submitted.";
+    vi.spyOn(OnchainDaoClient.prototype, "preparePropose").mockRejectedValue(new DaoPreparationChangedError(message));
+    const hook = renderHookWithProviders(() => useDaoAuthoringServices(proposer.address, proposer));
+    await act(async () => expect(await hook.result.current.services.submit({ review, publication, outcome: "success" })).toMatchObject({
+      state: "failed", error: { code: "PREPARATION_CHANGED", message },
+    }));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher.mock.calls[0][0]).toBe("/api/dao-content?digest=" + identity.digest);
+    expect(readDaoAuthoringRecovery(key, proposer.address)).toMatchObject({ state: "published", transactionHash: null, publication: { fingerprint: identity.digest } });
   });
   it.each(["disabled", "budget_reached", "verification_pending", "unavailable"])("keeps %s publication failures out of transaction recovery", async code => {
     const { proposer, review } = reviewedContent();

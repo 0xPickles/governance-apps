@@ -13,7 +13,7 @@ const ABI = [...DAO_VOTING_ABI, ...parseAbi([
 export function createDaoRpcFixture() {
   const original = saved.proposals[0];
   const state = {
-    chain: "0x1", hash: v2Hash(88), replaced: false, timestamp: V2_NOW + 120,
+    chain: "0x1", number: "0x2a00000", hash: v2Hash(88), replaced: false, timestamp: V2_NOW + 120,
     fail: false,
     values: {
       proposals: {
@@ -33,7 +33,7 @@ export function createDaoRpcFixture() {
     if (state.fail) throw new Error("Controlled RPC failure");
     if (method === "eth_chainId") return state.chain;
     if (method === "eth_getBlockByNumber") return {
-      number: "0x2a00000", hash: state.replaced && params?.[0] !== "latest" ? v2Hash(89) : state.hash,
+      number: state.number, hash: state.replaced && params?.[0] !== "latest" ? v2Hash(89) : state.hash,
       timestamp: "0x" + state.timestamp.toString(16),
     };
     if (method !== "eth_call") throw new Error("Unexpected RPC method");
