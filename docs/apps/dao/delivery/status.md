@@ -10,7 +10,8 @@ package starts.
 - The exact approved package `da041f5eaa5abe55ed5221f2642d3f0b047e5315` is integrated on `agent/integration`.
 - The [integration record](integration-20260924.md) is authoritative for merge identity, current validation, and the added review range.
 - Use [built local validation](../local-validation.md) for the UI walkthrough and [preprod preparation](../preprod-validation.md) for the later mainnet deployment gate.
-- The broader interactive walkthrough and preprod deployment remain outstanding.
+- The optimized local build and empty-feed producer acquisition passed. The built-app proposal-to-producer smoke awaits a rerun after the origin fix.
+- The session is stopped with state retained. The final added wallet-confinement test, broader interactive walkthrough, and preprod deployment remain outstanding.
 
 ## Publication closeout before integration (historical, 2026-09-24)
 
