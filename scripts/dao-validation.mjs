@@ -90,13 +90,15 @@ export async function refresh(s) {
   await forkRequest(rpc, "evm_mine");
   const head = await forkRequest(rpc, "eth_getBlockByNumber", ["latest", false]);
   const timestamp = Number(BigInt(head.timestamp));
-  const offset = timestamp + 2 - Math.floor(Date.now() / 1000);
+  // Freeze only this one-shot process's wall clock. A cold acquisition can take
+  // over a minute; elapsed acquisition time must not move it away from Anvil.
+  const producerTime = new Date((timestamp + 2) * 1000).toISOString().slice(0, 19).replace("T", " ");
   const directory = join(s.directory, "producer", String(Date.now()));
   await mkdir(directory, { recursive: true });
   await run(s, s.manifest.producer, ["local", join(s.directory, "producer-config.json"), join(directory, "state"), join(directory, "dao.json")], "producer", {
     DAO_RPC_TRANSPORT: "http", DAO_RPC_URL: rpc, DAO_CONTENT_GATEWAY: "http://127.0.0.1:18080/ipfs/",
     DYLD_INSERT_LIBRARIES: s.manifest.clockLibrary, DYLD_FORCE_FLAT_NAMESPACE: "1",
-    FAKETIME: (offset >= 0 ? "+" : "") + offset, FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
+    TZ: "UTC", FAKETIME: producerTime, FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
   }, 120_000);
   const bytes = await readFile(join(directory, "dao.json"));
   const feed = JSON.parse(bytes);

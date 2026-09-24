@@ -168,7 +168,7 @@ Close the browser before reset so its saved receipts cannot cross branches. Refr
 
 Each refresh mines one confirmation block, then runs the hash-verified binary once in `local` mode.
 It reads only loopback RPC, retrieves content from the offline loopback gateway, and writes a new isolated state directory.
-The producer's process clock follows the fork with a two-second margin. Its monotonic clock remains real.
+The one-shot producer's wall clock stays fixed at the fork time plus two seconds. Its monotonic clock remains real.
 The wrapper verifies the output time and canonical block before replacing the served file atomically.
 It never changes `observedAt`, block timestamps, or document bytes.
 The browser clock follows the greater of the actual fork timestamp and producer observation time.
