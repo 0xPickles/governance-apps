@@ -96,7 +96,7 @@ export async function refresh(s) {
   await run(s, s.manifest.producer, ["local", join(s.directory, "producer-config.json"), join(directory, "state"), join(directory, "dao.json")], "producer", {
     DAO_RPC_TRANSPORT: "http", DAO_RPC_URL: rpc, DAO_CONTENT_GATEWAY: "http://127.0.0.1:18080/ipfs/",
     DYLD_INSERT_LIBRARIES: s.manifest.clockLibrary, DYLD_FORCE_FLAT_NAMESPACE: "1",
-    FAKETIME: (offset >= 0 ? "+" : "") + offset + "s", FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
+    FAKETIME: (offset >= 0 ? "+" : "") + offset, FAKETIME_DONT_FAKE_MONOTONIC: "1", NO_FAKE_STAT: "1",
   }, 120_000);
   const bytes = await readFile(join(directory, "dao.json"));
   const feed = JSON.parse(bytes);
