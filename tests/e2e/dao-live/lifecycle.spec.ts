@@ -75,6 +75,11 @@ test("publishes exact bytes, creates ID zero, recovers feed lag, votes and execu
   await page.getByRole("radio", { name: /Executable/ }).check();
   await page.getByLabel("Full Executor script").fill(state.script);
   await page.getByRole("button", { name: "Review proposal", exact: true }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download exact content" }).click();
+  const downloadPath = await (await download).path();
+  expect(downloadPath).not.toBeNull();
+  const reviewedBytes = await readFile(downloadPath!);
   await page.getByRole("checkbox", { name: /I reviewed/ }).check();
   // The real route performs public durable admission. No grant or publication wallet signature.
   // Corrupt one transport body to exercise actual route rejection while preserving the editor review.
@@ -90,6 +95,7 @@ test("publishes exact bytes, creates ID zero, recovers feed lag, votes and execu
   await expect(page.getByText("Wallet request cancelled", { exact: true })).toBeVisible();
   const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem(Object.keys(sessionStorage).find(key => key.startsWith("yearn.dao.live.authoring"))!)!));
   const bytes = Buffer.from(JSON.stringify(stored.content) + "\n");
+  expect(reviewedBytes).toEqual(bytes);
   await writeFile(directory + "/ui-content.json", bytes);
   const retrieved = await request.get("/api/dao-content?digest=" + stored.digest);
   expect(retrieved.ok()).toBe(true); expect(await retrieved.body()).toEqual(bytes);

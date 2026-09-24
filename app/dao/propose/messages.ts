@@ -38,6 +38,8 @@ export const daoProposeCopy = {
     placeholder: "https://gov.yearn.fi/t/proposal-topic/1001",
     validate: "Validate topic",
     validating: "Validating topic",
+    empty: "Enter the proposal’s forum topic URL.",
+    unvalidated: "Validate this topic before review.",
     accepted: "Forum topic accepted",
     topicTitle: "Topic title",
     normalizedUrl: "Normalized topic",

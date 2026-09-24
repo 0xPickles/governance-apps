@@ -17,6 +17,7 @@ describe("manual browser startup", () => {
     const sigterm = process.listenerCount("SIGTERM");
     try {
       await expect(runManualBrowser(directory, "0xlocal", "http://127.0.0.1:" + port)).rejects.toThrow("Navigation timed out");
+      expect(browser.newContext).toHaveBeenCalledExactlyOnceWith({ acceptDownloads: true, viewport: null });
       expect(context.addInitScript).toHaveBeenCalledWith(installForkWallet, { account: "0xlocal", rpc: "http://127.0.0.1:" + port });
       expect(goto).toHaveBeenCalledExactlyOnceWith("http://127.0.0.1:3310/dao/propose#A", { timeout: 60_000 });
       expect(close).toHaveBeenCalledOnce();

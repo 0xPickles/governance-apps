@@ -75,7 +75,9 @@ export async function runManualBrowser(directory, account, rpc = acceptanceForkR
   process.on("SIGINT", close);
   process.on("SIGTERM", close);
   try {
-    const context = await browser.newContext({ acceptDownloads: true });
+    // Follow the actual window. A fixed emulated viewport can extend beyond a
+    // smaller native window and make the bottom of the page unreachable.
+    const context = await browser.newContext({ acceptDownloads: true, viewport: null });
     await context.addInitScript(installForkWallet, { account, rpc });
     for (const label of ["A", "C", "B"]) {
       const page = await context.newPage();

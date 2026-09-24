@@ -253,6 +253,7 @@ function DaoProposalAuthoringFormState({
     const request = forumRequest.current + 1;
     forumRequest.current = request;
     setForumState({ state: "validating" });
+    setErrors((current) => ({ ...current, forum: undefined }));
     const result = await (services?.validateForum ?? validateMockDaoForumTopic)(
       forumInput,
       serviceLatencyMs
@@ -337,7 +338,7 @@ function DaoProposalAuthoringFormState({
     nextErrors: DaoAuthoringErrors,
     contentError: { offset: number | null } | null
   ) => {
-    const first = (Object.keys(nextErrors) as (keyof DaoAuthoringErrors)[])[0];
+    const first = (Object.keys(nextErrors) as (keyof DaoAuthoringErrors)[]).find(key => nextErrors[key]);
     if (!first) return;
     pendingErrorFocusRef.current = {
       field: first,
@@ -613,7 +614,7 @@ function DaoProposalAuthoringFormState({
         </p>
       </div>
 
-      {Object.keys(errors).length > 0 ? (
+      {Object.values(errors).some(Boolean) ? (
         <div
           role="alert"
           className="rounded-box border border-red-300 bg-red-50 p-4 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-100"
@@ -675,7 +676,7 @@ function DaoProposalAuthoringFormState({
             <p id="dao-forum-help" className="text-pretty text-xs leading-5 text-text-secondary">
               {daoProposeCopy.discussion.placeholder}
             </p>
-            <ForumStatus state={forumState} error={errors.forum} />
+            <ForumStatus state={forumState} error={errors.forum} hasInput={forumInput.trim().length > 0} />
           </div>
         </AuthoringSection>
 
@@ -1646,9 +1647,11 @@ function AuthoringLiveRegion({ message }: { message: string }) {
 function ForumStatus({
   error,
   state,
+  hasInput,
 }: {
   error?: string;
   state: ForumState;
+  hasInput: boolean;
 }) {
   if (state.state === "validating") {
     return (
@@ -1674,7 +1677,9 @@ function ForumStatus({
       </div>
     );
   }
-  if (state.state !== "valid") return <span id="dao-forum-status" />;
+  if (state.state !== "valid") return <p id="dao-forum-status" className="text-sm text-text-secondary">
+    {hasInput ? daoProposeCopy.discussion.unvalidated : daoProposeCopy.discussion.empty}
+  </p>;
   return (
     <div id="dao-forum-status" className="space-y-3 rounded-box bg-green-50 p-4 text-sm text-green-950">
       <p className="font-bold">{daoProposeCopy.discussion.accepted}</p>
