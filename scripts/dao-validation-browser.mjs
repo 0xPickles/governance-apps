@@ -38,9 +38,11 @@ export async function openValidationBrowser(directory, { headless = false, persi
     return route.continue();
   });
   const configured = new WeakSet();
+  const viewports = new WeakMap();
   const configure = async page => {
     if (configured.has(page)) return;
     configured.add(page);
+    viewports.set(page, "desktop");
     page.on("download", async download => {
       try { await download.saveAs(join(directory, "documents", Date.now() + "-" + download.suggestedFilename())); }
       catch (error) { console.error("Download could not be retained: " + error.message); }
@@ -66,8 +68,14 @@ export async function openValidationBrowser(directory, { headless = false, persi
       for (const page of context.pages()) {
         if (new URL(page.url()).origin !== "http://127.0.0.1:3310") continue;
         await page.clock.setFixedTime(new Date(clock * 1000));
-        const viewport = current.viewport === "mobile" ? { width: 390, height: 844 } : { width: 1280, height: 900 };
-        if (page.viewportSize()?.width !== viewport.width) await page.setViewportSize(viewport);
+        if (viewports.get(page) !== current.viewport) {
+          if (current.viewport === "mobile") await page.setViewportSize({ width: 390, height: 844 });
+          else if (persistent) {
+            const cdp = await context.newCDPSession(page);
+            await cdp.send("Emulation.clearDeviceMetricsOverride"); await cdp.detach();
+          } else await page.setViewportSize({ width: 1280, height: 900 });
+          viewports.set(page, current.viewport);
+        }
         await page.evaluate(({ account, reject }) => {
           const c = window.daoLocalWalletControl;
           if (!c) return;

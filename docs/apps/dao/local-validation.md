@@ -21,6 +21,18 @@ The preparation used upstream tag `v0.9.13`, commit `86b37fde2fed7336ea2d0c17928
 No system clock or producer source changes are required.
 See the upstream [macOS instructions](https://github.com/wolfcw/libfaketime/blob/v0.9.13/README.OSX).
 
+To reproduce this dependency in a new directory:
+
+```fish
+set clock_source /private/tmp/dao-validation-clock-v0.9.13
+git clone --branch v0.9.13 --depth 1 https://github.com/wolfcw/libfaketime.git "$clock_source"
+test (git -C "$clock_source" rev-parse HEAD) = 86b37fde2fed7336ea2d0c17928e3015a55d9b4a; or exit 1
+make -C "$clock_source/src" -f Makefile.OSX
+set clock_library "$clock_source/src/libfaketime.1.dylib"
+```
+
+This launcher targets the current macOS workstation. It does not install a system library.
+
 The session stores its source SHA, dependency lock hash, clock-library hash, producer hash, upstream block, and fork checkpoint.
 It exports tracked source into its directory and shares the installed `node_modules` directory.
 Do not change dependencies during a session. Use a new session after a dependency installation.
@@ -121,6 +133,7 @@ npm run dao:validate -- control "$session" clock '"fork"'
 ```
 
 The session browser applies controls once per second. A rejected request consumes the rejection control once.
+Desktop mode follows the native window. Mobile mode uses a 390 × 844 viewport.
 RPC delay affects browser requests, including identity reads. Producer acquisition remains an independent local operation.
 The fixture controls intercept only browser feed responses. They never change the saved producer output.
 Fixture results are display evidence, not producer or transaction evidence.
@@ -171,6 +184,7 @@ Close the browser before reset so its saved receipts cannot cross branches. Refr
 ## Clocks and producer evidence
 
 Each refresh mines one confirmation block, then runs the hash-verified binary once in `local` mode.
+The local configuration uses supported 10,000-block log queries to reduce cold acquisition overhead. Its 90-second budget stays unchanged.
 It reads only loopback RPC and retrieves content from the offline loopback gateway.
 It retains each output separately and reuses producer history while the previous snapshot remains canonical and the clock moves forward.
 After a branch replacement or backward reset, it starts another state directory and preserves the previous one.

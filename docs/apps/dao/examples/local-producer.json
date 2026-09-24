@@ -24,7 +24,7 @@
     }
   ],
   "limits": {
-    "logRange": 2000,
+    "logRange": 10000,
     "requestSeconds": 10,
     "retries": 0,
     "cycleSeconds": 90,
