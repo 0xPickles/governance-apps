@@ -1,0 +1,4 @@
+{
+  "result": "assertion mismatch",
+  "detail": "Expected an internal RPC error string, but the action panel intentionally displays the generic unavailable message. The stale notice and unavailable actions rendered. No transaction was sent. Correct the diagnostic selector and assert absence of action controls."
+}

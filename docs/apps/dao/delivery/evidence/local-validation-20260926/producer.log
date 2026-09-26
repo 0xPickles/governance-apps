@@ -1,0 +1,8 @@
+DAO accepted observed_at=1790414393 block=26060694 proposals=0 events=0 bytes=515 sha256=1056472d20054a5ffbde5e40394ab9951fc3ca6b964cd52ae5e4fc28dbb0ebff
+DAO cycle elapsed_ms=17638 rpc_requests=93 success=true
+DAO accepted observed_at=1790414466 block=26060697 proposals=1 events=1 bytes=1942 sha256=646db7e4172bdf369e7253ed303489f7f5c95982077ac266653a02781adc5cbd
+DAO cycle elapsed_ms=82 rpc_requests=31 success=true
+DAO accepted observed_at=1791417612 block=26060700 proposals=1 events=1 bytes=1940 sha256=8ae9caea25a6f4117bc820fa4875c8de75246d6c4175655e5ad5518e49f1754a
+DAO cycle elapsed_ms=60 rpc_requests=29 success=true
+DAO accepted observed_at=1791417617 block=26060704 proposals=1 events=1 bytes=1940 sha256=9868fd3171607a8c6f3c8e007ef771e69d3a84112b58288c19547c45a13e8405
+DAO cycle elapsed_ms=300 rpc_requests=29 success=true

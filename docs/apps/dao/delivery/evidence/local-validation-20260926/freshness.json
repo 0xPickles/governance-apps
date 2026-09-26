@@ -1,0 +1,11 @@
+{
+  "source": "9a186ac5b6b5f7ac30b742d609f4c1a6ab39c865",
+  "feedSha256": "9868fd3171607a8c6f3c8e007ef771e69d3a84112b58288c19547c45a13e8405",
+  "freshUnsignedVoteReview": true,
+  "staleNotice": true,
+  "staleRpcEligibilityBlocked": true,
+  "restoredFreshUnsignedVoteReview": true,
+  "feedUnchanged": true,
+  "transactions": 0,
+  "fullWalkthrough": false
+}

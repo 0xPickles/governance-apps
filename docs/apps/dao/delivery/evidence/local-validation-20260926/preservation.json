@@ -1,0 +1,17 @@
+{
+  "original": "/private/tmp/dao-ui-validation-20260924-v3",
+  "archive": "/Users/hydra/Developer/yearn/dao-local-validation/20260926/previous-session-20260924",
+  "archiveIsInert": true,
+  "reason": "Session ownership labels, manifest paths, producer state paths and build fingerprints prevent a blind relocation. Original and archive remain unchanged; new session is separate.",
+  "hashes": {
+    "session.json": "75e5fc28d6641fedd0fc619873875546bf3d9aeec1f102a767b0918182c9a523",
+    "anvil.json": "0cdbe2928fee0b352f44f5da3851dac31b33da9008e25df2e78262fbd2f60bd2",
+    "snapshot.json": "a058cf7a23ed08178547ebb20b6d7ff31da7c29f3913e0327efe9d6e7caa9342",
+    "fork/state.json": "cdb85ba2ee024d6141fba659e7ff450457d051503f784cdffc38c14fcdbe2463",
+    "documents/smoke-content.json": "de167d3b0af1e6bf372706c08769def0b519c6796bfab4f0c19b27bb308b3d6c",
+    "logs/ui-smoke-origin-failure.log": "90b5a4797809db03a37d0c0febb7cce3fbb60af3f93c7d03867d736f38e9a63f",
+    "d1/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite": "4c34b48e33536be849e9810707c97ff2b5625bb5cbf1637dbe384cfffdda3b9d"
+  },
+  "clockSourceCommit": "86b37fde2fed7336ea2d0c17928e3015a55d9b4a",
+  "clockSha256": "18741dd4fd8d794205b0dc710505d7fe7e8707e85f42951b732093ecbddf838e"
+}

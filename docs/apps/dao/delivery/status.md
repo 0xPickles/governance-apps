@@ -5,13 +5,14 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current work (2026-09-24)
+## Current work (2026-09-26)
 
 - The exact approved package `da041f5eaa5abe55ed5221f2642d3f0b047e5315` is integrated on `agent/integration`.
-- The [integration record](integration-20260924.md) is authoritative for merge identity, current validation, and the added review range.
+- The [integration record](integration-20260924.md) records merge identity. The [completion record](integration-20260926.md) records current validation and the review handoff.
 - Use [built local validation](../local-validation.md) for the UI walkthrough and [preprod preparation](../preprod-validation.md) for the later mainnet deployment gate.
-- The optimized local build and empty-feed producer acquisition passed. The built-app proposal-to-producer smoke awaits a rerun after the origin fix.
-- The session is stopped with state retained. The final added wallet-confinement test, broader interactive walkthrough, and preprod deployment remain outstanding.
+- All 41 tooling tests passed, including localhost wallet confinement. The complete built-app publication, proposal, producer, and rendering path passed.
+- Voting-phase advancement, populated stop/resume, exact content/accounting preservation, and freshness checks passed. The durable session is stopped with state retained.
+- Independent review and master reconciliation precede the broader interactive walkthrough. The walkthrough and preprod deployment remain outstanding.
 
 ## Publication closeout before integration (historical, 2026-09-24)
 

@@ -2,6 +2,8 @@
 
 This is the current local walkthrough entry point on `agent/integration`.
 The approved publication acceptance remains complete. This session does not repeat that experiment.
+The [September 26 completion record](delivery/integration-20260926.md) identifies the tested source, durable populated session, and retained evidence.
+The broader interactive walkthrough follows independent review and master reconciliation.
 
 The launcher builds optimized Next.js output with `NODE_ENV=production` and explicit `NEXT_PUBLIC_RUNTIME_MODE=development`.
 It uses real DAO clients, the shared transaction pipeline, and production freshness, canonicality, and simulation checks.
@@ -24,7 +26,7 @@ See the upstream [macOS instructions](https://github.com/wolfcw/libfaketime/blob
 To reproduce this dependency in a new directory:
 
 ```fish
-set clock_source /private/tmp/dao-validation-clock-v0.9.13
+set clock_source /Users/hydra/Developer/yearn/dao-local-validation/libfaketime-v0.9.13
 git clone --branch v0.9.13 --depth 1 https://github.com/wolfcw/libfaketime.git "$clock_source"
 test (git -C "$clock_source" rev-parse HEAD) = 86b37fde2fed7336ea2d0c17928e3015a55d9b4a; or exit 1
 make -C "$clock_source/src" -f Makefile.OSX
@@ -43,37 +45,28 @@ It never copies `.env` files, acceptance checkpoints, or private credentials.
 
 ## Start, use, resume, and stop
 
-These commands use fish. The directory survives terminal closure. `/private/tmp` remains subject to operating-system cleanup.
-Keep the directory and its stopped Docker container until the walkthrough is complete.
-For longer retention, choose another absolute directory outside Git before initialization.
+These fish commands operate the existing durable session. It contains proposal `0` in the Voting phase.
+Keep the directory, recorded dependencies, and stopped Docker container until the walkthrough is complete.
+Do not initialize, reset, or rerun the proposal smoke in this populated session.
 
 ```fish
 cd /Users/hydra/Developer/yearn/governance-apps.agent.integration
-set session /private/tmp/dao-ui-validation-20260924
-set clock_library /private/tmp/dao-integration-20260924/libfaketime/src/libfaketime.1.dylib
+set session /Users/hydra/Developer/yearn/dao-local-validation/20260926/session
 
-# New sessions only: select a NEW directory, then initialize once.
-env DAO_FORK_SOURCE_RPC=https://ethereum.reth.rs/rpc \
-  DAO_VALIDATION_CLOCK_LIBRARY="$clock_library" \
-  npm run dao:validate -- init "$session"
-
-# Start a new session or resume the same stopped session.
+# Start or resume the retained populated session.
 npm run dao:validate -- start "$session"
-npm run dao:validate -- browser "$session"
 npm run dao:validate -- status "$session"
+npm run dao:validate -- browser "$session"
 
 # After relevant UI transactions or a phase change, acquire a real producer snapshot.
 npm run dao:validate -- refresh "$session"
 
 # Stop the owned browser, application, Anvil, and offline container. Retain all state.
 npm run dao:validate -- stop "$session"
-
-# Resume later, without init or rebuilding unchanged source.
-npm run dao:validate -- start "$session"
-npm run dao:validate -- browser "$session"
+npm run dao:validate -- status "$session"
 ```
 
-For the prepared session, omit `init`. The delivery record identifies its retained directory and source revision.
+The session manifest selects the tested source export. Documentation-only delivery changes do not require rebuilding it.
 Open the browser with the session command. Connect **Browser Wallet** in the app.
 The session wallet exists only at `http://localhost:3310` and sends requests only to the selected loopback Anvil.
 This canonical local origin matches Next's request normalization. The production publication origin guard remains unchanged.
@@ -85,9 +78,27 @@ Startup refuses occupied ports. It does not terminate unrelated listeners.
 Logs, downloads, D1 accounting, browser storage, producer state, snapshots, and Anvil state remain inside the session directory.
 The container stores the offline content blocks. Its ownership label must match the session directory.
 
+For a separate experiment, choose a new durable directory outside Git and initialize it once:
+
+```fish
+set new_session /Users/hydra/Developer/yearn/dao-local-validation/another-session
+set clock_library /Users/hydra/Developer/yearn/dao-local-validation/20260926/dependencies/libfaketime-v0.9.13/src/libfaketime.1.dylib
+env DAO_FORK_SOURCE_RPC=https://ethereum.reth.rs/rpc \
+  DAO_VALIDATION_CLOCK_LIBRARY="$clock_library" \
+  npm run dao:validate -- init "$new_session"
+```
+
+Stop the existing session before starting another. These sessions use the same fixed ports.
+Relocation is unsupported. Manifest paths, build fingerprints, producer state paths, and container labels refer to the original directory.
+Preserve an old session as an archive and initialize a separate session at its intended durable location.
+The completion record identifies the retained September 24 session and its additional durable archive.
+
 Startup bounds are 60 seconds for Anvil and Kubo, ten minutes for the first build, and 90 seconds for app readiness.
 An acquisition has a 90-second producer budget and a 120-second process deadline.
 A failed startup stops owned services. Inspect `logs/` before retrying.
+Wait for the `Ready` message before opening the session browser.
+Readiness includes a real producer acquisition and a successful built-app feed request.
+The September 26 fresh-session smoke passed without another warm-up. One passing run does not establish repeated cold-start reliability.
 Anvil saves state every 30 seconds and at clean shutdown, including historical states.
 Startup mines two explicit monotonic blocks after the retained tip, parent, and producer observation times.
 This handles Anvil's restored tip-clock behavior before a confirmed producer snapshot is acquired.
@@ -201,6 +212,9 @@ For stale-state inspection, the browser moves one hour forward while the feed st
 `node scripts/dao-validation-smoke.mjs /absolute/session` creates one proposal through the built UI.
 It checks its receipt, Propose event, identity, script, digest, exact content bytes, released producer output, and rendered proposal.
 Run this only in a disposable session with an eligible author and sufficient retained publication allowance.
+The prepared durable session already passed this check. Do not rerun it to resume the environment.
+After a failure, inspect retained receipts, the publication ledger, and downloads before any retry.
+Preserve attempt files before retrying; the smoke uses fixed output filenames.
 The broader interactive walkthrough remains a separate validation session.
 
 ## Substitutions and environment differences

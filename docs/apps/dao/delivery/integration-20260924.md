@@ -1,5 +1,9 @@
 # DAO integration and local validation — 24 September 2026
 
+This record preserves the September 24 results and shutdown.
+The [September 26 completion](integration-20260926.md) supersedes its outstanding local-preparation items and temporary-session resume commands.
+Use that record for the durable session, completed populated-state checks, and current review handoff.
+
 ## Source identity
 
 - Authorized baseline: `28dd8fff2e7ff00961174635715be8d18ecd8d42`.

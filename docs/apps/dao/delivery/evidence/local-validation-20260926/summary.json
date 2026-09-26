@@ -1,0 +1,92 @@
+{
+  "testedSource": "9a186ac5b6b5f7ac30b742d609f4c1a6ab39c865",
+  "reviewBase": "4e7d4fd51d39eadc060fccbae77c1748d9375069",
+  "configuration": "optimized-local-development",
+  "durableSession": "/Users/hydra/Developer/yearn/dao-local-validation/20260926/session",
+  "fullWalkthrough": false,
+  "toolingTests": {
+    "files": 7,
+    "passed": 41,
+    "localhostConfinement": true
+  },
+  "typecheck": "passed",
+  "lint": "passed",
+  "smoke": "passed first attempt in durable session",
+  "proposalCount": 1,
+  "phaseChange": "PROPOSED to VOTING",
+  "resume": "passed",
+  "history": {
+    "sameIdentity": true,
+    "sameVerificationPolicy": true,
+    "logsPreserved": true,
+    "checkpointsPreserved": true,
+    "created": 19,
+    "phase": 20,
+    "resumed": 21
+  },
+  "publication": {
+    "documents": 1,
+    "uploads": 1,
+    "retrievals": 1,
+    "unchangedAcrossPhaseAndResume": true
+  },
+  "oldSessionInspection": {
+    "transactions": 5,
+    "proposeEvents": 0,
+    "publicationDocuments": 0,
+    "uploads": 0,
+    "retrievals": 0
+  },
+  "coldRpc": {
+    "failureRecurred": false,
+    "initialProducerMilliseconds": 17638,
+    "initialProducerRpcRequests": 93,
+    "repeatReliabilityClaim": false
+  },
+  "shutdown": {
+    "anvil": "stopped",
+    "app": "stopped",
+    "browser": "stopped",
+    "container": "dao-validation-857869440066",
+    "containerRunning": false,
+    "portsClear": [
+      3310,
+      18545,
+      18546,
+      15001,
+      18080
+    ]
+  },
+  "artifacts": {
+    "created/state.json": "94f29cb3144b35aaba60f2c60230cbb2059d222aed09fea6f682a0e14d9bb5b4",
+    "created/producer-feed.json": "646db7e4172bdf369e7253ed303489f7f5c95982077ac266653a02781adc5cbd",
+    "created/served-feed.json": "646db7e4172bdf369e7253ed303489f7f5c95982077ac266653a02781adc5cbd",
+    "created/producer-state.json": "f2a5116fc006672fd2a1a74130490d4bdf0aa3e15fb577caf9e717f7e6a697bf",
+    "phase/state.json": "7eb99f68b4f04f3a01e13d888e4cd7f631844b20a00ff2d5f99b4afb651d6cf2",
+    "phase/producer-feed.json": "8ae9caea25a6f4117bc820fa4875c8de75246d6c4175655e5ad5518e49f1754a",
+    "phase/served-feed.json": "8ae9caea25a6f4117bc820fa4875c8de75246d6c4175655e5ad5518e49f1754a",
+    "phase/producer-state.json": "7f2fedcd8b0392552e447f0165f928a000dd24dfa5664f9a4bed66009f338f26",
+    "resumed/state.json": "3c8b3cf9287e4ec1309cd4efb9d5bf30b1feb976448ab84f5f382f002f210c8b",
+    "resumed/producer-feed.json": "9868fd3171607a8c6f3c8e007ef771e69d3a84112b58288c19547c45a13e8405",
+    "resumed/served-feed.json": "9868fd3171607a8c6f3c8e007ef771e69d3a84112b58288c19547c45a13e8405",
+    "resumed/producer-state.json": "122cf8267e3430037a69088ce8b2ce9c5f1ff0a7ed4f0640e2f880ce390e4120",
+    "smoke.json": "b031116a5cb9531b3dd3806fe4b0d0dec5406e4804dee492b9f7af4d8f7c3738",
+    "smoke-run.json": "c7502e1bd0220de52a7f583615412db96dd9fa7bbb9fc3aa6413d7fc73926bb2",
+    "content.json": "a39c94b28720a40c5f1247f547a2c9d09278e3cfd9ae54cc0f52c20cad271891",
+    "freshness.json": "fa5a3b2d6c12b6dd06a1338a3b5c037d0db743198ab3c9234160599caa6d9ee8",
+    "checks.json": "aee366ad5993abe36bcf41bde91826f9abc105614974432e2718450dd2b82c73",
+    "build.json": "4f5f9f4276c5bd7956c153e512be01e9a28ae14400fa87a572b50415d7f1be92",
+    "producer-config.json": "836781596fe51830441a687502c3bd9936dfbeef70d66896cfdaa2ad3d1ea4af",
+    "preservation.json": "335b570c0f4fb7cfe28f9a5d2923072f0e1bd137cb8192c6fcc907cd4959e678",
+    "diagnostic-failure.json": "248bd6139f2530bce9e46e20523065c8ff519c74c49e35ab908abf37d49bf346"
+  },
+  "screenshots": {
+    "created/render.png": "759fdfc0013507ec1dbbac01eefc61fb50bbe88ed9e364f2437ef5b8b7338912",
+    "phase/render.png": "1c053672bebe0a2f569b23ba41b419dddf99b471430fedc5ef70f7c99fb2508f",
+    "resumed/render.png": "1c053672bebe0a2f569b23ba41b419dddf99b471430fedc5ef70f7c99fb2508f",
+    "resumed/fresh-review-attempt-1.png": "c1394e2106eefbfb614597f44bfa3c02c4c92b8b8fd7070a803b78db791d6a1c",
+    "resumed/freshness-failure.png": "c499ddc6298a61c18950d96657045fc0fa657547b897bc753d720d7ed52c8432",
+    "resumed/fresh-review-attempt-2.png": "2f5b2208b768343a2f6115b8f3408613aeb5a5c01cb6f5f57f2f69e9a8401014",
+    "resumed/stale-clock-attempt-2.png": "c499ddc6298a61c18950d96657045fc0fa657547b897bc753d720d7ed52c8432"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "source": "9a186ac5b6b5f7ac30b742d609f4c1a6ab39c865",
+  "producerSha256": "61c51b8528cb249b8290b0bc1fe9acc9f9514be7a5991d8af22fd61fedc8ff5c",
+  "hash": "0x0f17eaf04409d1d3f3619fbdcfaadc391d23a7d4f90de4d48a77d10aa5b9921e",
+  "proposalId": "0",
+  "votingAddress": "0x543e8871562a8c53e8b6a26835aeecb3a5a13070",
+  "blockHash": "0xdd4e9f74017e774e281684abb299d83c65948c40cd5922b76f5a55fd8ce985b3",
+  "contentDigest": "0xa39c94b28720a40c5f1247f547a2c9d09278e3cfd9ae54cc0f52c20cad271891",
+  "contentBytes": 397,
+  "scriptHash": "0x12e7e738438dfb13213ae69ae19b2f65c046cebf854209f9146aa6583ffb3c10",
+  "exactBytes": true,
+  "events": true,
+  "rendered": true,
+  "feedBlock": {
+    "number": "26060697",
+    "hash": "0xdd4e9f74017e774e281684abb299d83c65948c40cd5922b76f5a55fd8ce985b3",
+    "timestamp": 1790414460
+  },
+  "configuration": "optimized-local-development",
+  "fullWalkthrough": false
+}

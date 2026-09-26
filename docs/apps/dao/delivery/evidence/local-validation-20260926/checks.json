@@ -1,0 +1,20 @@
+[
+  {
+    "name": "tooling",
+    "code": 0,
+    "seconds": 4.301,
+    "source": "9a186ac5b6b5f7ac30b742d609f4c1a6ab39c865"
+  },
+  {
+    "name": "typecheck",
+    "code": 0,
+    "seconds": 11.513,
+    "source": "9a186ac5b6b5f7ac30b742d609f4c1a6ab39c865"
+  },
+  {
+    "name": "lint",
+    "code": 0,
+    "seconds": 11.383,
+    "source": "9a186ac5b6b5f7ac30b742d609f4c1a6ab39c865"
+  }
+]
