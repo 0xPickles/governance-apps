@@ -1,14 +1,14 @@
 # DAO preprod candidate checklist
 
 Do not deploy or perform the publication smoke check as part of local integration.
-The [integration delivery record](delivery/integration-20260924.md) identifies the source and completed checks.
+The [master reconciliation handoff](delivery/master-reconciliation-20260926.md) identifies the candidate and completed checks.
 
 Preprod remains connected to mainnet. A transaction signed there is a real mainnet transaction.
 Routine preprod validation stops before sending any transaction. Wallet connection and unsigned review are sufficient.
 
 ## Candidate and host
 
-- Resolve the integration/master divergence through separately authorized release work. Do not replace master during this task.
+- Obtain independent acceptance of the reconciled candidate. Its normal merge preserves both histories and leaves local master unchanged.
 - Record the final deployed source SHA, lockfile hash, build command, public configuration, Worker version, and operator.
 - Intended configuration: `wrangler.preprod.jsonc`, Worker `governance-apps-preprod`, DAO host `dao-beta.dao-ops.com`.
 - Confirm protected-host routing, access protection, noindex headers, clean DAO paths, and disabled-host behavior.

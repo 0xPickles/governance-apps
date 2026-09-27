@@ -3,7 +3,8 @@
 This is the current local walkthrough entry point on `agent/integration`.
 The approved publication acceptance remains complete. This session does not repeat that experiment.
 The [September 26 completion record](delivery/integration-20260926.md) identifies the tested source, durable populated session, and retained evidence.
-The broader interactive walkthrough follows independent review and master reconciliation.
+Use the [master reconciliation handoff](delivery/master-reconciliation-20260926.md) to rebuild the retained session after candidate approval.
+Until that rebuild, the commands below resume the earlier tested source. The broader walkthrough remains a separate task.
 
 The launcher builds optimized Next.js output with `NODE_ENV=production` and explicit `NEXT_PUBLIC_RUNTIME_MODE=development`.
 It uses real DAO clients, the shared transaction pipeline, and production freshness, canonicality, and simulation checks.

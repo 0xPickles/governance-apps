@@ -1,17 +1,18 @@
 # DAO release and integration checklist
 
 Publication acceptance is [complete](publication-acceptance-20260923.md).
-The approved package is now integrated. See the [integration delivery record](delivery/integration-20260924.md).
+The approved package is integrated. DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427` passed independent review.
+See the [master reconciliation handoff](delivery/master-reconciliation-20260926.md) for the current candidate and checks.
 Use [built local validation](local-validation.md) and the [preprod preparation checklist](preprod-validation.md) for the next gates.
 This checklist does not authorize a merge, deployment, remote change, or production transaction.
 
 ## Remaining release inputs
 
-1. Review of the post-package local validation changes recorded in the integration delivery record.
+1. Independent review of the reconciled candidate and the subsequent local walkthrough.
 2. Reviewed production deployment allowlist, RPC URLs, and producer endpoint/identity.
 3. Distinct production and preproduction D1 IDs, the existing migration, and backup ownership.
 4. An upload-only Worker secret, public gateway, reviewed aggregate limits, and content-retention policy.
-5. Separate release-branch reconciliation, protected-host checks, monitoring ownership, rollback target, and rollout approval.
+5. Protected-host checks, monitoring ownership, rollback target, and rollout approval after candidate acceptance.
 
 The retained acceptance configuration and throwaway wallets are not production inputs.
 Wrangler's reserved database IDs must be replaced through separately authorized release work.

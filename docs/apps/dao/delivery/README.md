@@ -1,6 +1,6 @@
 # DAO Governance Delivery Plan
 
-Current entry points: [local validation completion](integration-20260926.md), [merge record](integration-20260924.md), [built local validation](../local-validation.md), and [preprod preparation](../preprod-validation.md).
+Current entry points: [master reconciliation and review handoff](master-reconciliation-20260926.md), [local validation completion](integration-20260926.md), [built local validation](../local-validation.md), and [preprod preparation](../preprod-validation.md).
 The dated sequencing below records the historical delivery plan.
 
 Status (2026-09-10): the accepted mock UI and reviewed V2 reads are integrated. The producer is reported released and active.

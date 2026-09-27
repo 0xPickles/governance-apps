@@ -1,0 +1,576 @@
+{
+  "merge": "fe2efb3b1976008bda48cb10cef369b21a91dec3",
+  "parents": [
+    "9bee14b9037396899d8f1d3d3b604eabeeba7427",
+    "06d9ec46458675e36d72b2165ff80189914efb03"
+  ],
+  "testedTree": "746df83c67d2924ba832415bcac5078615a14bfa",
+  "reconciliation": {
+    "integration": "9bee14b9037396899d8f1d3d3b604eabeeba7427",
+    "master": "06d9ec46458675e36d72b2165ff80189914efb03",
+    "origin": "2863876b2a06f40fa26f2cbbc9c16b82bcc43d56",
+    "upstream": "06d9ec46458675e36d72b2165ff80189914efb03",
+    "base": "7870fde1a02e2ed36ca6097256f2518add062cd1",
+    "divergence": "189\t18",
+    "overlap": [
+      "package.json"
+    ],
+    "conflicts": [],
+    "dependencyLockSha256": "35d42f38bf8c5194cb8906c6347c1d3a274dae57eb31fc68da24753392257cce",
+    "cloudflareTypesExact": true,
+    "masterAlertCodeAndConfigExact": true,
+    "integrationDaoAndPolicyExact": true,
+    "allParentPackageScriptsPreserved": true,
+    "masterChangedFilesExactExcludingPackage": 79
+  },
+  "checks": [
+    {
+      "name": "alerts-worker-1",
+      "command": [
+        "node",
+        "node_modules/wrangler/bin/wrangler.js",
+        "deploy",
+        "--dry-run",
+        "--config",
+        "wrangler.alerts.jsonc",
+        "--outdir",
+        "/private/tmp/governance-reconcile-20260926/alerts-worker"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:19:04.856Z",
+      "seconds": 1.059,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/alerts-worker-1.log",
+      "logSha256": "eb7dec719e39a49c8ead1983171586df004c25393c0a4cf256289cb194370855"
+    },
+    {
+      "name": "anvil-1",
+      "command": [
+        "anvil",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "18545",
+        "--chain-id",
+        "1",
+        "--fork-url",
+        "https://ethereum.reth.rs/rpc",
+        "--state",
+        "/private/tmp/governance-reconcile-20260926/anvil.json",
+        "--state-interval",
+        "30",
+        "--preserve-historical-states",
+        "--silent"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:34:32.240Z",
+      "seconds": 49858.665,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/anvil-1.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "cf-types-1",
+      "command": [
+        "npm",
+        "run",
+        "cf-typegen"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:29.696Z",
+      "seconds": 1.007,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/cf-types-1.log",
+      "logSha256": "83eb3fa08b68cd2d0436ccc2d88f38535cba74b4222e6ec1e96995d771179cf5"
+    },
+    {
+      "name": "cleanup-1",
+      "command": [
+        "node",
+        "/private/tmp/governance-reconcile-20260926/cleanup.mjs"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-27T06:25:30.857Z",
+      "seconds": 0.482,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/cleanup-1.log",
+      "logSha256": "e4d126797a73e86af3790df078d289ba1acd3fcbf5332a8243fc9365a9c05463"
+    },
+    {
+      "name": "dependencies-1",
+      "command": [
+        "npm",
+        "run",
+        "validate:deps"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:22.528Z",
+      "seconds": 0.237,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/dependencies-1.log",
+      "logSha256": "55e480ac691a996e319dcf5c96c388df113fd872d114e81532e89e715e0033ce"
+    },
+    {
+      "name": "doc-links-1",
+      "command": [
+        "node",
+        "scripts/check-dao-doc-links.mjs"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:29.696Z",
+      "seconds": 0.586,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/doc-links-1.log",
+      "logSha256": "7f2f43259c207dfc36b50c7b2b162cc8b523c80eb95b87e48d64542b7b3c12b9"
+    },
+    {
+      "name": "docker-inventory-1",
+      "command": [
+        "docker",
+        "ps",
+        "-a",
+        "--format",
+        "{{.Names}} {{.Status}}"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:33:52.404Z",
+      "seconds": 0.095,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/docker-inventory-1.log",
+      "logSha256": "88f4c560e0a25b569effe19cc0f10638419b57d0350c31a55206889e863aad0c"
+    },
+    {
+      "name": "fork-browser-1",
+      "command": [
+        "npm",
+        "run",
+        "test:e2e:dao-live"
+      ],
+      "profile": "fork",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:48:17.988Z",
+      "seconds": 186.134,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/fork-browser-1.log",
+      "logSha256": "63962fc38d34518e826bac4af158d243552d301e727c94bfdab8c8b2b0c1fdd4"
+    },
+    {
+      "name": "fork-setup-1",
+      "command": [
+        "npm",
+        "run",
+        "dao:scenario",
+        "--",
+        "setup"
+      ],
+      "profile": "fork",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:34:49.684Z",
+      "seconds": 5.645,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/fork-setup-1.log",
+      "logSha256": "e52f693e164a42031a7fa50224021f5fdeb6f3a86ab9772c0f7f0f6fc912a699"
+    },
+    {
+      "name": "fork-status-1",
+      "command": [
+        "npm",
+        "run",
+        "dao:scenario",
+        "--",
+        "status"
+      ],
+      "profile": "fork",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T19:01:28.837Z",
+      "seconds": 0.335,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/fork-status-1.log",
+      "logSha256": "39d9d49abfce4debe38e551c777784274f2cf09d6dacde89d6fa105bf87d03cc"
+    },
+    {
+      "name": "full-1",
+      "command": [
+        "npm",
+        "run",
+        "test:e2e:full",
+        "--",
+        "--workers=1"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:34:20.340Z",
+      "seconds": 658.877,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/full-1.log",
+      "logSha256": "b1ba013797dee189735b5c80b2c8e85b25d2df9a01fd14938eba5a81e401230e"
+    },
+    {
+      "name": "generated-feed-1",
+      "command": [
+        "npm",
+        "run",
+        "generate:dao-feed",
+        "--",
+        "--check"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:22.529Z",
+      "seconds": 0.81,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/generated-feed-1.log",
+      "logSha256": "a6135040cf2dda72427643c702f1e2ba0524fe33777b26ca0753f9cd8d25b755"
+    },
+    {
+      "name": "installed-dependencies-1",
+      "command": [
+        "npm",
+        "ls",
+        "--depth=0"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:29.696Z",
+      "seconds": 0.677,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/installed-dependencies-1.log",
+      "logSha256": "99e8c4976642cd8d1418d3fa8ea816252e2922d1525d702b31233135a42d9a11"
+    },
+    {
+      "name": "kubo-start-1",
+      "command": [
+        "docker",
+        "run",
+        "--detach",
+        "--name",
+        "dao-reconcile-20260926",
+        "--label",
+        "dao.reconcile.session=/private/tmp/governance-reconcile-20260926",
+        "--publish",
+        "127.0.0.1:15001:5001",
+        "--publish",
+        "127.0.0.1:18080:8080",
+        "--env",
+        "IPFS_PROFILE=test",
+        "ipfs/kubo:v0.40.1",
+        "daemon",
+        "--offline"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:34:06.304Z",
+      "seconds": 0.167,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/kubo-start-1.log",
+      "logSha256": "183cd1fabc4f17fb3a83f7340542fe7b3532308aea953c4e5ef6c9d4648b77fc"
+    },
+    {
+      "name": "lint-1",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:22.527Z",
+      "seconds": 12.871,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/lint-1.log",
+      "logSha256": "f38ded17c5451ba6cebe6a2cdc22ab1094a070537c5ee153dcbd08121340284d"
+    },
+    {
+      "name": "prod-env-1",
+      "command": [
+        "npm",
+        "run",
+        "validate:prod-env"
+      ],
+      "profile": "production",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:29.697Z",
+      "seconds": 0.216,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/prod-env-1.log",
+      "logSha256": "25a13e7bfa293c2674f1daad525606ac2261b583b60767d7bb5ad86d407703ef"
+    },
+    {
+      "name": "production-disabled-1",
+      "command": [
+        "npm",
+        "run",
+        "test:e2e:dao-feed",
+        "--",
+        "--disabled"
+      ],
+      "profile": "production",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:38:14.393Z",
+      "seconds": 32.135,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/production-disabled-1.log",
+      "logSha256": "398b85b8a76227397109747d5526e687eb0f6a937dac1ab9164167a6741a4a9f"
+    },
+    {
+      "name": "production-enabled-1",
+      "command": [
+        "npm",
+        "run",
+        "test:e2e:dao-feed"
+      ],
+      "profile": "production",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:36:42.578Z",
+      "seconds": 47.111,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/production-enabled-1.log",
+      "logSha256": "3f4f870fe99aa1f44c3fa6cc31d1032e7b1b40f61d0b4a23efe41c30c62c6081"
+    },
+    {
+      "name": "smoke-1",
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "profile": "standard",
+      "code": 1,
+      "signal": null,
+      "start": "2026-09-26T16:18:35.889Z",
+      "seconds": 1.633,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/smoke-1.log",
+      "logSha256": "a63ebf82d1278b1ad951a1b4df1527f0af808be8fc72bbd0f3cd0697212bc12f"
+    },
+    {
+      "name": "smoke-2",
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:52.517Z",
+      "seconds": 520.764,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/smoke-2.log",
+      "logSha256": "29d54a5d6f9e66e98734da6216d50720e5384c6a4ada537fcdf796ec0de3a61a"
+    },
+    {
+      "name": "typecheck-1",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:18:22.529Z",
+      "seconds": 12.675,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/typecheck-1.log",
+      "logSha256": "3cf5a18f9cffbafe2469c5fd7b97fe3ab0bb1b5ce8e20923f5c86b0789972807"
+    },
+    {
+      "name": "unit-1",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=2"
+      ],
+      "profile": "standard",
+      "code": 1,
+      "signal": null,
+      "start": "2026-09-26T16:18:08.905Z",
+      "seconds": 93.208,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/unit-1.log",
+      "logSha256": "3758d3db25334ee4b6123e6128fc2e553ded5f440c00c5b330342f26ae355ec5"
+    },
+    {
+      "name": "unit-2",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=2"
+      ],
+      "profile": "standard",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T16:34:22.718Z",
+      "seconds": 82.245,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/unit-2.log",
+      "logSha256": "44202dfe66fccf01f67cae5642b12829ee4448245365daa561463397bbedc8e8"
+    },
+    {
+      "name": "worker-build-1",
+      "command": [
+        "npm",
+        "run",
+        "worker:build"
+      ],
+      "profile": "worker",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:14:55.509Z",
+      "seconds": 25.855,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-build-1.log",
+      "logSha256": "ce0a63223cbbd2e900212f373aaf3543899255fc66ef6c2aef117293e929c868"
+    },
+    {
+      "name": "worker-build-2",
+      "command": [
+        "npm",
+        "run",
+        "worker:build"
+      ],
+      "profile": "worker",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:48:58.140Z",
+      "seconds": 37.834,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-build-2.log",
+      "logSha256": "6d3c61ce43a6b1e95297334c8d4dcf96a2e59c82652a673acd6521f7627f7282"
+    },
+    {
+      "name": "worker-client-isolation-1",
+      "command": [
+        "node",
+        "scripts/check-dao-publication-build.mjs"
+      ],
+      "profile": "worker",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:50:05.351Z",
+      "seconds": 0.069,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-client-isolation-1.log",
+      "logSha256": "e263fb526395a63180a45d09867e6881290deb54ca2283cb9c800e71d0849198"
+    },
+    {
+      "name": "worker-env-1",
+      "command": [
+        "npm",
+        "run",
+        "validate:prod-env"
+      ],
+      "profile": "worker",
+      "code": 1,
+      "signal": null,
+      "start": "2026-09-26T16:57:42.615Z",
+      "seconds": 0.121,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-env-1.log",
+      "logSha256": "f8d77d992a47103eb5b1b88e69302946ad0a4b9c82f600e17a8c5e56a9a784ec"
+    },
+    {
+      "name": "worker-env-2",
+      "command": [
+        "npm",
+        "run",
+        "validate:prod-env"
+      ],
+      "profile": "worker",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:48:16.174Z",
+      "seconds": 0.132,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-env-2.log",
+      "logSha256": "25a13e7bfa293c2674f1daad525606ac2261b583b60767d7bb5ad86d407703ef"
+    },
+    {
+      "name": "worker-size-preprod-1",
+      "command": [
+        "npm",
+        "run",
+        "validate:worker-size",
+        "--",
+        "wrangler.preprod.jsonc"
+      ],
+      "profile": "worker",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:50:05.351Z",
+      "seconds": 2.512,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-size-preprod-1.log",
+      "logSha256": "d1ff24beae51ec8abef274144c9f8148b4561121953e572684963db321afe8cd"
+    },
+    {
+      "name": "worker-size-prod-1",
+      "command": [
+        "npm",
+        "run",
+        "validate:worker-size",
+        "--",
+        "wrangler.jsonc"
+      ],
+      "profile": "worker",
+      "code": 0,
+      "signal": null,
+      "start": "2026-09-26T17:50:05.351Z",
+      "seconds": 2.519,
+      "log": "/private/tmp/governance-reconcile-20260926/checks/worker-size-prod-1.log",
+      "logSha256": "034fa0035133689bd3ed48f7878db0514ed3d3c4194733ff7f0d7b5fce641017"
+    }
+  ],
+  "cleanup": {
+    "anvil": "stopped",
+    "anvilState": "/private/tmp/governance-reconcile-20260926/anvil.json",
+    "disposableContainer": "/dao-reconcile-20260926",
+    "containerStatus": "exited",
+    "containerExitCode": 0,
+    "preservedContainer": "/dao-validation-857869440066",
+    "preservedContainerStatus": "exited",
+    "portsClear": [
+      3000,
+      3131,
+      3310,
+      18545,
+      18546,
+      15001,
+      18080,
+      18551
+    ],
+    "preservedSessionHashes": 54,
+    "allSessionHashesUnchanged": true,
+    "stateRetained": true
+  },
+  "toolchain": {
+    "node": "24.1.0",
+    "npm": "11.14.0",
+    "wrangler": "4.120.0"
+  },
+  "results": {
+    "unitFiles": 171,
+    "unitTests": 1716,
+    "smokePassed": 46,
+    "smokeConditionalSkipped": 1,
+    "fullPassed": 37,
+    "forkPassed": 7,
+    "productionEnabledPassed": 3,
+    "productionUnconfiguredPassed": 1,
+    "productionDisabledPassed": 1,
+    "enabledUpstreamRequests": 2,
+    "disabledUpstreamRequests": 0,
+    "clientArtifactsChecked": 227,
+    "workerGzipKiB": 3365.89,
+    "workerBudgetKiB": 9216,
+    "alertsWorkerGzipKiB": 124.85
+  },
+  "limits": [
+    "No provider acceptance repeated",
+    "No broader manual walkthrough",
+    "No deployed Worker validation or mainnet transaction",
+    "One non-fatal Next router initialization error in passing development full suite"
+  ],
+  "rawEvidenceRoot": "/private/tmp/governance-reconcile-20260926"
+}

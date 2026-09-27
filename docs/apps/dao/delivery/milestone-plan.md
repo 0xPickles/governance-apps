@@ -1,5 +1,9 @@
 # DAO remaining milestone plan
 
+Current sequence: independently review the [reconciled candidate](master-reconciliation-20260926.md), validate it in the retained populated session, then authorize preprod preparation.
+The user confirmed independent approval of DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427`.
+The dated plan below is historical. The current handoff supersedes its outstanding closeout-review and branch-reconciliation steps.
+
 This plan supersedes the implementation sequence recorded before September 23.
 [Publication acceptance](../publication-acceptance-20260923.md) is complete; provider selection and the A/C/B experiment are closed.
 The [historical index](historical-index.md) preserves earlier scope, requirements, failures, and review identifiers.
@@ -17,7 +21,7 @@ The original immutable content, feed schemas, contracts, and shared transaction 
 The package includes M5 live at `fc81ae0502efe45ed84367062a57df16c6dab46c`.
 Preserve reviewed history and use the normal `--no-ff` merge into `agent/integration`.
 Do not cherry-pick only the closeout commits onto a branch without their M5 and publication dependencies.
-Use the [integration instructions](../release-checklist.md#integration-after-independent-approval) and repeat the required checks after merging.
+Use the [integration instructions](../release-checklist.md#completed-integration-procedure-historical) and repeat the required checks after merging.
 
 ## 3. Configure and authorize release
 
