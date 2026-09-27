@@ -36,23 +36,11 @@ export function YbcHero({ data }: YbcHeroProps) {
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.15fr)]">
+          <div className="max-w-2xl">
             <InfluenceCard
-              label={copy.hero.summary.internalLabel}
+              label={copy.hero.summary.collectiveLabel}
               value={formatWeight(data.hero.internalWeight)}
-              body={copy.hero.summary.internalBody}
-              className="border-yearn-blue/30 bg-yearn-blue/[0.06]"
-            />
-            <InfluenceCard
-              label={copy.hero.summary.delegatedLabel}
-              value={formatWeight(data.hero.delegatedWeight)}
-              body={copy.hero.summary.delegatedBody}
-              className="bg-surface-secondary/70"
-            />
-            <InfluenceCard
-              label={copy.hero.summary.totalLabel}
-              value={formatWeight(data.hero.totalInfluence)}
-              body={copy.hero.summary.totalBody}
+              body={copy.hero.summary.collectiveBody}
               className="bg-neutral-950 text-white"
               mutedClassName="text-neutral-300"
               emphasisClassName="text-white"

@@ -9,7 +9,7 @@ export const ybcCopy = {
   page: {
     title: "Yearn Builder's Collective",
     description:
-      "Review influence, member weight, proposals, and rewards.",
+      "Review collective voting power, member weight, on-chain proposals, and rewards.",
     loadingTitle: "Loading collective influence",
     loadingBody:
       "Loading the YBC overview, members, and proposals.",
@@ -101,12 +101,9 @@ export const ybcCopy = {
   },
   hero: {
     summary: {
-      internalLabel: "Internal influence",
-      internalBody: "Weight sourced from current YBC members.",
-      delegatedLabel: "Delegated influence",
-      delegatedBody: "External delegated voting power visible to the collective.",
-      totalLabel: "Total collective influence",
-      totalBody: "Internal and delegated influence combined for governance.",
+      collectiveLabel: "Total collective voting power",
+      collectiveBody:
+        "The current on-chain voting weight controlled by all active YBC members.",
     },
     stats: {
       members: "Members",
@@ -135,7 +132,7 @@ export const ybcCopy = {
   members: {
     title: "Members and weight",
     description:
-      "Raw stake, effective weight, target weight, maturity, and source mix.",
+      "Raw stake, effective weight, target weight, and maturity for every member.",
     totals: {
       rawStaked: "Raw staked",
       effectiveWeight: "Effective weight",
@@ -149,7 +146,6 @@ export const ybcCopy = {
       effectiveWeight: "Effective weight",
       targetWeight: "Target weight",
       maturity: "Maturity",
-      sourceMix: "Source mix",
     },
     alias: {
       edit: "Edit name",

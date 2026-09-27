@@ -1,0 +1,397 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`approved alert catalogue > B1 ybc_proposal_opened 1`] = `
+"<b>🗳️ YBC proposal opened</b>
+
+YBC-12 · Add member
+Candidate: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Proposed by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Voting: 21 Sep 2026, 14:13 UTC → 28 Sep 2026, 14:13 UTC
+Pass threshold: 60.00% of weight cast
+
+<a href="https://ybc.yearn.fi/?proposal=12#proposals">View current proposal status</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B2 ybc_proposal_retracted 1`] = `
+"<b>↩️ YBC proposal retracted</b>
+
+YBC-12 · Add member
+Candidate: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Retracted by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+
+<a href="https://ybc.yearn.fi/?proposal=12#proposals">View current proposal status</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B3 ybc_vote_cast 1`] = `
+"<b>🗳️ YBC vote cast</b>
+
+YBC-12 · Add member
+Vote: Yea
+Voter: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Counted weight: 8.00 YFI
+Result now: 8.00 / 10.00 YFI cast · 80.00% yea
+Threshold: 60.00% · Currently passing
+Participation: 2 unique voters · 5 eligible members
+
+Timing adjustment: 80.00% of current weight counted due to final-day decay
+
+<a href="https://ybc.yearn.fi/?proposal=12#proposals">View current proposal status</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B4 ybc_proposal_executed 1`] = `
+"<b>✅ YBC proposal executed</b>
+
+YBC-12 · Add member
+Member added: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Executed by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Final result: 8.00 / 10.00 YFI cast · 80.00% yea
+Collective voting power after: 100.00 YFI
+Active members: 6
+
+<a href="https://ybc.yearn.fi/?proposal=12#proposals">View current proposal status</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B5 ybc_member_added 1`] = `
+"<b>👤 YBC member added</b>
+
+Member: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Changed by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Collective voting power: 90.00 → 100.00 YFI
+Active members: 6
+
+<a href="https://ybc.yearn.fi/#members">View current YBC members</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B6 ybc_member_removed 1`] = `
+"<b>👤 YBC member removed</b>
+
+Member: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Changed by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Collective voting power: 100.00 → 90.00 YFI
+Active members: 5
+
+<a href="https://ybc.yearn.fi/#members">View current YBC members</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B7 ybc_rewards_claimed 1`] = `
+"<b>💰 YBC rewards claimed</b>
+
+Rewards attributed: 2.00 YFI
+For: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Claim route: YBC reward claimer
+
+<a href="https://ybc.yearn.fi/#rewards">View current YBC rewards</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B8 ybc_team_bonus_received 1`] = `
+"<b>🎁 YBC team bonus received</b>
+
+Staked for YBC: 5.00 YFI
+Source team: Frontend &amp; Tools · <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Periods: #2–#3
+
+<a href="https://ybc.yearn.fi/#rewards">View current YBC rewards</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B9 ybc_thresholds_changed 1`] = `
+"<b>⚙️ YBC vote thresholds changed</b>
+
+Addition threshold: 50.00% → 60.00%
+Expulsion threshold: 60.00% → 70.00%
+Changed by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B10 ybc_operator_changed 1`] = `
+"<b>🔐 YBC operator added</b>
+
+Operator: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Status: Authorized
+Changed by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B11 ybc_hooks_changed 1`] = `
+"<b>⚙️ YBC membership hooks changed</b>
+
+Membership hook: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a> → <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Changed by: <a href="https://etherscan.io/address/0x3333333333333333333333333333333333333333">0x3333…3333</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B12 ybc_rewards_stopped 1`] = `
+"<b>🚨 YBC reward distribution stopped</b>
+
+Stopped by: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+New reward accrual: Disabled
+Accrued claims: Still claimable
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B13 ybc_unrecognized_call 1`] = `
+"<b>🚨 Unrecognized YBC operator call</b>
+
+Operator: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Target: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Function selector: 0x12345678
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > B14 ybc_collective_power_changed 1`] = `
+"<b>⚖️ YBC collective voting power changed</b>
+
+Total: 90.00 → 100.00 YFI
+Change: +10.00 YFI
+Cause: Member stake changed
+
+<a href="https://ybc.yearn.fi/#overview">View current YBC overview</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > I-teams and I-ybc introductions 1`] = `
+{
+  "teams": "<b>Yearn Teams activity</b>
+
+This channel tracks team lifecycle, revenue, funding, bonus claims, accounting corrections, and revenue allocation on Ethereum.
+
+Financial and team state is shown at the end of each event's confirmed block. Historical messages were replayed from the Teams deployment block using the same rules as live alerts.",
+  "ybc": "<b>YBC governance activity</b>
+
+This channel tracks membership proposals, votes, executions, member changes, rewards, bonus receipts, configuration changes, and collective voting power on Ethereum.
+
+Proposal results use only the voting weight cast on that proposal. Collective voting power is context, not quorum. Historical messages were replayed from the YBC deployment block using the same rules as live alerts.",
+}
+`;
+
+exports[`approved alert catalogue > T1 team_added 1`] = `
+"<b>🏢 Team added</b>
+
+Team: Frontend &amp; Tools
+Team contract: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Team index: #2
+Owner: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Current period: #4
+
+<a href="https://teams.yearn.fi/?section=overview&amp;team=0x1111111111111111111111111111111111111111">View current team overview</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T2 team_retirement_scheduled 1`] = `
+"<b>🕰️ Team retirement scheduled</b>
+
+Team: Frontend &amp; Tools
+Current period: #4
+Effective retirement: Period #5 · 15 Jan 2027
+Current status: Active through period #4
+
+<a href="https://teams.yearn.fi/?section=lifecycle&amp;team=0x1111111111111111111111111111111111111111">View current team lifecycle</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T3 teams_registry_deprecated 1`] = `
+"<b>🔁 Teams registry deprecated</b>
+
+Registry: <a href="https://etherscan.io/address/0x1111111111111111111111111111111111111111">0x1111…1111</a>
+Successor: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Registered teams: 7
+
+<a href="https://teams.yearn.fi/">View current Teams directory</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T4 team_migrated 1`] = `
+"<b>🔁 Team migrated</b>
+
+Team: Frontend &amp; Tools
+Registry: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a> → <a href="https://etherscan.io/address/0x3333333333333333333333333333333333333333">0x3333…3333</a>
+
+<a href="https://teams.yearn.fi/?section=lifecycle&amp;team=0x1111111111111111111111111111111111111111">View current team lifecycle</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T5 team_owner_pending 1`] = `
+"<b>🔐 Team ownership transfer started</b>
+
+Team: Frontend &amp; Tools
+Current owner: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Pending owner: <a href="https://etherscan.io/address/0x3333333333333333333333333333333333333333">0x3333…3333</a>
+
+<a href="https://teams.yearn.fi/?section=lifecycle&amp;team=0x1111111111111111111111111111111111111111">View current team lifecycle</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T6 team_owner_set 1`] = `
+"<b>🔐 Team ownership transferred</b>
+
+Team: Frontend &amp; Tools
+Owner: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a> → <a href="https://etherscan.io/address/0x3333333333333333333333333333333333333333">0x3333…3333</a>
+
+<a href="https://teams.yearn.fi/?section=lifecycle&amp;team=0x1111111111111111111111111111111111111111">View current team lifecycle</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T7 team_revenue_deposited 1`] = `
+"<b>💵 Team revenue deposited</b>
+
+Team: Frontend &amp; Tools
+Deposited: 3.00 YFI
+Credited revenue: $9.00
+Deposited by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Period: #4
+Period #4 after: $12.00 revenue · $5.00 cost · $7.00 profit
+
+<a href="https://teams.yearn.fi/?section=revenue&amp;team=0x1111111111111111111111111111111111111111">View current team revenue</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T8 team_funding_approved 1`] = `
+"<b>📋 Team funding approved</b>
+
+Approval: #3
+Team: Frontend &amp; Tools
+Funding: 10.00 YFI
+Period: #4
+Vesting: 7 days from period start
+Claim window: 21 Sep 2026 → 28 Sep 2026
+
+<a href="https://teams.yearn.fi/?section=funding&amp;team=0x1111111111111111111111111111111111111111">View current team funding</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T9 team_funding_claimed 1`] = `
+"<b>💸 Team funding claimed</b>
+
+Approval: #3
+Team: Frontend &amp; Tools
+Claimed: 2.00 YFI
+Recorded cost: $4.00
+Recipient: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Delivery: Vesting contract <a href="https://etherscan.io/address/0x3333333333333333333333333333333333333333">0x3333…3333</a>
+Remaining approval: 8.00 YFI
+
+<a href="https://teams.yearn.fi/?section=funding&amp;team=0x1111111111111111111111111111111111111111">View current team funding</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T10 team_funding_returned 1`] = `
+"<b>↩️ Team funding returned</b>
+
+Approval: #3
+Team: Frontend &amp; Tools
+Returned: 2.00 YFI
+Recorded cost reduced: $4.00
+Returned by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Used after: 3.00 YFI
+
+<a href="https://teams.yearn.fi/?section=funding&amp;team=0x1111111111111111111111111111111111111111">View current team funding</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T11 team_bonus_claimed 1`] = `
+"🚨 <b>WHALE MOVE</b>
+<b>🎁 Team bonus claimed</b>
+
+Team: Frontend &amp; Tools
+Periods: #2–#3
+Gross bonus: 50.00 YFI
+Team received: 45.00 YFI
+YBC share: 5.00 YFI
+Recipient: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+
+<a href="https://teams.yearn.fi/?section=bonus&amp;team=0x1111111111111111111111111111111111111111">View current team bonus history</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T12 team_revenue_adjusted 1`] = `
+"<b>🧾 Team revenue accounting adjusted</b>
+
+Team: Frontend &amp; Tools
+Adjustment: +$1.00
+Adjusted by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Period: #4
+Revenue after: $12.00
+Period result after: $7.00 profit
+
+<a href="https://teams.yearn.fi/?section=overview&amp;team=0x1111111111111111111111111111111111111111">View current team overview</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T13 team_cost_adjusted 1`] = `
+"<b>🧾 Team cost accounting adjusted</b>
+
+Team: Frontend &amp; Tools
+Adjustment: -$1.00
+Adjusted by: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Period: #4
+Cost after: $5.00
+Period result after: $7.00 profit
+
+<a href="https://teams.yearn.fi/?section=overview&amp;team=0x1111111111111111111111111111111111111111">View current team overview</a>
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T14 team_revenue_to_rewards 1`] = `
+"<b>💰 Revenue sent to stYFI rewards</b>
+
+Allocated: 2.00 YFI
+Reward epoch: #8
+Rewards bucket used after: 12.00 YFI
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T15 team_revenue_to_treasury 1`] = `
+"<b>🏛️ Revenue sent to treasury</b>
+
+Sent: 2.00 YFI
+Treasury: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Treasury bucket used after: 12.00 YFI
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;
+
+exports[`approved alert catalogue > T16 team_revenue_to_recovery 1`] = `
+"<b>🛟 Revenue sent to yETH recovery</b>
+
+Sent: 2.00 YFI
+Recovery auction: <a href="https://etherscan.io/address/0x2222222222222222222222222222222222222222">0x2222…2222</a>
+Auction: Started
+Recovery bucket used after: 12.00 YFI
+
+<a href="https://etherscan.io/tx/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">Tx</a> · <a href="https://etherscan.io/block/25500000">Block 25,500,000</a> · 22 Sep 2026, 18:00 UTC"
+`;

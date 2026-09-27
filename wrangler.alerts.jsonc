@@ -1,38 +1,39 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "governance-alerts-bot",
+  // Permanent v2 identity. Do not reuse the live singleton Worker name during rollout.
+  "name": "governance-alerts-bot-v2",
   "main": "workers/alerts-bot/src/index.ts",
 
-  "compatibility_date": "2026-01-22",
+  "compatibility_date": "2026-09-03",
   "compatibility_flags": ["nodejs_compat"],
-  // Required secrets:
+  // The authenticated /status endpoint uses this stable rollout URL.
+  "workers_dev": true,
+
+  // Required secrets. Deploy once with every domain disabled, then configure them
+  // interactively outside git before enabling any domain:
   // wrangler secret put RPC_URL --config wrangler.alerts.jsonc
   // wrangler secret put TELEGRAM_BOT_TOKEN --config wrangler.alerts.jsonc
-  // wrangler secret put TELEGRAM_CHAT_ID --config wrangler.alerts.jsonc
-  // wrangler secret put ADMIN_CHAT_ID --config wrangler.alerts.jsonc
-  // wrangler secret put TEST_TO_CHAT_ID --config wrangler.alerts.jsonc
+  // wrangler secret put STYFI_TELEGRAM_CHAT_ID --config wrangler.alerts.jsonc
+  // wrangler secret put VEYFI_TELEGRAM_CHAT_ID --config wrangler.alerts.jsonc
+  // wrangler secret put YETH_TELEGRAM_CHAT_ID --config wrangler.alerts.jsonc
+  // wrangler secret put TEAMS_TELEGRAM_CHAT_ID --config wrangler.alerts.jsonc
+  // wrangler secret put YBC_TELEGRAM_CHAT_ID --config wrangler.alerts.jsonc
   // wrangler secret put ADMIN_TOKEN --config wrangler.alerts.jsonc
-  // wrangler secret put MANUAL_RUN_TOKEN --config wrangler.alerts.jsonc
-  // wrangler secret put GLOBAL_DATA_URL --config wrangler.alerts.jsonc
   "vars": {
+    // All domains fail closed until their final private chat is ready.
+    "ALERTS_STYFI_ENABLED": "true",
+    "ALERTS_VEYFI_ENABLED": "true",
+    "ALERTS_YETH_ENABLED": "true",
+    "ALERTS_TEAMS_ENABLED": "true",
+    "ALERTS_YBC_ENABLED": "true",
     "CONFIRMATIONS": "6",
-    "ENABLED": "true",
-    "DRY_RUN": "true",
     "MAX_MESSAGES_PER_RUN": "5",
-    "MANUAL_RUN_ENABLED": "false",
-    "MAX_SUBREQUESTS_PER_RUN": "45",
-    "BUDGET_STALL_ALERT_THRESHOLD": "3",
-    "BUDGET_STALL_ALERT_COOLDOWN_SECONDS": "3600",
-    "DAILY_IMPACT_DIGEST_ENABLED": "true",
-    //YETH_ALERTS_MODE=off|test|prod
-    // - off: no yETH decode/dispatch.
-    // - test: yETH alerts route to TEST_TO_CHAT_ID regardless of global mode.
-    // - prod: yETH alerts use normal route logic.
-    "YETH_ALERTS_MODE": "prod",
-    //YETH_ONLY=true|false
-    // - true: dispatch only yETH alerts (suppress non-yETH alerts).
-    // - false: existing alerts + yETH per mode
-    "YETH_ONLY": "false",
+    "MAX_RANGES_PER_RUN": "6",
+    "LOG_RANGE_SIZE": "10000",
+    // One deterministic checkpoint per roughly 24 hours on Ethereum.
+    "YETH_DAILY_CHECKPOINT_BLOCKS": "7200",
+    // Review private replay frequency before raising this materiality threshold.
+    "YETH_DAILY_MIN_DELTA_ETH": "0.5",
   },
 
   "triggers": {

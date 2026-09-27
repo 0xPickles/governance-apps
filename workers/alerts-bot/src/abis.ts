@@ -1,4 +1,9 @@
-import { parseAbi, parseAbiItem, toEventSelector } from "viem";
+import {
+  parseAbi,
+  parseAbiItem,
+  toEventSelector,
+  toFunctionSelector,
+} from "viem";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -31,21 +36,24 @@ export const LEGACY_VEYFI_MODIFY_LOCK_EVENT = parseAbiItem(
 );
 
 export const LEGACY_VEYFI_WITHDRAW_EVENT = parseAbiItem(
-  "event Withdraw(address indexed provider, uint256 value, uint256 ts, uint256 penalty)",
+  "event Withdraw(address indexed user, uint256 amount, uint256 ts)",
 );
 
 export const LEGACY_VEYFI_PENALTY_EVENT = parseAbiItem(
-  "event Penalty(address indexed sender, address indexed receiver, uint256 amount)",
+  "event Penalty(address indexed user, uint256 amount, uint256 ts)",
 );
 export const YETH_SET_CLAIM_EVENT = parseAbiItem(
-  "event SetClaim(address,uint256)",
+  "event SetClaim(address indexed account, uint256 amount)",
 );
 export const YETH_CLAIM_EVENT = parseAbiItem(
-  "event Claim(address,uint256,uint256,uint256)",
+  "event Claim(address indexed account, uint256 amount, uint256 underlying, uint256 shares)",
 );
 
 export const LEGACY_VEYFI_LOCKED_ABI = parseAbi([
-  "function locked(address) view returns (int128 amount, uint256 end)",
+  "function locked(address) view returns (uint256 amount, uint256 end)",
+] as const);
+export const COOLDOWN_STREAMS_ABI = parseAbi([
+  "function streams(address account) view returns (uint256 start, uint256 total, uint256 claimed)",
 ] as const);
 export const ERC20_BALANCE_OF_ABI = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
@@ -53,9 +61,20 @@ export const ERC20_BALANCE_OF_ABI = parseAbi([
 export const ERC4626_TOTAL_ASSETS_ABI = parseAbi([
   "function totalAssets() view returns (uint256)",
 ] as const);
-export const YETH_CLAIM_CALL_ABI = parseAbi([
-  "function claim(bool _exit)",
+export const STYFI_EXIT_CALL_ABI = parseAbi([
+  "function withdraw(uint256 assets) returns (uint256 shares)",
+  "function withdraw(uint256 assets, address receiver) returns (uint256 shares)",
+  "function withdraw(uint256 assets, address receiver, address owner) returns (uint256 shares)",
+  "function redeem(uint256 shares) returns (uint256 assets)",
+  "function redeem(uint256 shares, address receiver) returns (uint256 assets)",
+  "function redeem(uint256 shares, address receiver, address owner) returns (uint256 assets)",
 ] as const);
+export const YETH_CLAIM_CALL_ABI = parseAbi([
+  "function claim() returns (uint256 underlying, uint256 shares)",
+  "function claim(bool _exit) returns (uint256 underlying, uint256 shares)",
+] as const);
+export const YETH_CLAIM_NO_ARGUMENTS_SELECTOR = toFunctionSelector("claim()");
+export const YETH_CLAIM_EXIT_SELECTOR = toFunctionSelector("claim(bool)");
 
 export const ERC20_TRANSFER_ABI = [ERC20_TRANSFER_EVENT] as const;
 export const ERC4626_DEPOSIT_ABI = [ERC4626_DEPOSIT_EVENT] as const;
@@ -96,23 +115,3 @@ export const LEGACY_VEYFI_PENALTY_TOPIC = toEventSelector(
 );
 export const YETH_SET_CLAIM_TOPIC = toEventSelector(YETH_SET_CLAIM_EVENT);
 export const YETH_CLAIM_TOPIC = toEventSelector(YETH_CLAIM_EVENT);
-
-export const MONITORED_EVENT_TOPICS = [
-  ERC20_TRANSFER_TOPIC,
-  ERC4626_DEPOSIT_TOPIC,
-  ERC4626_WITHDRAW_TOPIC,
-  LIQUID_LOCKER_REDEEM_TOPIC,
-  LIQUID_LOCKER_EXCHANGE_TOPIC,
-  VEYFI_DISTRIBUTOR_MIGRATE_TOPIC,
-  LEGACY_VEYFI_MODIFY_LOCK_TOPIC,
-  LEGACY_VEYFI_WITHDRAW_TOPIC,
-  LEGACY_VEYFI_PENALTY_TOPIC,
-] as const;
-
-export const YETH_MONITORED_EVENT_TOPICS = [
-  YETH_SET_CLAIM_TOPIC,
-  YETH_CLAIM_TOPIC,
-  ERC4626_DEPOSIT_TOPIC,
-  ERC4626_WITHDRAW_TOPIC,
-  ERC20_TRANSFER_TOPIC,
-] as const;

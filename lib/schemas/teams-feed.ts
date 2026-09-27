@@ -1,8 +1,10 @@
 import { z } from "@/lib/schemas/zod";
+import { TEAMS_FEED_CORRECTED_ACCOUNTING_BLOCK } from "@/lib/clients/teams/accounting-history";
+
+export { TEAMS_FEED_CORRECTED_ACCOUNTING_BLOCK } from "@/lib/clients/teams/accounting-history";
 
 export const TEAMS_PROTOCOL_USD_DECIMALS = 18;
 export const TEAMS_BONUS_TOKEN_DECIMALS = 18;
-export const TEAMS_FEED_CORRECTED_ACCOUNTING_BLOCK = 25_633_144;
 export const TEAMS_FEED_MAX_PAYLOAD_BYTES = 2 * 1024 * 1024;
 export const TEAMS_FEED_MAX_TOKENS = 256;
 export const TEAMS_FEED_MAX_TEAMS = 512;

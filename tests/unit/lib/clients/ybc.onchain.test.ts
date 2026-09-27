@@ -81,6 +81,30 @@ describe("YBC feed mapper", () => {
     expect(pageState.data.rewards.claim.disabledReason).toMatch(/connect/i);
   });
 
+  it("excludes removed members from total collective voting power", () => {
+    const removedFeed = parseFeed({
+      ...feedExample,
+      members: [{
+        ...feedExample.members[0]!,
+        status: "removed",
+        removedAt: feedExample.generatedAt,
+      }],
+      events: {
+        ...feedExample.events,
+        activeMemberCount: 0,
+        removedMemberCount: 1,
+      },
+    });
+
+    const pageState = mapYbcFeedToPageState(removedFeed);
+
+    expect(pageState.data.hero.memberCount).toBe(0);
+    expect(pageState.data.hero.internalWeight).toBe("0");
+    expect(pageState.data.roster.totals.rawStaked).toBe("0");
+    expect(pageState.data.roster.totals.effectiveWeight).toBe("0");
+    expect(pageState.data.roster.totals.targetWeight).toBe("0");
+  });
+
   it("derives live epoch and proposal timing from pinned constants", () => {
     const canonicalTimestamp =
       YBC_MAINNET_DEPLOYMENT.genesis +

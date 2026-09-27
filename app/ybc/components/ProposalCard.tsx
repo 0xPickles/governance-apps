@@ -25,6 +25,7 @@ type ProposalCardProps = {
   onExecute?: () => void;
   transactionPending?: boolean;
   defaultOpen?: boolean;
+  focused?: boolean;
 };
 
 type TimelineStatus = "complete" | "current" | "upcoming" | "closed";
@@ -63,23 +64,35 @@ export function ProposalCard({
   onExecute,
   transactionPending = false,
   defaultOpen = false,
+  focused = false,
 }: ProposalCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const threshold = getYbcProposalThresholdState(proposal);
   const headingId = `${proposal.id}-heading`;
   const timelineRows = getTimelineRows(proposal);
+  const isExpanded = focused || isOpen;
 
   return (
-    <Card className="overflow-hidden border-border bg-app/70 p-0">
+    <Card
+      id={`ybc-proposal-${proposal.id}`}
+      data-focused={focused || undefined}
+      className={`overflow-hidden bg-app/70 p-0 transition-[border-color,box-shadow,background-color] duration-200 ${
+        focused
+          ? "border-yearn-blue bg-yearn-blue/[0.04] ring-2 ring-yearn-blue/30"
+          : "border-border"
+      }`}
+    >
       <details
-        open={isOpen}
-        onToggle={(event) => setIsOpen(event.currentTarget.open)}
+        open={isExpanded}
+        onToggle={(event) => {
+          if (!focused) setIsOpen(event.currentTarget.open);
+        }}
         role="article"
         aria-labelledby={headingId}
         className="group"
       >
         <summary
-          aria-label={`${isOpen ? "Collapse" : "Expand"} ${proposal.id} proposal details`}
+          aria-label={`${isExpanded ? "Collapse" : "Expand"} ${proposal.id} proposal details`}
           className="grid cursor-pointer list-none gap-4 p-6 transition-colors hover:bg-surface-secondary/40 focus:outline-none focus-visible:bg-surface-secondary/60 lg:grid-cols-[minmax(0,1fr)_minmax(260px,auto)] [&::-webkit-details-marker]:hidden"
         >
           <div className="min-w-0 space-y-3">

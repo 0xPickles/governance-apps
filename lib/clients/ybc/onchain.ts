@@ -473,8 +473,9 @@ export function mapYbcFeedToPageState(
           currentFeedMember?.pendingRewards ?? "0"
         )
     : "0";
+  const activeMembers = members.filter((member) => member.status !== "removed");
   const effectiveWeightTotal = sumDisplayAmounts(
-    members.map((member) => member.weight.effectiveWeight)
+    activeMembers.map((member) => member.weight.effectiveWeight)
   );
 
   const data: YbcMockDataV1 = {
@@ -488,7 +489,7 @@ export function mapYbcFeedToPageState(
     },
     hero: {
       collectiveAddress: YBC_MAINNET_DEPLOYMENT.ybc,
-      memberCount: members.filter((member) => member.status !== "removed").length,
+      memberCount: activeMembers.length,
       internalWeight: effectiveWeightTotal,
       delegatedWeight: "0",
       totalInfluence: effectiveWeightTotal,
@@ -513,11 +514,11 @@ export function mapYbcFeedToPageState(
     roster: {
       totals: {
         rawStaked: sumDisplayAmounts(
-          members.map((member) => member.weight.rawStaked)
+          activeMembers.map((member) => member.weight.rawStaked)
         ),
         effectiveWeight: effectiveWeightTotal,
         targetWeight: sumDisplayAmounts(
-          members.map((member) => member.weight.targetWeight)
+          activeMembers.map((member) => member.weight.targetWeight)
         ),
         rampingMemberCount: members.filter(
           (member) =>

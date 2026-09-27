@@ -11,7 +11,7 @@ Recommended display label: `Yearn Builder's Collective`
 
 A governance and membership workspace for the Yearn Builder's Collective.
 
-It covers collective influence, membership, weight maturity, proposal lifecycle,
+It covers collective voting power, membership, weight maturity, proposal lifecycle,
 thresholds, execution timing, rewards, and scoped operator controls.
 
 ## Naming stance
@@ -39,6 +39,14 @@ Default structure:
 3. Member roster table, with Cards available through a saved view toggle
 4. Rewards
 5. Operator panel, shown only for operator/admin perspectives
+
+The overview has one authoritative headline metric, **Total collective voting
+power**. It is the sum of current on-chain weight for active members; removed
+members never contribute even if a feed retains their last nonzero weight.
+Proposal links in the form `?proposal=<id>#proposals` open and focus the
+matching proposal card; invalid IDs are removed from the URL and fall back to
+`#proposals`. Telegram alert behavior is specified in
+[`../../alerts-bot-teams-ybc-spec.md`](../../alerts-bot-teams-ybc-spec.md).
 
 ## Live data path
 

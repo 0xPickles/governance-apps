@@ -1,22 +1,22 @@
 import type { Address } from "viem";
 import type { YbcFeed } from "@/lib/schemas/ybc-feed";
+import deployment from "@/lib/deployment.json";
 
 export const YBC_MAINNET_DEPLOYMENT = {
-  genesis: 1_770_249_600,
-  epochLengthSeconds: 1_209_600,
-  voteLengthSeconds: 604_800,
-  decayLengthSeconds: 86_400,
-  deployBlock: 25_228_044,
-  ybc: "0xd6AFd78C05f0d425F2b46359746dD44991dCB315",
-  ybcElection: "0xe16608758c11322d407745927d2D033f1BFB206C",
-  ybcWeightAggregator: "0xADB7228a85fCD24E3Cfc8C58E2d4b9F03E1468D9",
-  ybcRewardDistributor: "0x53100f8979D3655a2E95465f583b0f4A11c8bbe1",
-  ybcBonusRecipient: "0xf03a919a59f8381bE220511eCf788b15FB039e4C",
-  upstreamWeightAggregator:
-    "0x6973CF85d479b9253E13E71F377E8CD2c2dfECd7",
-  rewardToken: "0xBe53A109B494E5c9f97b9Cd39Fe969BE68BF6204",
-  rewardClaimer: "0xA82454009E01Ae697012a73cB232d85e61B05e50",
-  multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11",
+  genesis: deployment.YBC.GENESIS,
+  epochLengthSeconds: deployment.YBC.EPOCH_LENGTH_SECONDS,
+  voteLengthSeconds: deployment.YBC.VOTE_LENGTH_SECONDS,
+  decayLengthSeconds: deployment.YBC.DECAY_LENGTH_SECONDS,
+  deployBlock: deployment.YBC.DEPLOY_BLOCK,
+  ybc: deployment.YBC.YBC as Address,
+  ybcElection: deployment.YBC.ELECTION as Address,
+  ybcWeightAggregator: deployment.YBC.WEIGHT_AGGREGATOR as Address,
+  ybcRewardDistributor: deployment.YBC.REWARD_DISTRIBUTOR as Address,
+  ybcBonusRecipient: deployment.TEAMS.YBC_BONUS_RECIPIENT as Address,
+  upstreamWeightAggregator: deployment.YBC.UPSTREAM_WEIGHT_AGGREGATOR as Address,
+  rewardToken: deployment.REWARD as Address,
+  rewardClaimer: deployment.REWARD_CLAIMER as Address,
+  multicall3: deployment.MULTICALL3 as Address,
 } as const satisfies {
   genesis: number;
   epochLengthSeconds: number;

@@ -1,6 +1,38 @@
 interface TelegramSendMessageResponse {
-  ok: boolean;
-  description?: string;
+  ok?: boolean;
+  error_code?: number;
+  parameters?: {
+    retry_after?: number;
+  };
+}
+
+export type TelegramSendFailureKind =
+  | "http_error"
+  | "api_error"
+  | "invalid_response";
+
+export class TelegramRateLimitError extends Error {
+  constructor(readonly retryAfterSeconds: number) {
+    super("telegram_rate_limited");
+    this.name = "TelegramRateLimitError";
+  }
+}
+
+export class TelegramSendError extends Error {
+  constructor(
+    readonly httpStatus: number,
+    readonly telegramErrorCode: number | null,
+    readonly kind: TelegramSendFailureKind,
+  ) {
+    super("telegram_send_failed");
+    this.name = "TelegramSendError";
+  }
+}
+
+function safeInteger(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value)
+    ? value
+    : null;
 }
 
 export async function sendMessage(
@@ -26,9 +58,23 @@ export async function sendMessage(
   const payload =
     (await response.json().catch(() => null)) as TelegramSendMessageResponse | null;
 
+  const retryAfter = safeInteger(payload?.parameters?.retry_after);
+  if (
+    response.status === 429 &&
+    retryAfter !== null &&
+    retryAfter > 0
+  ) {
+    throw new TelegramRateLimitError(retryAfter);
+  }
   if (!response.ok || payload?.ok !== true) {
-    throw new Error(
-      `Telegram sendMessage failed: ${payload?.description ?? response.statusText}`,
+    throw new TelegramSendError(
+      response.status,
+      safeInteger(payload?.error_code),
+      payload === null
+        ? "invalid_response"
+        : response.ok
+          ? "api_error"
+          : "http_error",
     );
   }
 }

@@ -115,7 +115,7 @@ describe("YbcPageClient", () => {
     expect(onRetry).toHaveBeenCalledOnce();
   });
 
-  it("renders the observer overview with separate internal and delegated influence", async () => {
+  it("renders the observer overview with one collective voting-power metric", async () => {
     const data = await getScenarioData("observer");
 
     render(<YbcPageContent data={data} />);
@@ -132,9 +132,7 @@ describe("YbcPageClient", () => {
     expect(
       screen.queryByText("Membership", { exact: true }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(ybcCopy.hero.summary.internalLabel)).toBeInTheDocument();
-    expect(screen.getByText(ybcCopy.hero.summary.delegatedLabel)).toBeInTheDocument();
-    expect(screen.getByText(ybcCopy.hero.summary.totalLabel)).toBeInTheDocument();
+    expect(screen.getByText(ybcCopy.hero.summary.collectiveLabel)).toBeInTheDocument();
     expect(screen.queryByText("Accepted shell map")).not.toBeInTheDocument();
     expect(screen.queryByText("Mock interactions")).not.toBeInTheDocument();
     expect(screen.queryByText("Mock MVP scope")).not.toBeInTheDocument();
@@ -177,7 +175,48 @@ describe("YbcPageClient", () => {
       })
     ).toBeInTheDocument();
     expect(screen.getAllByText("5,650 weight").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("100,000 weight").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("opens and focuses a proposal from a Telegram deep link", async () => {
+    const data = await getScenarioData("observer");
+    const proposal = data.proposals.items.at(-1)!;
+    const proposalNumber = proposal.id.replace(/^YBC-/, "");
+    const { scrollIntoView, restore } = installHashScrollMock();
+    window.history.replaceState(null, "", `/ybc?proposal=${proposalNumber}#proposals`);
+
+    try {
+      const { container } = render(<YbcPageContent data={data} />);
+      const card = container.querySelector(`#ybc-proposal-${proposal.id}`);
+      expect(card).toHaveAttribute("data-focused", "true");
+      expect(card?.querySelector("details")).toHaveAttribute("open");
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+    } finally {
+      restore();
+    }
+  });
+
+  it("removes an invalid proposal deep link without losing the section hash", async () => {
+    const data = await getScenarioData("observer");
+    window.history.replaceState(null, "", "/ybc?proposal=999999#proposals");
+
+    render(<YbcPageContent data={data} />);
+
+    await waitFor(() => {
+      expect(window.location.search).toBe("");
+      expect(window.location.hash).toBe("#proposals");
+    });
+  });
+
+  it("falls invalid proposal links back to the proposals section", async () => {
+    const data = await getScenarioData("observer");
+    window.history.replaceState(null, "", "/ybc?keep=yes&proposal=invalid#overview");
+
+    render(<YbcPageContent data={data} />);
+
+    await waitFor(() => {
+      expect(window.location.search).toBe("?keep=yes");
+      expect(window.location.hash).toBe("#proposals");
+    });
   });
 
   it("edits local member names without hiding the canonical address", async () => {

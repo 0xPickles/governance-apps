@@ -34,6 +34,7 @@ type ProposalBoardProps = {
   proposalTargetRequired?: boolean;
   proposalTxState?: TxState;
   resetProposalTx?: () => void;
+  focusedProposalId?: string | null;
   retractProposal?: (proposalId: string) => void | Promise<void>;
   voteOnProposal?: (
     proposalId: string,
@@ -52,6 +53,7 @@ export function ProposalBoard({
   proposalTargetRequired = false,
   proposalTxState,
   resetProposalTx,
+  focusedProposalId = null,
   retractProposal,
   voteOnProposal,
 }: ProposalBoardProps) {
@@ -243,6 +245,7 @@ export function ProposalBoard({
                       : undefined
                   }
                   transactionPending={transactionPending}
+                  focused={proposal.id === focusedProposalId}
                 />
               ))}
             </div>

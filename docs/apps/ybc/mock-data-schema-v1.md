@@ -204,8 +204,12 @@ behind the debug panel and E2E bridge rather than as visible route-local control
 - `generatedAt` is when a fixture was produced. `asOf` is the effective data
   time used for proposal action and phase examples.
 - Token amounts and weights are decimal strings to preserve precision in JSON.
-- `hero.internalWeight` is the collective effective member weight, not raw stake.
-- `hero.totalInfluence` is `internalWeight + delegatedWeight` in display units.
+- `hero.internalWeight` is the authoritative collective voting-power value for
+  active members and is the value shown in the overview.
+- `hero.delegatedWeight` and `hero.totalInfluence` remain in schema v1 for
+  fixture compatibility. The current UI does not display them or use them for
+  proposal results; `totalInfluence` remains `internalWeight + delegatedWeight`
+  in display units.
 - Raw stake, effective weight, and target weight must remain separate fields on
   `me`, roster totals, and every roster member.
 - `maturityBps` is `0` to `10000`. `maturesAt` is `null` for fully matured or

@@ -28,7 +28,7 @@ Needs:
 - what YBC is
 - who is in it
 - what proposals exist
-- how much governance influence it has
+- how much collective voting power it controls
 
 ### Member
 Needs:
@@ -87,11 +87,10 @@ the member roster so actionable governance work is not buried.
 
 Approved shell map:
 
-- Overview summarizes member count, internal member weight, public delegated weight,
-  total governance influence, current epoch, active proposals, and proposals awaiting
-  execution.
+- Overview shows one total collective voting-power value for active members, member count, current epoch,
+  active proposals, and proposals awaiting execution.
 - Members keeps raw stake, effective voting weight, target weight, maturity progress,
-  and source mix visible as separate values in both Table and Cards views.
+  visible as separate values in both Table and Cards views.
 - Proposals maps addition and expulsion proposals through discussion, voting, awaiting
   execution, executed, and expired terminal states.
 - Proposal cards keep phase, target, proposer, and next action visible in the summary.
@@ -101,6 +100,9 @@ Approved shell map:
   and reward status controls.
 - Deep links such as `#overview`, `#members`, `#proposals`, `#rewards`, and `#admin`
   should scroll to the matching section.
+- A link in the form `?proposal=<numeric-id>#proposals` opens, scrolls to, and
+  highlights the matching proposal. Invalid or unknown IDs are removed while
+  preserving other query parameters and forcing the safe `#proposals` fallback.
 
 ## 5. Core UX rules
 
@@ -175,10 +177,8 @@ at 360px. The canonical address remains a Mainnet Etherscan target on coarse poi
 
 Recommended hero stats:
 
+- total collective voting power for active members
 - member count
-- internal member weight
-- public delegated weight
-- total governance influence
 - current epoch
 - active proposals
 - proposals awaiting execution
@@ -194,7 +194,6 @@ Columns:
 - effective weight
 - target weight
 - maturity progress
-- source mix summary
 
 Cards show:
 - maturity progress bar

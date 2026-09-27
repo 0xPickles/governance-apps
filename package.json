@@ -23,6 +23,7 @@
     "validate:deps": "node ./scripts/validate-dependency-policy.mjs",
     "validate:prod-env": "node ./scripts/validate-prod-env.mjs",
     "validate:worker-size": "node ./scripts/check-worker-size.mjs",
+    "alerts:catalogue-examples": "ALERTS_PRINT_GOLDENS=1 vitest run tests/unit/workers/alerts-bot.catalogue-goldens.test.ts --reporter=verbose",
     "agent:sync": "./scripts/sync-agent-env.sh",
     "agent:bootstrap": "./scripts/agent-worktree.sh",
     "measure:dao-feed": "node ./scripts/measure-dao-feed-v2.mjs",

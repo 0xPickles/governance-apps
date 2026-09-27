@@ -242,16 +242,6 @@ function MemberRow({
           <ProgressBar value={maturityPercent} className="h-2.5 bg-surface-secondary" />
         </div>
       </TableCell>
-      <TableCell>
-        <ul className="space-y-1 text-xs text-text-secondary">
-          {getSourceMix(member).map((source) => (
-            <li key={source.label}>
-              <span className="font-bold text-text-primary">{source.value}</span>{" "}
-              {source.label}
-            </li>
-          ))}
-        </ul>
-      </TableCell>
     </TableRow>
   );
 }
@@ -313,21 +303,6 @@ function MemberCard({
         </dl>
       </div>
 
-      <div className="mt-auto rounded-box border border-border bg-app px-4 py-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
-          {copy.members.columns.sourceMix}
-        </p>
-        <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-          {getSourceMix(member).map((source) => (
-            <li key={source.label}>
-              <span className="font-number font-bold text-text-primary">
-                {source.value}
-              </span>{" "}
-              {source.label}
-            </li>
-          ))}
-        </ul>
-      </div>
     </Card>
   );
 }
@@ -363,7 +338,6 @@ function MembersAuditTable({
             </TableHead>
             <TableHead className="text-right">{copy.members.columns.targetWeight}</TableHead>
             <TableHead>{copy.members.columns.maturity}</TableHead>
-            <TableHead>{copy.members.columns.sourceMix}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -436,19 +410,6 @@ function TotalCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function getSourceMix(member: YbcMemberRecord) {
-  return [
-    { label: "stYFI", value: member.sources.stYFI },
-    { label: "stYFIx", value: member.sources.stYFIx },
-    { label: "migrated veYFI", value: member.sources.migratedVeYfi },
-  ]
-    .filter((source) => isPositiveDecimalAmount(source.value))
-    .map((source) => ({
-      ...source,
-      value: formatDecimalAmount(source.value, 2),
-    }));
-}
-
 function getMaturityLabel(member: YbcMemberRecord) {
   if (member.weight.maturesAt) {
     return `${copy.members.states.maturesOn} ${formatUtcDate(
@@ -459,12 +420,6 @@ function getMaturityLabel(member: YbcMemberRecord) {
   return member.weight.maturityBps >= 10_000
     ? copy.members.states.fullyMatured
     : copy.members.states.ramping;
-}
-
-function isPositiveDecimalAmount(amount: string): boolean {
-  const normalized = amount.trim();
-  const match = /^[+]?\d+(?:\.\d*)?$/.exec(normalized);
-  return Boolean(match && /[1-9]/.test(normalized));
 }
 
 const statusVariantMap = {

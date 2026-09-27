@@ -21,6 +21,29 @@ export type ActionKind =
 
 export type YethWithdrawalType = "full" | "partial";
 
+export type ActionPrincipalEvidence =
+  | {
+      readonly kind: "proven";
+      readonly address: string;
+    }
+  | {
+      readonly kind: "unavailable";
+      readonly reason: "canonical_sender_unavailable";
+    };
+
+export type NormalizedActionSource =
+  | {
+      readonly kind: "onchain";
+      readonly txHash: string;
+      readonly logIndex: number;
+    }
+  | {
+      readonly kind: "synthetic";
+      readonly metricId: string;
+      readonly blockHash: string;
+      readonly orderingIndex: number;
+    };
+
 export interface ActionAmounts {
   assets?: bigint;
   shares?: bigint;
@@ -33,6 +56,8 @@ export interface ActionAmounts {
   previousAmount?: bigint;
   previousLocktime?: bigint;
   yethSnapshotAmount?: bigint;
+  yethUnderlyingAmount?: bigint;
+  yethClaimShares?: bigint;
   yethSnapshotMoved?: bigint;
   yethTotalSnapshotDebtEth?: bigint;
   yethSnapshotExitedEth?: bigint;
@@ -66,7 +91,9 @@ export interface ActionAmounts {
 export interface NormalizedAction {
   kind: ActionKind;
   tokenSymbol: string;
-  user: string;
+  user: string | null;
+  /** Canonical primary account evidence consumed by the WP3 context resolver. */
+  principal?: ActionPrincipalEvidence;
   owner?: string;
   receiver?: string;
   caller?: string;
@@ -74,5 +101,9 @@ export interface NormalizedAction {
   txHash: string;
   blockNumber: number;
   logIndex: number;
+  /** Distinguishes linkable chain logs from block-level protocol metrics. */
+  source: NormalizedActionSource;
   yethWithdrawalType?: YethWithdrawalType;
+  /** Scanner-proven pre-event stream state for cooldown restart copy. */
+  cooldownRestarted?: boolean;
 }

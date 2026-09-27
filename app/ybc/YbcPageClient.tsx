@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { UtcTime } from "@/components/ui/UtcTime";
@@ -206,6 +206,7 @@ export function YbcPageContent({
   readStatus = "current",
   warningMessage,
 }: YbcPageContentProps) {
+  const [focusedProposalId, setFocusedProposalId] = useState<string | null>(null);
   const {
     aliases,
     clearAliases,
@@ -260,6 +261,51 @@ export function YbcPageContent({
     return () => window.removeEventListener("hashchange", applyHash);
   }, [showOperatorSection]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const applyProposalLink = () => {
+      const url = new URL(window.location.href);
+      const rawProposal = url.searchParams.get("proposal");
+      if (rawProposal === null) {
+        setFocusedProposalId(null);
+        return;
+      }
+      const proposalId = /^\d+$/.test(rawProposal)
+        ? `YBC-${BigInt(rawProposal).toString()}`
+        : null;
+      const exists = proposalId !== null && data.proposals.items.some(
+        (proposal) => proposal.id === proposalId
+      );
+      if (!exists) {
+        url.searchParams.delete("proposal");
+        url.hash = "proposals";
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `${url.pathname}${url.search}${url.hash}`
+        );
+        setFocusedProposalId(null);
+        return;
+      }
+      setFocusedProposalId(proposalId);
+      window.requestAnimationFrame(() => {
+        document.getElementById(`ybc-proposal-${proposalId}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      });
+    };
+
+    applyProposalLink();
+    window.addEventListener("popstate", applyProposalLink);
+    window.addEventListener("hashchange", applyProposalLink);
+    return () => {
+      window.removeEventListener("popstate", applyProposalLink);
+      window.removeEventListener("hashchange", applyProposalLink);
+    };
+  }, [data.proposals.items]);
+
   const membersSection = (
     <MembersTable
       aliases={aliases}
@@ -283,6 +329,7 @@ export function YbcPageContent({
       proposalTargetRequired={proposalTargetRequired}
       proposalTxState={proposalTxState}
       resetProposalTx={resetProposalTx}
+      focusedProposalId={focusedProposalId}
     />
   );
 

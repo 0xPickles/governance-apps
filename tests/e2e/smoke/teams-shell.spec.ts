@@ -101,6 +101,33 @@ test("keeps loading and empty coverage reachable through the shared Teams runtim
   await expect(page.locator("#admin").getByText("No admin console available")).toBeVisible();
 });
 
+test("opens lifecycle and bonus links from Teams alerts", async ({ page }) => {
+  const teamAddress = "0x1111111111111111111111111111111111111111";
+  const destinations = [
+    { section: "lifecycle", heading: "Ownership and Status" },
+    { section: "bonus", heading: "Bonus" },
+  ] as const;
+
+  for (const destination of destinations) {
+    await page.goto(
+      `/teams?section=${destination.section}&team=${teamAddress}`,
+    );
+    await waitForTestBridge(page);
+
+    await expect(page).toHaveURL((url) =>
+      url.pathname === "/teams" &&
+      url.searchParams.get("team") === teamAddress &&
+      url.searchParams.get("section") === destination.section
+    );
+    await expect(
+      page.locator(`#${destination.section}`).getByRole("heading", {
+        name: destination.heading,
+        exact: true,
+      }),
+    ).toBeVisible();
+  }
+});
+
 test("restores deep links and browser history without resetting active sections", async ({
   page,
 }) => {
