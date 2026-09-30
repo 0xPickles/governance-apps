@@ -6,6 +6,7 @@ import {
 } from "@playwright/test";
 import {
   DAO_BLOCKED_REASONS,
+  DAO_MOCK_FEED,
   type DaoMockFixtureId,
   type DaoMockRole,
   type DaoMockTransactionOutcome,
@@ -27,7 +28,7 @@ test.beforeEach(async ({ page }) => {
 
 test("keeps the action panel reachable, responsive, and keyboard safe", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   for (const viewport of VIEWPORTS) {
@@ -50,6 +51,11 @@ test("keeps the action panel reachable, responsive, and keyboard safe", async ({
     }
 
     const actionHeading = page.getByRole("heading", { name: "Your action" });
+    const results = page.getByLabel("Vote results", { exact: true });
+    const rules = results.locator("summary");
+    await expect(results).toBeVisible();
+    await expect(results.locator("details")).not.toHaveAttribute("open", "");
+    const resultsBox = await results.boundingBox();
     const contentHeading = page.getByRole("heading", {
       name: "Immutable proposal content",
     });
@@ -57,6 +63,26 @@ test("keeps the action panel reachable, responsive, and keyboard safe", async ({
     const contentBox = await contentHeading.boundingBox();
     expect(actionBox).not.toBeNull();
     expect(contentBox).not.toBeNull();
+    expect(resultsBox).not.toBeNull();
+    expect(resultsBox!.y + resultsBox!.height).toBeLessThan(actionBox!.y);
+    expect(
+      await actionHeading.evaluate((heading) => {
+        const resultsCard = document.querySelector('[aria-label="Vote results"]');
+        return Boolean(
+          resultsCard &&
+          (resultsCard.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING)
+        );
+      })
+    ).toBe(true);
+
+    const yea = page.getByRole("radio", { name: "Yea" });
+    const nay = page.getByRole("radio", { name: "Nay" });
+    await expect(yea).toBeEnabled();
+    await expect(nay).toBeEnabled();
+    await rules.focus();
+    await expect(rules).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(yea).toBeFocused();
 
     if (viewport.width < 1_024) {
       expect(actionBox!.y).toBeLessThan(contentBox!.y);
@@ -64,8 +90,6 @@ test("keeps the action panel reachable, responsive, and keyboard safe", async ({
       expect(actionBox!.x).toBeGreaterThan(contentBox!.x);
     }
 
-    const yea = page.getByRole("radio", { name: "Yea" });
-    const nay = page.getByRole("radio", { name: "Nay" });
     await expect(yea).not.toBeChecked();
     await expect(nay).not.toBeChecked();
     await expectMinimumHitArea(yea.locator(".."));
@@ -74,6 +98,13 @@ test("keeps the action panel reachable, responsive, and keyboard safe", async ({
       actionHeading.locator("xpath=ancestor::aside")
     ).toHaveCSS("position", "static");
     await expectNoDocumentOverflow(page, viewport.name);
+    if (viewport.name === "phone" || viewport.name === "desktop") {
+      await page.getByRole("complementary", {
+        name: "Proposal actions and vote results", exact: true,
+      }).screenshot({
+        path: testInfo.outputPath(`results-first-${viewport.name}.png`),
+      });
+    }
   }
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -164,8 +195,57 @@ test("keeps post-veto participation open and blocks an early veto", async ({
   await expect(page.getByRole("radio", { name: "Nay" })).toBeEnabled();
 
   await loadFixture(page, "early-veto", 12);
-  await expect(page.getByText(DAO_BLOCKED_REASONS.voteLifecycle)).toBeVisible();
+  await expect(page.getByText(DAO_BLOCKED_REASONS.voteVetoed)).toBeVisible();
   await expect(page.getByRole("radio")).toHaveCount(0);
+});
+
+for (const [fixture, id, reason] of [
+  ["retracted", 10, "This proposal was retracted and cannot receive votes."],
+  ["flagged", 11, "This proposal was flagged and cannot receive votes."],
+  ["early-veto", 12, "This proposal was vetoed and cannot receive votes."],
+] as const) {
+  test(`explains ${fixture} before, during, and after voting`, async ({ page }, testInfo) => {
+    const proposal = DAO_MOCK_FEED.proposals.find(
+      (value) => value.ref.proposalId === BigInt(id)
+    )!;
+    await page.setViewportSize(
+      id === 11 ? { width: 390, height: 844 } : { width: 1_280, height: 900 }
+    );
+    await loadFixture(page, fixture, id);
+    for (const now of [proposal.voteStartsAt - 1, proposal.voteStartsAt, proposal.voteEndsAt + 1]) {
+      await page.evaluate(async (timestamp) => {
+        await window.__TEST__?.setNow(timestamp);
+      }, now);
+      await expect(page.getByText(reason, { exact: true })).toBeVisible();
+      await expect(page.getByRole("radio")).toHaveCount(0);
+      const state = await page.evaluate(async () => window.__TEST__?.getDaoState?.());
+      expect(state?.capabilities.canVote).toBe(false);
+      await expectNoDocumentOverflow(page, `${fixture} at ${now}`);
+      if (now < proposal.voteStartsAt) {
+        await page.getByRole("complementary", {
+          name: "Proposal actions and vote results", exact: true,
+        }).screenshot({ path: testInfo.outputPath(`${fixture}.png`) });
+      }
+    }
+  });
+}
+
+test("keeps results readable above actions without a wallet", async ({ page }) => {
+  for (const viewport of [VIEWPORTS[0], VIEWPORTS[2]]) {
+    await page.setViewportSize(viewport);
+    await loadFixture(page, "voting", 2);
+    await page.evaluate(async () => {
+      await window.__TEST__?.setDaoAccountState?.("disconnected");
+    });
+    const results = page.getByLabel("Vote results", { exact: true });
+    await expect(results.getByText("11", { exact: true })).toBeVisible();
+    await expect(page.getByText(DAO_BLOCKED_REASONS.walletDisconnected, { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("radio")).toHaveCount(0);
+    const resultsBox = await results.boundingBox();
+    const actionBox = await page.getByRole("heading", { name: "Your action" }).boundingBox();
+    expect(resultsBox!.y + resultsBox!.height).toBeLessThan(actionBox!.y);
+    await expectNoDocumentOverflow(page, `disconnected ${viewport.name}`);
+  }
 });
 
 test("requires tiered confirmation when immutable content cannot be trusted", async ({

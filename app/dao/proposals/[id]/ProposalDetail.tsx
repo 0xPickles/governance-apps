@@ -141,7 +141,6 @@ export function ProposalDetail({
           className="order-first min-w-0 space-y-5 lg:order-last"
           aria-label={daoCopy.detail.actionSidebar}
         >
-          {actionPanel}
           <Card className="min-w-0 space-y-5" aria-label={daoCopy.detail.voteResults}>
             <div className="space-y-3">
               <h3 className="text-balance text-xl font-bold">
@@ -174,6 +173,7 @@ export function ProposalDetail({
 
             <ProposalRules proposal={proposal} />
           </Card>
+          {actionPanel}
         </aside>
 
         <div className="order-last min-w-0 space-y-5 lg:order-first">
