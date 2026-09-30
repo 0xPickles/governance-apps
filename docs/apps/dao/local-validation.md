@@ -3,8 +3,8 @@
 This is the current local walkthrough entry point on `agent/integration`.
 The approved publication acceptance remains complete. This session does not repeat that experiment.
 The [September 26 completion record](delivery/integration-20260926.md) identifies the tested source, durable populated session, and retained evidence.
-Use the [master reconciliation handoff](delivery/master-reconciliation-20260926.md) to rebuild the retained session after candidate approval.
-Until that rebuild, the commands below resume the earlier tested source. The broader walkthrough remains a separate task.
+The manual walkthrough completed on September 30. The [UAT closeout](delivery/uat-closeout-20260930.md) records its evidence and subsequent product corrections.
+The retained session uses `ad2c18a47c9366f50037e9daa79b08641d09affa`. Preserve it as completed evidence. This closeout does not require another walkthrough or rebuild.
 
 The launcher builds optimized Next.js output with `NODE_ENV=production` and explicit `NEXT_PUBLIC_RUNTIME_MODE=development`.
 It uses real DAO clients, the shared transaction pipeline, and production freshness, canonicality, and simulation checks.
@@ -13,6 +13,9 @@ It does not represent a production Worker deployment.
 ## Prerequisites and source
 
 Use Node 24, the locked npm dependencies, Anvil, Docker, uvx, and the installed Playwright Chromium browser.
+The Docker CLI can use Colima without Docker Desktop. Inspect the existing Colima profile, Docker context, and container ownership label before use.
+`colima-m1-wp2` is this retained session's context, not a universal default. Its container is `dao-validation-857869440066`, labeled with the session directory.
+Do not start an unrelated profile or reset storage based on sandbox-restricted status output.
 The producer remains the released `gov-apps-dao` binary. Each acquisition requires this SHA-256:
 
 ```text
@@ -46,8 +49,8 @@ It never copies `.env` files, acceptance checkpoints, or private credentials.
 
 ## Start, use, resume, and stop
 
-These fish commands operate the existing durable session. It contains proposal `0` in the Voting phase.
-Keep the directory, recorded dependencies, and stopped Docker container until the walkthrough is complete.
+These fish commands document session operation. The completed session contains eight proposals in their final lifecycle states.
+Keep the directory, recorded dependencies, and stopped Docker container as evidence. Resume only for separately requested work.
 Do not initialize, reset, or rerun the proposal smoke in this populated session.
 
 ```fish
@@ -128,14 +131,6 @@ npm run dao:validate -- scenario "$session" phase expire 0
 npm run dao:validate -- refresh "$session"
 npm run dao:validate -- scenario "$session" mine
 
-# Save before an action or block advancement, then replace that branch.
-npm run dao:validate -- scenario "$session" checkpoint
-npm run dao:validate -- scenario "$session" mine
-npm run dao:validate -- refresh "$session"
-npm run dao:validate -- scenario "$session" replace-chain
-# Inspect the old observation's rejection, then acquire the replacement.
-npm run dao:validate -- refresh "$session"
-
 # Explicit display-only fixtures. Reload after changing feed mode.
 npm run dao:validate -- control "$session" feed '"empty-fixture"'
 npm run dao:validate -- control "$session" feed '"content-fixture"'
@@ -150,6 +145,12 @@ Desktop mode follows the native window. Mobile mode uses a 390 × 844 viewport.
 RPC delay affects browser requests, including identity reads. Producer acquisition remains an independent local operation.
 The fixture controls intercept only browser feed responses. They never change the saved producer output.
 Fixture results are display evidence, not producer or transaction evidence.
+
+Opening a review dialog does not prepare a transaction. Confirmation starts preparation.
+A canonical-replacement rejection test requires preparation first, replacement of the observed block second, and invocation of the old preparation afterward.
+The existing [automated canonicality test](../../../tests/e2e/dao-live/canonicality.spec.ts) asserts this sequence and zero sends on rejection.
+That test resets its disposable fork. Do not run it against the retained session.
+Replacement before confirmation does not establish rejection of an old preparation. Mining with a dialog open checks UI continuity only.
 
 The helper script and reverting variant are available from the session state:
 
@@ -181,8 +182,8 @@ The local forum substitute accepts `https://gov.yearn.fi/t/local-fork-uat/1234` 
 | Wallet rejection | Set `rejectNext true` immediately before confirmation | Preserved review and retry; no transaction hash |
 | Failed simulation | Create the reverting executable, pass its vote, then enter execute phase | Disabled execution, simulation error, unchanged contract state |
 | Reload / indexing lag | Create or vote, reload before `refresh`, then acquire | Saved receipt, one transaction, eventual indexed state |
-| Ordinary advancement | Review an action, run `mine`, confirm | Fresh revalidation and one transaction |
-| Canonical replacement | Checkpoint, advance/acquire, prepare action, replace branch | Old preparation rejected; new snapshot accepted after refresh |
+| Ordinary advancement | Review an action, run `mine`, confirm | UI continuity and preparation on confirmation; not proof of revalidating an old preparation |
+| Canonical replacement | Existing automated test on a disposable fork: prepare, replace observed block, invoke old preparation | Old preparation rejected with zero sends; no manual dialog-based rejection claim |
 | Cold / slow RPC | Fresh browser profile/session, or delay/offline controls | Loading, retry, error, and no duplicate submission |
 | Empty | Fresh initialized fork for producer evidence; `empty-fixture` for display inspection | Label the evidence source explicitly |
 | Stale | `clock stale`, then return to `clock fork` | Freshness blocker without edited feed timestamps |
@@ -216,7 +217,7 @@ Run this only in a disposable session with an eligible author and sufficient ret
 The prepared durable session already passed this check. Do not rerun it to resume the environment.
 After a failure, inspect retained receipts, the publication ledger, and downloads before any retry.
 Preserve attempt files before retrying; the smoke uses fixed output filenames.
-The broader interactive walkthrough remains a separate validation session.
+The broader interactive walkthrough completed on September 30. Its evidence remains separate from this earlier smoke check.
 
 ## Substitutions and environment differences
 

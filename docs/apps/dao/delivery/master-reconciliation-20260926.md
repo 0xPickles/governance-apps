@@ -1,5 +1,8 @@
 # Master reconciliation candidate — 26–27 September 2026
 
+Current handoff: [September 30 UAT closeout](uat-closeout-20260930.md). The manual walkthrough is complete.
+The record below preserves the reconciliation evidence and its then-pending gates. Its session rebuild instructions are historical, not the next task.
+
 This candidate merges master into the independently reviewed DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427`.
 Independent review of this reconciliation remains required. The populated local walkthrough and preprod deployment remain separate gates.
 The completed [Pinata acceptance](../publication-acceptance-20260923.md) remains valid and was not repeated.

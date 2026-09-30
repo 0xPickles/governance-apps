@@ -2,13 +2,13 @@
 
 Publication acceptance is [complete](publication-acceptance-20260923.md).
 The approved package is integrated. DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427` passed independent review.
-See the [master reconciliation handoff](delivery/master-reconciliation-20260926.md) for the current candidate and checks.
-Use [built local validation](local-validation.md) and the [preprod preparation checklist](preprod-validation.md) for the next gates.
+See the [UAT closeout](delivery/uat-closeout-20260930.md) for the current candidate, finding dispositions, and checks.
+The manual walkthrough and Pinata acceptance are complete. Independent review and [preprod preparation](preprod-validation.md) are the next gates.
 This checklist does not authorize a merge, deployment, remote change, or production transaction.
 
 ## Remaining release inputs
 
-1. Independent review of the reconciled candidate and the subsequent local walkthrough.
+1. Independent review of the closeout candidate on the reconciled integration branch.
 2. Reviewed production deployment allowlist, RPC URLs, and producer endpoint/identity.
 3. Distinct production and preproduction D1 IDs, the existing migration, and backup ownership.
 4. An upload-only Worker secret, public gateway, reviewed aggregate limits, and content-retention policy.

@@ -5,7 +5,15 @@ every accepted merge. When a merge SHA is not known before integration, the
 integrator records it in a small post-merge documentation commit before the next
 package starts.
 
-## Current work (2026-09-27)
+## Current work (2026-09-30)
+
+- The manual lifecycle walkthrough, populated restart, disconnected reads, desktop/mobile checks, fallback displays, and shutdown passed according to the user.
+- Independent comparisons confirm unchanged proposal records after restart and unchanged publication records, policy, and accounting: eight documents, eight uploads, eight retrievals.
+- The [UAT closeout](uat-closeout-20260930.md) records the voting explanation correction, results-before-actions layout, validation, and review range.
+- The earlier browser stall remains unexplained, deferred, and non-blocking at the user's request. Investigate only if it recurs during ordinary validation.
+- Completed Pinata acceptance remains accepted. Independent candidate review precedes the production-mode preprod build connected to mainnet.
+
+## Reconciliation handoff (historical, 2026-09-27)
 
 - The user confirmed independent approval of DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427`.
 - The [master reconciliation handoff](master-reconciliation-20260926.md) is the active candidate record. It records exact parents, validation, and the new independent review scope.
