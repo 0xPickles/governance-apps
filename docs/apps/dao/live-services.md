@@ -31,6 +31,11 @@ Historical grant and Kubo evidence remains historical. Those settings are obsole
 `GET /api/dao-forum?url=...` retains public topic, category, and ancestry validation.
 The app never posts to the forum. Provider credentials stay in deployment secrets.
 
+Forum, Pinata upload, and gateway requests use `redirect: "manual"` and reject every non-2xx response.
+The repository's Worker runtime rejects `redirect: "error"` before it sends a request.
+That option caused valid topics to return `FORUM_UNAVAILABLE` and also blocked publication requests.
+Manual redirect handling preserves mandatory validation and prevents credential forwarding.
+
 ## Transactions and recovery
 
 Domain clients read one canonical block, check current roles and commitments, and simulate the exact call.

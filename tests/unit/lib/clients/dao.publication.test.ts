@@ -32,7 +32,7 @@ describe("Pinata exact-file transport", () => {
   it("uploads exact bytes with CIDv1 and no wrapping; public retrieval receives no credential", async () => {
     const calls: string[] = [];
     vi.stubGlobal("fetch", vi.fn(async (url: string, options: RequestInit) => {
-      calls.push(url); expect(options.redirect).toBe("error"); expect(options.credentials).toBe("omit");
+      calls.push(url); expect(options.redirect).toBe("manual"); expect(options.credentials).toBe("omit");
       expect(options.signal).toBeInstanceOf(AbortSignal);
       if (options.method === "POST") {
         expect(url).toBe("https://api.pinata.cloud/pinning/pinFileToIPFS");
@@ -49,6 +49,17 @@ describe("Pinata exact-file transport", () => {
     const service = daoPublicationServiceConfiguration();
     await uploadDaoPinataFile(identity.bytes, service); await retrieveDaoPinataFile(identity.bytes, service);
     expect(calls).toHaveLength(2);
+  });
+  it.each([301, 302, 303, 307, 308])("rejects upload and gateway redirects (%s)", async status => {
+    const fetcher = vi.fn(async (_url: string, options: RequestInit) => {
+      expect(options.redirect).toBe("manual");
+      return new Response(null, { status, headers: { Location: "https://untrusted.example/" } });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const service = daoPublicationServiceConfiguration();
+    await expect(uploadDaoPinataFile(identity.bytes, service)).rejects.toMatchObject({ code: "verification_pending" });
+    await expect(retrieveDaoPinataFile(identity.bytes, service)).rejects.toMatchObject({ code: "verification_pending" });
+    expect(fetcher).toHaveBeenCalledTimes(2);
   });
   it.each([{}, { IpfsHash: "wrong", PinSize: identity.bytes.length }, { IpfsHash: identity.cid, PinSize: 0 }])("rejects invalid provider identity %j", async body => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(body)));

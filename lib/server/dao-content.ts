@@ -31,7 +31,8 @@ export async function uploadDaoPinataFile(bytes: Uint8Array, service: Service) {
   body.append("file", new Blob([new Uint8Array(bytes)], { type: "application/octet-stream" }), cid + ".json");
   body.append("pinataOptions", JSON.stringify({ cidVersion: 1, wrapWithDirectory: false }));
   const response = await fetch(service.upload, {
-    method: "POST", body, cache: "no-store", redirect: "error", credentials: "omit",
+    // Do not follow redirects or forward upload credentials to another URL.
+    method: "POST", body, cache: "no-store", redirect: "manual", credentials: "omit",
     headers: service.authorization ? { Authorization: service.authorization } : {},
     signal: AbortSignal.timeout(15_000),
   });
@@ -45,7 +46,7 @@ export async function retrieveDaoPinataFile(bytes: Uint8Array, service: Service)
   const { cid } = validateDaoPublicationBytes(bytes);
   // Gateway requests never receive upload authorization, including redirects.
   const response = await fetch(service.gateway + cid, {
-    cache: "no-store", redirect: "error", credentials: "omit", signal: AbortSignal.timeout(15_000),
+    cache: "no-store", redirect: "manual", credentials: "omit", signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) { cancelDaoBody(response.body); throw new DaoPublicationPolicyError("verification_pending", 503); }
   const retained = await readDaoBoundedBytes(response);

@@ -21,6 +21,17 @@ describe("real DAO forum policy", () => {
     expect(fetcher).toHaveBeenCalledTimes(3);
     expect(fetcher.mock.calls.every(call => String(call[0]).startsWith("https://gov.yearn.fi/"))).toBe(true);
   });
+  it.each([301, 302, 303, 307, 308])("rejects topic redirects (%s) without following them", async status => {
+    const fetcher = vi.fn(async () => new Response(null, {
+      status, headers: { Location: "https://untrusted.example/" },
+    }));
+    vi.stubGlobal("fetch", fetcher);
+    expect(await validateDaoForumTopic("https://gov.yearn.fi/t/proposal/123")).toMatchObject({
+      state: "invalid", error: { code: "FORUM_UNAVAILABLE" },
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledWith("https://gov.yearn.fi/t/123.json", expect.objectContaining({ redirect: "manual" }));
+  });
   it("rejects category labels with the wrong ancestry", async () => {
     vi.stubGlobal("fetch", vi.fn(async (url: string) => Response.json(url.includes("/t/") ? {
       id: 123, slug: "proposal", title: "Proposal", category_id: 10, created_at: "2026-09-01T00:00:00Z",

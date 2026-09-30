@@ -26,7 +26,8 @@ export function parseDaoForumUrl(input: string): { topicId: number } | null {
 }
 const policy: FeedTransportPolicy = {
   maximumPayloadBytes: 1024 * 1024, requestTimeoutMs: 8_000, fatalUtf8: true,
-  fetchOptions: { cache: "no-store", redirect: "error", credentials: "omit" },
+  // Workers require manual redirects; readForum rejects every non-2xx response.
+  fetchOptions: { cache: "no-store", redirect: "manual", credentials: "omit" },
   createPayloadTooLargeError: () => new Error("Forum response is too large."),
   createTimeoutError: () => new Error("Forum request timed out."),
   payloadTooLargeCancelReason: "Forum response limit", timeoutCancelReason: "Forum deadline",
