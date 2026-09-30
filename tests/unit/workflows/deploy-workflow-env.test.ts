@@ -36,6 +36,10 @@ const preprodDaoReviewControlsFlag =
 function expectedRuntimeEnvFor(relativePath: string) {
   return {
     ...expectedRuntimeEnv,
+    ...(relativePath.includes("preprod") ? {
+      NEXT_PUBLIC_DAO_DEPLOYMENTS: "${{ vars.NEXT_PUBLIC_DAO_DEPLOYMENTS }}",
+      NEXT_PUBLIC_ENABLE_SIMULATION_TRANSPORT_FALLBACK: '"false"',
+    } : {}),
     NEXT_PUBLIC_ENABLE_DAO: relativePath.includes("preprod")
       ? preprodDaoFlag
       : '"false"',
