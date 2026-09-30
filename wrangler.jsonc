@@ -6,8 +6,16 @@
   "compatibility_date": "2026-01-22",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 
-  // Release gate: replace this reserved placeholder with the reviewed database ID.
-  "d1_databases": [{ "binding": "DAO_PUBLICATION_DB", "database_name": "dao-publication", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations/dao-publication" }],
+  // Shared mainnet publication records and accounting with preprod.
+  // Local tools must use isolated storage. See docs/apps/dao/preprod-validation.md.
+  "d1_databases": [
+    {
+      "binding": "DAO_PUBLICATION_DB",
+      "database_name": "dao-publication",
+      "database_id": "66d8bf6b-9b2c-41d2-afa1-19647ea9725e",
+      "migrations_dir": "migrations/dao-publication",
+    },
+  ],
 
   "observability": {
     "enabled": true,
@@ -20,9 +28,7 @@
     },
   },
 
-  "routes": [
-    { "pattern": "app.dao-ops.com", "custom_domain": true },
-  ],
+  "routes": [{ "pattern": "app.dao-ops.com", "custom_domain": true }],
 
   "assets": {
     "directory": ".open-next/assets",
@@ -35,4 +41,10 @@
       "service": "governance-apps",
     },
   ],
+
+  // --keep-vars preserves dashboard-only values; this policy overrides its dashboard value.
+  // Coordinate policy changes with the stored D1 policy and both Workers.
+  "vars": {
+    "DAO_PUBLICATION_LIMITS": "{\"hourlyDocuments\":10,\"dailyDocuments\":30,\"monthlyDocuments\":100,\"documents\":400,\"bytes\":52428800,\"concurrent\":2,\"uploadAttempts\":1200,\"documentUploadAttempts\":3,\"retrievalAttempts\":2400,\"documentRetrievalAttempts\":6,\"documentReservations\":6}",
+  },
 }
