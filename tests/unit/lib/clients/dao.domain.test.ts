@@ -359,6 +359,70 @@ describe("DAO timing and voting weight", () => {
 });
 
 describe("DAO action capabilities", () => {
+  it.each([
+    [10n, DAO_BLOCKED_REASONS.voteRetracted],
+    [11n, DAO_BLOCKED_REASONS.voteFlagged],
+    [12n, DAO_BLOCKED_REASONS.voteVetoed],
+  ] as const)("keeps proposal %s permanently blocked across its voting window", (id, reason) => {
+    const value = proposal(id);
+    expect(value.retracted).toBe(true);
+    for (const now of [value.voteStartsAt - 1, value.voteStartsAt, DAO_MOCK_NOW, value.voteEndsAt, value.voteEndsAt + 1]) {
+      const input = {
+        proposal: value,
+        account: capabilityAccount(value),
+        now,
+        vetoEndsAt: value.voteEndsAt + 14 * DAY,
+        executionGuard: "guarded" as const,
+      };
+      expect(deriveDaoCapabilities(input)).toMatchObject({
+        canVote: false, votePurpose: null, voteBlockedReason: reason,
+      });
+      for (const [overrides, accountReason] of [
+        [{ connected: false }, DAO_BLOCKED_REASONS.walletDisconnected],
+        [{ correctChain: false }, DAO_BLOCKED_REASONS.wrongNetwork],
+        [{ hasVoted: true }, DAO_BLOCKED_REASONS.voteAlreadySubmitted],
+      ] as const) {
+        expect(deriveDaoCapabilities({ ...input, account: capabilityAccount(value, overrides) })).toMatchObject({
+          canVote: false, votePurpose: null, voteBlockedReason: accountReason,
+        });
+      }
+    }
+  });
+
+  it.each([2n, 13n])("preserves voting boundaries for proposal %s", (id) => {
+    const value = proposal(id);
+    const purpose = id === 13n ? "participation_only" : "decision";
+    expect(value.retracted).toBe(false);
+    for (const [now, reason] of [
+      [value.voteStartsAt - 1, DAO_BLOCKED_REASONS.voteNotOpen],
+      [value.voteStartsAt, null],
+      [value.voteEndsAt - 1, null],
+      [value.voteEndsAt, DAO_BLOCKED_REASONS.voteClosed],
+      [value.voteEndsAt + 1, DAO_BLOCKED_REASONS.voteClosed],
+    ] as const) {
+      expect(deriveDaoCapabilities({
+        proposal: value, account: capabilityAccount(value), now,
+        vetoEndsAt: value.voteEndsAt + 14 * DAY, executionGuard: "guarded",
+      })).toMatchObject({
+        canVote: reason === null,
+        votePurpose: reason === null ? purpose : null,
+        voteBlockedReason: reason,
+      });
+    }
+  });
+
+  it.each([
+    [1n, DAO_BLOCKED_REASONS.voteNotOpen],
+    [4n, DAO_BLOCKED_REASONS.voteClosed],
+    [7n, DAO_BLOCKED_REASONS.voteClosed],
+  ] as const)("keeps ordinary timing explanations for proposal %s", (id, reason) => {
+    const value = proposal(id);
+    expect(deriveDaoCapabilities({
+      proposal: value, account: capabilityAccount(value), now: DAO_MOCK_NOW,
+      vetoEndsAt: value.voteEndsAt + 14 * DAY, executionGuard: "guarded",
+    })).toMatchObject({ canVote: false, votePurpose: null, voteBlockedReason: reason });
+  });
+
   it("allows participation voting after a post-vote veto", () => {
     const fixture = getDaoMockFixture("post-vote-veto");
     const value = proposal(fixture.proposalRef.proposalId);
@@ -393,7 +457,7 @@ describe("DAO action capabilities", () => {
     expect(capabilities.canVote).toBe(false);
     expect(capabilities.votePurpose).toBeNull();
     expect(capabilities.voteBlockedReason).toBe(
-      DAO_BLOCKED_REASONS.voteLifecycle
+      DAO_BLOCKED_REASONS.voteVetoed
     );
   });
 

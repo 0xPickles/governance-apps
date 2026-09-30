@@ -36,6 +36,9 @@ export const DAO_BLOCKED_REASONS = {
   voteAlreadySubmitted: "This account has already voted on this proposal.",
   voteNotOpen: "Voting has not opened yet.",
   voteClosed: "Voting is closed.",
+  voteRetracted: "This proposal was retracted and cannot receive votes.",
+  voteFlagged: "This proposal was flagged and cannot receive votes.",
+  voteVetoed: "This proposal was vetoed and cannot receive votes.",
   voteLifecycle: "This proposal no longer accepts votes.",
   zeroVotingWeight: "Effective voting weight is zero.",
   notProposer: "Only the proposal author can retract it.",
@@ -643,6 +646,17 @@ function deriveVoteCapability(input: DaoCapabilityInput): {
       reason: DAO_BLOCKED_REASONS.voteAlreadySubmitted,
     };
   }
+  if (input.proposal.protocolStatus === "flagged") {
+    return { purpose: "decision", reason: DAO_BLOCKED_REASONS.voteFlagged };
+  }
+  if (input.proposal.retracted) {
+    return {
+      purpose: "decision",
+      reason: input.proposal.protocolStatus === "vetoed"
+        ? DAO_BLOCKED_REASONS.voteVetoed
+        : DAO_BLOCKED_REASONS.voteRetracted,
+    };
+  }
   if (input.now < input.proposal.voteStartsAt) {
     return { purpose: "decision", reason: DAO_BLOCKED_REASONS.voteNotOpen };
   }
@@ -653,10 +667,7 @@ function deriveVoteCapability(input: DaoCapabilityInput): {
   const participationOnly =
     input.proposal.protocolStatus === "vetoed" &&
     !input.proposal.retracted;
-  if (
-    input.proposal.retracted ||
-    (input.proposal.protocolStatus !== "voting" && !participationOnly)
-  ) {
+  if (input.proposal.protocolStatus !== "voting" && !participationOnly) {
     return { purpose: "decision", reason: DAO_BLOCKED_REASONS.voteLifecycle };
   }
   if (input.account.effectiveVotingWeight <= 0n) {

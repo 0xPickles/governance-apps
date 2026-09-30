@@ -413,7 +413,7 @@ describe("DAO mock proposal actions", () => {
         DAO_MOCK_ACCOUNT_ADDRESS,
         "yea"
       )
-    ).toThrow(DAO_BLOCKED_REASONS.voteLifecycle);
+    ).toThrow(DAO_BLOCKED_REASONS.voteVetoed);
 
     const voting = load("voting");
     setDaoMockAccountState("already-voted");

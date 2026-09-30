@@ -165,7 +165,7 @@ describe("DAO proposal action panel", () => {
     expect(screen.getByRole("radio", { name: "Nay" })).toBeEnabled();
 
     renderFixture("early-veto");
-    expect(screen.getAllByText(DAO_BLOCKED_REASONS.voteLifecycle).at(-1)).toBeVisible();
+    expect(screen.getAllByText(DAO_BLOCKED_REASONS.voteVetoed).at(-1)).toBeVisible();
     expect(screen.getAllByRole("radio")).toHaveLength(2);
   });
 
