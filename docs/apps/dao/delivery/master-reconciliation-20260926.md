@@ -3,6 +3,12 @@
 Current handoff: [September 30 UAT closeout](uat-closeout-20260930.md). The manual walkthrough is complete.
 The record below preserves the reconciliation evidence and its then-pending gates. Its session rebuild instructions are historical, not the next task.
 
+Supersession note, 2026-09-30: the [preparation handoff](preprod-preparation-20260930.md) is now the current candidate record.
+Use the [canonical preprod procedure](../preprod-validation.md) for the approved shared database, mainnet JSON, and operator steps.
+Earlier separate-D1 and reserved-ID requirements below no longer apply. Historical reconciliation results remain unchanged.
+To resolve this record's original documentation candidate, restrict its Git path history to `6191716ed4781ccdfdec6590acb4aea71c355bc9` or earlier.
+
+
 This candidate merges master into the independently reviewed DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427`.
 Independent review of this reconciliation remains required. The populated local walkthrough and preprod deployment remain separate gates.
 The completed [Pinata acceptance](../publication-acceptance-20260923.md) remains valid and was not repeated.
@@ -162,7 +168,7 @@ It retains the previous handoff and distinguishes the preserved session source f
 Resolve the handoff commit and review both parent comparisons with:
 
 ```fish
-set candidate (git log -1 --format=%H -- docs/apps/dao/delivery/master-reconciliation-20260926.md)
+set candidate (git log -1 --format=%H 6191716ed4781ccdfdec6590acb4aea71c355bc9 -- docs/apps/dao/delivery/master-reconciliation-20260926.md)
 git log --first-parent --oneline 9bee14b9037396899d8f1d3d3b604eabeeba7427.."$candidate"
 git diff --stat 9bee14b9037396899d8f1d3d3b604eabeeba7427 "$candidate"
 git diff --stat 06d9ec46458675e36d72b2165ff80189914efb03 "$candidate"

@@ -1,5 +1,10 @@
 # DAO UAT closeout — September 30, 2026
 
+Supersession note, 2026-09-30: use the [preparation handoff](preprod-preparation-20260930.md) and [canonical preprod procedure](../preprod-validation.md) for current release inputs.
+The shared-database decision replaces the separate-D1 and placeholder requirements below. The reviewed mainnet JSON and producer identity are now recorded.
+This historical closeout retains its original tests, observations, and then-pending inputs.
+Its original documentation candidate is `6191716ed4781ccdfdec6590acb4aea71c355bc9`. Use that SHA for its review range after this note.
+
 This bounded closeout is on `agent/integration`, for independent review before preprod deployment.
 The starting commit was `ad2c18a47c9366f50037e9daa79b08641d09affa`, with a clean worktree.
 The tested application commits are `6b7f810b27f68fa901915a230cf5baca1ed2b183` and `2feddf9263d56213c8c9ddffc6406bf0ac954243`.
@@ -8,7 +13,7 @@ The documentation commit uses the documented `--no-gpg-sign` fallback after `1Pa
 The final candidate is the commit that adds this handoff. Resolve its exact SHA and review range with:
 
 ```fish
-set candidate (git log -1 --format=%H -- docs/apps/dao/delivery/uat-closeout-20260930.md)
+set candidate (git log -1 --format=%H 6191716ed4781ccdfdec6590acb4aea71c355bc9 -- docs/apps/dao/delivery/uat-closeout-20260930.md)
 git log --oneline ad2c18a47c9366f50037e9daa79b08641d09affa.."$candidate"
 git diff --stat ad2c18a47c9366f50037e9daa79b08641d09affa "$candidate"
 ```

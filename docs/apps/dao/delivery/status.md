@@ -7,6 +7,11 @@ package starts.
 
 ## Current work (2026-09-30)
 
+- Repository preprod preparation is complete for independent review. The [preparation handoff](preprod-preparation-20260930.md) records the candidate and local validation.
+- The approved infrastructure shares mainnet contracts, producer, Pinata account/gateway/JWT, and one D1 database across both Workers.
+- The operator reports database setup complete. Remote migration, bindings, secrets, and dashboard values were not independently verified during preparation.
+- The [canonical preprod procedure](../preprod-validation.md) starts after that setup and separates private inputs, deployment, bounded checks, and later production rollout.
+- Production DAO flags and routes remain unchanged. Local tools retain isolated storage and offline provider fixtures.
 - The manual lifecycle walkthrough, populated restart, disconnected reads, desktop/mobile checks, fallback displays, and shutdown passed according to the user.
 - Independent comparisons confirm unchanged proposal records after restart and unchanged publication records, policy, and accounting: eight documents, eight uploads, eight retrievals.
 - The [UAT closeout](uat-closeout-20260930.md) records the voting explanation correction, results-before-actions layout, validation, and review range.
@@ -14,6 +19,9 @@ package starts.
 - Completed Pinata acceptance remains accepted. Independent candidate review precedes the production-mode preprod build connected to mainnet.
 
 ## Reconciliation handoff (historical, 2026-09-27)
+
+Supersession note, 2026-09-30: the current procedure replaces earlier separate-database, placeholder-ID, and pending-walkthrough instructions.
+Historical results and acceptance records below retain their original scope.
 
 - The user confirmed independent approval of DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427`.
 - The [master reconciliation handoff](master-reconciliation-20260926.md) is the active candidate record. It records exact parents, validation, and the new independent review scope.

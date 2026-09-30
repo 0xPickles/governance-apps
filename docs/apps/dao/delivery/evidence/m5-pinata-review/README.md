@@ -1,5 +1,8 @@
 # Pinata publication acknowledgement correction
 
+Supersession note, 2026-09-30: use the [canonical preprod procedure](../../../preprod-validation.md) for current infrastructure and key installation.
+Shared D1 configuration replaces the reserved-ID requirements below. Historical correction evidence and acceptance-key instructions retain their original scope.
+
 Review base: `6886f447da52006f9659b91a5129572b944a92e5` on `codex/dao/m5/pinata`.
 Correction commit: `a5b82c412df26eae3dfe4e5e64aa16221de94a0d`.
 Code review range: `6886f447da52006f9659b91a5129572b944a92e5..a5b82c412df26eae3dfe4e5e64aa16221de94a0d`.

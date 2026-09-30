@@ -1,5 +1,8 @@
 # Pinata publication implementation evidence
 
+Supersession note, 2026-09-30: use the [canonical preprod procedure](../../../preprod-validation.md) for current infrastructure and key installation.
+Shared D1 configuration replaces the placeholder-resource requirements below. Historical implementation evidence and acceptance keys remain unchanged.
+
 Implementation started from `e1bd671b87758c49311bb0d8c3e6d93fbeeca61c` on `codex/dao/m5/pinata`.
 The prepared worktree was clean. This identity was recorded before application edits.
 

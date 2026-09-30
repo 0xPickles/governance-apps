@@ -2,22 +2,24 @@
 
 Publication acceptance is [complete](publication-acceptance-20260923.md).
 The approved package is integrated. DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427` passed independent review.
-See the [UAT closeout](delivery/uat-closeout-20260930.md) for the current candidate, finding dispositions, and checks.
-The manual walkthrough and Pinata acceptance are complete. Independent review and [preprod preparation](preprod-validation.md) are the next gates.
+The [UAT closeout](delivery/uat-closeout-20260930.md) retains completed walkthrough evidence and finding dispositions.
+Use the [preparation handoff](delivery/preprod-preparation-20260930.md) for the current candidate and local validation.
+The manual walkthrough and Pinata acceptance are complete. Independent review and authorized preprod deployment preparation are the next gates.
 This checklist does not authorize a merge, deployment, remote change, or production transaction.
 
 ## Remaining release inputs
 
-1. Independent review of the closeout candidate on the reconciled integration branch.
-2. Reviewed production deployment allowlist, RPC URLs, and producer endpoint/identity.
-3. Distinct production and preproduction D1 IDs, the existing migration, and backup ownership.
-4. An upload-only Worker secret, public gateway, reviewed aggregate limits, and content-retention policy.
-5. Protected-host checks, monitoring ownership, rollback target, and rollout approval after candidate acceptance.
+Follow the [canonical preprod procedure](preprod-validation.md) for the exact remaining inputs and their order.
+The reviewed mainnet JSON and producer identity are recorded there. Public-client RPC URLs and existing application configuration remain operator inputs.
+The operator reports database setup complete. Local preparation did not independently verify remote configuration or migration.
+Private shared-JWT installation, the public gateway, access protection, backup/retention owners, monitoring, and rollback remain operator release checks.
+Production rollout requires separate authorization and workflow/route review.
 
 The retained acceptance configuration and throwaway wallets are not production inputs.
-Wrangler's reserved database IDs must be replaced through separately authorized release work.
+Both Wrangler files now identify the approved shared database and identical publication policy.
+The September 30, 2026 decision supersedes separate-database and placeholder-ID requirements in historical handoffs.
 Keep `NEXT_PUBLIC_ENABLE_DAO` and `DAO_PUBLICATION_ENABLED` independently gated.
-Use [publication operations](pinata-publication.md) for provision, key replacement, backup, budget recovery, and rollback.
+Use [publication operations](pinata-publication.md) for shared policy semantics, key replacement, backup, budget recovery, and rollback.
 Do not repeat the completed A/C/B experiment as a normal production procedure.
 
 ## Completed integration procedure (historical)

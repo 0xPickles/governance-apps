@@ -1,5 +1,8 @@
 # Pinata live review: 2026-09-16
 
+Supersession note, 2026-09-30: credential checks and publication acceptance are complete in the [accepted follow-up](../../publication-acceptance-20260923.md).
+Use the [canonical preprod procedure](../../preprod-validation.md) for current key installation and shared infrastructure. The review below retains its original observations.
+
 Outcome: **content compatibility established; proceed with server-side implementation**.
 The user accepted moving the remaining small credential checks into staging acceptance.
 The exploratory spike is closed. Production publication remains disabled pending implementation and release acceptance.

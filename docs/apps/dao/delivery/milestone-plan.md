@@ -1,8 +1,12 @@
 # DAO remaining milestone plan
 
-Current sequence: independently review the [reconciled candidate](master-reconciliation-20260926.md), validate it in the retained populated session, then authorize preprod preparation.
+Current sequence (2026-09-30): independently review the [preprod preparation candidate](preprod-preparation-20260930.md), complete private operator inputs, then authorize deployment and bounded checks.
+Repository preparation is complete. The operator reports database setup complete. The manual walkthrough and Pinata acceptance remain complete.
+Use the [canonical preprod procedure](../preprod-validation.md) for all remaining steps and later production rollout.
+The approved decision shares mainnet contracts, producer, Pinata account/gateway/JWT, and one publication database across both Workers.
+Local tools and experimental migrations retain isolated databases and offline provider fixtures.
 The user confirmed independent approval of DAO integration through `9bee14b9037396899d8f1d3d3b604eabeeba7427`.
-The dated plan below is historical. The current handoff supersedes its outstanding closeout-review and branch-reconciliation steps.
+The dated plan below is historical. This handoff supersedes its outstanding closeout-review, walkthrough, branch-reconciliation, and separate-database steps.
 
 This plan supersedes the implementation sequence recorded before September 23.
 [Publication acceptance](../publication-acceptance-20260923.md) is complete; provider selection and the A/C/B experiment are closed.

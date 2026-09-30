@@ -3,6 +3,8 @@
 Publication is implemented and disabled by default. Publication acceptance completed on 23 September 2026.
 See the [accepted result](publication-acceptance-20260923.md) and [release checklist](release-checklist.md).
 Independent approval of the closeout corrections and production configuration remain release requirements.
+Use the [canonical preprod procedure](preprod-validation.md) for the current candidate, reported remote setup, and ordered operator steps.
+The September 30, 2026 decision replaces separate production/preprod databases with one shared mainnet publication database.
 The author needs no provider account, upload key, document grant, or publication signature.
 An eligible author publishes reviewed content, then separately authorizes the governance transaction.
 
@@ -35,8 +37,8 @@ The completed B experiment is historical evidence, not a production recovery pro
 | `DAO_PUBLICATION_ENABLED=true` | Enables new publication. Absent or false stops POST before upstream access. |
 | `DAO_PINATA_JWT` | Private Worker secret. Scope: only `pinning.pinFileToIPFS`. |
 | `DAO_IPFS_GATEWAY_URL` | Fixed HTTPS public gateway base ending in `/ipfs/`. No credentials, query, or fragment. |
-| `DAO_PUBLICATION_DB` | D1 binding shared by every replica of this publication service. |
-| `DAO_PUBLICATION_LIMITS` | Optional strict JSON overrides for the limits in the next table. |
+| `DAO_PUBLICATION_DB` | D1 binding shared by production, preprod, and every replica of both Workers. |
+| `DAO_PUBLICATION_LIMITS` | Strict JSON overrides. Both Wrangler files contain the approved deployment policy below. |
 | `DAO_PUBLICATION_TEST_ORIGIN` | Loopback development seam. Production rejects it. |
 | `DAO_PUBLICATION_LOCAL_STATE` | Optional isolated local D1 directory for disposable acceptance. |
 
@@ -45,8 +47,10 @@ The browser cannot select an endpoint. Gateway requests never contain the upload
 The application retains no delete, metadata-write, admin, or key-generation authority.
 Public variables and client bundles must never contain the JWT.
 
-The Wrangler files contain reserved database ID placeholders, not provisioned resources.
-An operator must supply distinct reviewed production and preproduction database IDs before release.
+Both Wrangler files identify the approved `dao-publication` database, ID `66d8bf6b-9b2c-41d2-afa1-19647ea9725e`.
+They bind `DAO_PUBLICATION_DB` with migration directory `migrations/dao-publication`.
+The operator reports database setup complete. This task did not independently verify remote migration, bindings, secrets, or dashboard values.
+Production and preprod share one Pinata account, gateway, upload-only JWT, and ledger. Worker hosts and enablement switches remain separate.
 An absent binding, missing migration, invalid limits, or missing key makes publication fail closed.
 The package adds no application dependency.
 
@@ -59,25 +63,28 @@ Empty binary requests reach `400 invalid_content` only after origin validation; 
 
 ## Global application limits
 
-| JSON field | Default | Accounting |
-| --- | ---: | --- |
-| `hourlyDocuments` | 2 | Newly admitted digests in the preceding hour |
-| `dailyDocuments` | 10 | Newly admitted digests in the preceding 24 hours |
-| `monthlyDocuments` | 40 | Newly admitted digests in the preceding 30 days |
-| `documents` | 300 | Lifetime distinct admitted documents |
-| `bytes` | 39,321,600 | Lifetime canonical bytes, including failed and abandoned documents |
-| `concurrent` | 2 | Active publication reservations. Maximum configurable value: 2 |
-| `uploadAttempts` | 500 | Lifetime reserved provider upload attempts |
-| `documentUploadAttempts` | 3 | Upload attempts for one digest |
-| `retrievalAttempts` | 1,800 | Lifetime gateway verification attempts |
-| `documentRetrievalAttempts` | 6 | Gateway attempts for one digest |
-| `documentReservations` | 6 | Lifetime publication jobs for one digest, including forum errors and crashes |
+| JSON field | Application default | Shared deployment policy | Accounting |
+| --- | ---: | ---: | --- |
+| `hourlyDocuments` | 2 | 10 | Newly admitted digests in the preceding hour |
+| `dailyDocuments` | 10 | 30 | Newly admitted digests in the preceding 24 hours |
+| `monthlyDocuments` | 40 | 100 | Newly admitted digests in the preceding 30 days |
+| `documents` | 300 | 400 | Lifetime distinct admitted documents |
+| `bytes` | 39,321,600 | 52,428,800 | Lifetime canonical bytes, including failed and abandoned documents |
+| `concurrent` | 2 | 2 | Active publication reservations. Maximum configurable value: 2 |
+| `uploadAttempts` | 500 | 1,200 | Lifetime reserved provider upload attempts |
+| `documentUploadAttempts` | 3 | 3 | Upload attempts for one digest |
+| `retrievalAttempts` | 1,800 | 2,400 | Lifetime gateway verification attempts |
+| `documentRetrievalAttempts` | 6 | 6 | Gateway attempts for one digest |
+| `documentReservations` | 6 | 6 | Lifetime publication jobs for one digest, including forum errors and crashes |
 
 These numbers are application allowances, not Pinata plan facts or billing formulas.
-They apply to one shared D1 ledger. Separate production and preproduction databases do not enforce an account-wide cap.
-If environments share a provider account, review their combined allowances before enabling both.
-The [complete JSON example](examples/publication-limits.json) matches the implementation defaults.
-Each legitimate revision consumes another document slot. A busy period can exhaust the hourly allowance.
+The deployment policy applies across both Workers through their shared D1 ledger, not separately to each site.
+The [complete default JSON example](examples/publication-limits.json) remains an application-default example, not the deployment policy.
+The identical strings in [production](../../../wrangler.jsonc) and [preprod](../../../wrangler.preprod.jsonc) are the source-controlled deployment overrides.
+Documents are distinct admitted content versions, including failed or abandoned admissions. Each changed digest consumes another document slot.
+Rolling windows expire with time. Lifetime counters do not reset when a rolling window expires.
+A busy period or quota incident can prevent publication through both sites.
+These limits do not bound all inbound traffic, public gateway traffic, or direct use of a stolen JWT.
 Operators can revise limits after usage review. Authors never request document approval.
 
 D1 stores one record per digest: bytes, CID, admission time, success time, attempts, and lease state.
@@ -134,32 +141,22 @@ The existing editor, template, preview, draft storage, and browser recovery rema
 Real proposer eligibility, simulation, transaction signatures, receipt identity, ID zero, replacement handling, cancellation, and indexing recovery remain.
 Publication grants no onchain authority. Feed V2 and immutable proposal-content V1 are unchanged.
 
-## Provision, replace, or disable
+## Configure, replace, or disable
 
-These commands are operator release steps. They were not run remotely during implementation.
-
-1. Obtain release authorization and a reviewed database name.
-2. Create the database with `npx wrangler d1 create dao-publication`.
-3. Replace the reserved ID in the applicable Wrangler file.
-4. Apply the migration with `npx wrangler d1 migrations apply DAO_PUBLICATION_DB --remote --config wrangler.jsonc`.
-5. Privately create a fresh Pinata JWT with only `pinning.pinFileToIPFS`.
-6. Store it through the interactive secret prompt: `npx wrangler secret put DAO_PINATA_JWT --config wrangler.jsonc`.
-7. Configure the public gateway and reviewed limits.
-8. Check the [accepted publication record](publication-acceptance-20260923.md) and complete the environment checks in the [release checklist](release-checklist.md).
-9. Enable publication only after separate rollout authorization.
-
-For preproduction, use `wrangler.preprod.jsonc` and its separate database.
+Use the [canonical preprod procedure](preprod-validation.md#continue-after-the-reported-database-setup) after the operator's reported database setup.
+It covers GitHub values, Worker runtime configuration, private secret installation, access protection, exact workflow/source selection, and bounded checks.
+Production later uses the same database, policy, gateway, and JWT through its separate Worker.
 Normal operation needs no per-document approval or planned frequent key rotation.
 
 To stop uploads, set `DAO_PUBLICATION_ENABLED=false` through the deployment configuration.
 Keep the DAO read flag and D1 binding intact.
-For a suspected key leak, stop publication and revoke the key privately at Pinata.
-Replace it through the same secret prompt, then complete a bounded publication check.
+For a suspected key leak, stop publication in both Workers and revoke the shared key privately at Pinata.
+Install the replacement upload-only JWT privately in both Workers, then complete a separately authorized bounded publication check.
 Application limits do not constrain direct abuse of a stolen provider credential.
 
 ## Backup, inventory, and recovery
 
-Before a release or policy change, stop publication and allow 180 seconds for reservations to expire.
+Before a release backup or policy change, stop publication in both Workers and allow 180 seconds for reservations to expire.
 Export the complete database through the operator's Cloudflare account:
 
 ```fish
@@ -180,12 +177,14 @@ If a confirmed pin needs restoration, treat a manual reupload as a separately au
 
 For a limits change, update the singleton `limits_json` to the complete approved JSON while publication is disabled.
 Use the field order in `DAO_PUBLICATION_DEFAULT_LIMITS`; the application compares its normalized serialization.
-Set matching `DAO_PUBLICATION_LIMITS` overrides on every replica before enabling publication.
+Update both source-controlled `DAO_PUBLICATION_LIMITS` strings and deploy matching values to both Workers before enabling publication.
+Coordinate the stored-policy update with both deployments. A policy mismatch fails closed, including during a code rollback.
 Preserve all publication rows. The local acceptance configuration is a separate example, not a production policy.
 
 ## Rollback and retention
 
 A code rollback keeps the same D1 database and spent allowances.
+Both deployed versions must remain compatible with the shared schema. Test experimental migrations only against isolated databases.
 Rollback to the inherited grant implementation requires publication to remain disabled.
 Old grant settings and Kubo production settings are obsolete and must not be restored.
 
@@ -195,6 +194,7 @@ If accounting cannot be reconciled, do not enable publication from that backup.
 Never attach an empty database as a rollback shortcut.
 
 No automatic task deletes historical proposal pins or abandoned documents.
+Content referenced by real proposals remains retained regardless of whether publication originated in preprod or production.
 Pinata Free retention and ten-year availability are not guaranteed by the experiment.
 Canonical backups and producer-embedded content provide additional recovery evidence.
 Unpinning does not erase copies from public IPFS caches.

@@ -1,0 +1,300 @@
+{
+  "date": "2026-09-30",
+  "base": "6191716ed4781ccdfdec6590acb4aea71c355bc9",
+  "root": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA",
+  "scope": "Repository configuration and documentation preparation only. No remote service verification or changes.",
+  "syntheticInputs": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/synthetic-build-inputs.json",
+  "checks": [
+    {
+      "name": "types",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "cf-typegen"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 0.727,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/types.log",
+      "sha256": "92457a402f3e6a53e72b657ea27aa9dbf2073d450b593dfed15981fdb2213c0f"
+    },
+    {
+      "name": "typecheck",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 12.654,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/typecheck.log",
+      "sha256": "3cf5a18f9cffbafe2469c5fd7b97fe3ab0bb1b5ce8e20923f5c86b0789972807"
+    },
+    {
+      "name": "lint",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 12.063,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/lint.log",
+      "sha256": "f38ded17c5451ba6cebe6a2cdc22ab1094a070537c5ee153dcbd08121340284d"
+    },
+    {
+      "name": "config",
+      "cmd": "node",
+      "args": [
+        "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/tools/check-config.cjs"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 0.385,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/config.log",
+      "sha256": "837b21652d411bb7f35e731429407790e775f1222cb2cd6d976cc9b50a1c5b75"
+    },
+    {
+      "name": "focused",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "test",
+        "--",
+        "tests/unit/lib/clients/dao.publication-policy.test.ts",
+        "tests/unit/lib/clients/dao.publication-store.test.ts",
+        "tests/unit/scripts/dao-publication-local-db.test.ts",
+        "--maxWorkers=2"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 8.193,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/focused.log",
+      "sha256": "31064662a42596793b46ce389c7019b8d34254f3ef0de3929b844599dc119bff"
+    },
+    {
+      "name": "unit",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=2"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 79.492,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/unit.log",
+      "sha256": "7333f5b9be5d376e39e93cf84d0f75a60050852ddced14714704b9989131c13e"
+    },
+    {
+      "name": "env",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "validate:prod-env"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": true,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 0.129,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/env.log",
+      "sha256": "25a13e7bfa293c2674f1daad525606ac2261b583b60767d7bb5ad86d407703ef"
+    },
+    {
+      "name": "build",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "worker:build"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": true,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 39.992,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/build.log",
+      "sha256": "e59da27276147a441e0dab383ec58e278fe7b424f09e07245b737b9709e8425d"
+    },
+    {
+      "name": "sizePreprod",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "validate:worker-size",
+        "--",
+        "wrangler.preprod.jsonc"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": true,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 2.276,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/sizePreprod.log",
+      "sha256": "1595df5d24a3b9809818c5b5c49fa510b53d78db0bc1af1c19882f3b05dac4a8"
+    },
+    {
+      "name": "sizeProd",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "validate:worker-size",
+        "--",
+        "wrangler.jsonc"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": true,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 2.283,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/sizeProd.log",
+      "sha256": "326128b139cbc9af0a09a6254fde89eec43894240711e76b9ca3b7cf39d00608"
+    },
+    {
+      "name": "isolation",
+      "cmd": "node",
+      "args": [
+        "scripts/check-dao-publication-build.mjs"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 0,
+      "signal": null,
+      "elapsedSeconds": 0.072,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/isolation.log",
+      "sha256": "e263fb526395a63180a45d09867e6881290deb54ca2283cb9c800e71d0849198"
+    },
+    {
+      "name": "build-sandbox",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "worker:build"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": true,
+      "code": 1,
+      "signal": null,
+      "elapsedSeconds": 2.646,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/build-sandbox.log",
+      "sha256": "24984b5c9f457426071f7aeefb7e6407130259e32b70e1cd7928327ae94d6627"
+    },
+    {
+      "name": "focused-sandbox",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "test",
+        "--",
+        "tests/unit/lib/clients/dao.publication-policy.test.ts",
+        "tests/unit/lib/clients/dao.publication-store.test.ts",
+        "tests/unit/scripts/dao-publication-local-db.test.ts",
+        "--maxWorkers=2"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 1,
+      "signal": null,
+      "elapsedSeconds": 31.812,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/focused-sandbox.log",
+      "sha256": "9f6a6d399c24a37bf0bbb0524cd1d657cb1d3252690d2f1f7229ea1aa183a3c6"
+    },
+    {
+      "name": "config-schema-loader-attempt",
+      "cmd": "node",
+      "args": [
+        "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/tools/check-config.cjs"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 1,
+      "signal": null,
+      "elapsedSeconds": 0.207,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/config-schema-loader-attempt.log",
+      "sha256": "3f65d40da19cbff513f2d5a4d6829c56f11e4f23b76281eda3063b0bdf1400ac"
+    },
+    {
+      "name": "config-workflow-path-attempt",
+      "cmd": "node",
+      "args": [
+        "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/tools/check-config.cjs"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 1,
+      "signal": null,
+      "elapsedSeconds": 0.346,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/config-workflow-path-attempt.log",
+      "sha256": "de113ea6c1940cff2d911be9b7e915b3285cd81fcce1b1fe6ee02ae58db3628b"
+    },
+    {
+      "name": "unit-before-expectation-update",
+      "cmd": "npm",
+      "args": [
+        "run",
+        "test",
+        "--",
+        "--maxWorkers=2"
+      ],
+      "cwd": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/source",
+      "synthetic": false,
+      "code": 1,
+      "signal": null,
+      "elapsedSeconds": 79.149,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/unit-before-expectation-update.log",
+      "sha256": "c7eb06651d9ada29eb8bbc293bf446136feda975d445f08436c10e8319dea8c0"
+    },
+    {
+      "name": "docs",
+      "cmd": "node",
+      "args": [
+        "scripts/check-dao-doc-links.mjs"
+      ],
+      "cwd": "/Users/hydra/Developer/yearn/governance-apps.agent.integration",
+      "code": 0,
+      "elapsedSeconds": 0.255,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/docs.log",
+      "sha256": "6e34e45550437534c9d1e73203a87c86473713fb280a855af5e2fbf8a3b23dcc"
+    },
+    {
+      "name": "finalAudit",
+      "cmd": "node",
+      "args": [
+        "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/tools/final-audit.mjs"
+      ],
+      "cwd": "/Users/hydra/Developer/yearn/governance-apps.agent.integration",
+      "code": 0,
+      "elapsedSeconds": 0.24,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/finalAudit.log",
+      "sha256": "08192966437c2389c54434c5e61f4a2dc82e19e804fc1413f8622ce881e8bf45"
+    },
+    {
+      "name": "whitespace",
+      "cmd": "git",
+      "args": [
+        "diff",
+        "--check"
+      ],
+      "cwd": "/Users/hydra/Developer/yearn/governance-apps.agent.integration",
+      "code": 0,
+      "elapsedSeconds": 0.014,
+      "log": "/private/tmp/dao-preprod-preparation-20260930-TfFeLA/checks/whitespace.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

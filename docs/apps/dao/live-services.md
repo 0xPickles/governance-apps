@@ -2,6 +2,7 @@
 
 DAO uses real clients when `NEXT_PUBLIC_USE_MOCKS=false`. Production always uses real clients.
 `NEXT_PUBLIC_ENABLE_DAO` gates DAO routes. `DAO_PUBLICATION_ENABLED` independently gates new uploads and defaults to false.
+Use the [canonical preprod procedure](preprod-validation.md) for the reviewed mainnet JSON, shared publication infrastructure, and ordered operator steps.
 
 ## Publication
 

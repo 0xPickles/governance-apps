@@ -54,6 +54,9 @@ The [closeout record](delivery/evidence/closeout-20260924/README.md) records the
 
 ## Release requirements
 
+Supersession note, 2026-09-30: the [canonical preprod procedure](preprod-validation.md) now defines release inputs and the shared database decision.
+It replaces the separate-D1 requirement and then-pending integration steps below. Acceptance evidence and historical key-revocation observations remain unchanged.
+
 Provider selection and publication acceptance are closed.
 Production still needs reviewed deployment identities and RPC/feed configuration, separate D1 bindings and migration, an upload-only secret, gateway, limits, and retention policy.
 Independent closeout approval, integration, release-branch reconciliation, protected-host checks, and rollout authorization remain separate steps.
